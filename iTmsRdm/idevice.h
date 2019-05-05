@@ -2,6 +2,7 @@
 
 #include <QObject>
 
+class iRDM;
 class iDevice : public QObject
 {
 	Q_OBJECT
@@ -9,4 +10,7 @@ class iDevice : public QObject
 public:
 	iDevice(QObject *parent);
 	~iDevice();
+
+private:
+	iRDM*		RDM;
 };

@@ -3,8 +3,18 @@
 iTag::iTag(quint64 tag_ID, QObject *parent)
 	: QObject(parent)
 {
+	T_id		 = tag_ID;
+	T_caldata.all= 0;
+	T_temp		= 0;
 }
 
 iTag::~iTag()
 {
+}
+float iTag::parseTCode(ushort tcode)
+{
+	float k = (float)(T_caldata.bits.temp2 - T_caldata.bits.temp1) / (T_caldata.bits.code2 - T_caldata.bits.code1);
+	short delta = tcode - T_caldata.bits.code1;
+
+	return (0.1f*(k * delta + T_caldata.bits.temp1 - 800));
 }
