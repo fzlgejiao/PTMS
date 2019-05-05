@@ -29,5 +29,31 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="irdm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ireader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="idevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="itag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="irdm.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ireader.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="idevice.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="itag.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
