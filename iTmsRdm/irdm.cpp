@@ -1,28 +1,70 @@
 #include "irdm.h"
 
 iRDM::iRDM(QObject *parent)
-	: QObject(parent), iotdevice(this)
+	: QObject(parent)
 {
+	QString comName;
 #ifdef WIN32
-	reader = new iReader("tmr:///com22", this);
+	comName = "tmr:///com22";
+#else
+	comName = "tmr:///dev/ttyUSB0";
 #endif
 
-#ifdef __linux__
-	reader = new iReader("tmr:///dev/ttyUSB0", this);
-#endif
+	reader		= new iReader(comName, this);
+	iotdevice	= new iDevice(this);
+
+	//Cfg_load();
+	timerId_2s	= startTimer(2000);
 }
 
 iRDM::~iRDM()
 {
 }
-void iRDM::Tag_init(QList<quint64>& tids)
+bool iRDM::Cfg_load(const QString& xml)
 {
+	//parse xml 
+
+
+	//todo: load iot info
+
+	iotdevice->IOT_init();
+
+	//reset tag list
 	qDeleteAll(taglist);
 	taglist.clear();
 
-	for(quint64 tid : tids)
+	int sid;
+	quint64 uid;
+	QString epc;
+	//todo: load tag info
+	Tag_add(sid, uid, epc);
+
+	return true;
+}
+void iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
+{
+	iTag *tag = new iTag(sid,uid,epc, this);
+	if(tag)
+		taglist.insert(tag->T_uid, tag);
+
+}
+void iRDM::timerEvent(QTimerEvent *event)
+{
+	if (event->timerId() == timerId_2s)
 	{
-		iTag *tag = new iTag(tid, this);
-		taglist.insert(tag->T_id, tag);
+		//read tags
+		reader->readtag();
+
+		//upload rdm data
+		iotdevice->PUB_rdm_event();
+
+
+		//upload tag data																				
+		for (iTag* tag : taglist)
+		{
+			iotdevice->PUB_tag_data(tag);
+			iotdevice->PUB_tag_event(tag);
+
+		}
 	}
 }

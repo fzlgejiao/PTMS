@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdm mac="00-23-5A-15-99-42" name="rdm_1" org="herong">
+    <note>rdm_note</note>
+    <cfg>
+    	<tag max="10" />
+        <gui ip="192.168.0.2" port="2871" version="R01.00.00"/>
+    </cfg>
+    <tags>
+        <tag sid="1" uid="000001" epc="tag_epc_1">tag_note_1</tag>
+  	<tag sid="2" uid="000002" epc="tag_epc_2">tag_note_2</tag>
+  	<tag sid="3" uid="000003" epc="tag_epc_3">tag_note_3</tag>
+  	<tag sid="4" uid="000004" epc="tag_epc_4">tag_note_4</tag>
+    </tags>
+</rdm>

@@ -21,7 +21,7 @@ class iTag : public QObject
 	Q_OBJECT
 
 public:
-	iTag(quint64 tag_ID, QObject *parent);
+	iTag(int sid,quint64 uid, const QString& epc,QObject *parent);
 	~iTag();
 
 	float parseTCode(ushort tcode);
@@ -31,8 +31,12 @@ private:
 	friend class iReader;
 	friend class iDevice;
 
-	quint64			T_id;
-	QString			T_epc;
+	int				T_sid;																			//squence id of tag[1 - ], ordered by uid
+	bool			T_available;																	//online/offline
+	bool			T_updated;																		//data changed ,but not transmitted
+	bool			T_alarm;																		//alarm or not(<online -> offline> ==> alarm)
+	quint64			T_uid;																			//uid
+	QString			T_epc;																			//epc 
 	float			T_temp;																			//temperature
 	CalibrationData T_caldata;
 };

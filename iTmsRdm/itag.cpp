@@ -1,11 +1,14 @@
 #include "itag.h"
 
-iTag::iTag(quint64 tag_ID, QObject *parent)
+iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	: QObject(parent)
 {
-	T_id		 = tag_ID;
+	T_available	= false;
+	T_sid = sid;
+	T_uid = uid;
+	T_epc = epc;
 	T_caldata.all= 0;
-	T_temp		= 0;
+	T_temp= 0;
 }
 
 iTag::~iTag()
