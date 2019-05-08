@@ -5,7 +5,7 @@ iRDM::iRDM(QObject *parent)
 {
 	QString comName;
 #ifdef WIN32
-	comName = "tmr:///com22";
+	comName = "tmr:///com3";
 #else
 	comName = "tmr:///dev/ttyUSB0";
 #endif
@@ -13,7 +13,8 @@ iRDM::iRDM(QObject *parent)
 	reader		= new iReader(comName, this);
 	iotdevice	= new iDevice(this);
 
-	//Cfg_load();
+	QString xml;
+	Cfg_load(xml);
 	timerId_2s	= startTimer(2000);
 }
 
@@ -26,7 +27,10 @@ bool iRDM::Cfg_load(const QString& xml)
 
 
 	//todo: load iot info
-
+	productkey	= "a19j8IwnnuH";
+	devicename	= "4zDwkhgFGGSIYzTuiwkE";
+	devicesecret= "tjtPWptju0WnDefExfSIGEwEodkAbwBj";
+	regionid	= "cn-shanghai";
 	iotdevice->IOT_init();
 
 	//reset tag list
@@ -34,7 +38,7 @@ bool iRDM::Cfg_load(const QString& xml)
 	taglist.clear();
 
 	int sid;
-	quint64 uid;
+	quint64 uid = 1;
 	QString epc;
 	//todo: load tag info
 	Tag_add(sid, uid, epc);

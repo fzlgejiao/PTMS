@@ -230,14 +230,16 @@ void iReader::readtag()
 			
 			iTag * tag = RDM->Tag_get(tid);
 
-			if (tag && tag->T_caldata.all == 0)
+			if (tag )
 			{
-				tag->T_caldata.all = readtagCalibration(&epcfilter);
+				tag->T_epc = epc;
+				if (tag->T_caldata.all == 0)
+					tag->T_caldata.all = readtagCalibration(&epcfilter);
+				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
+				if (temperaturecode > 0)
+					tag->T_temp = tag->parseTCode(temperaturecode);
 			}
-			tag->T_epc = epc;
-			ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
-			if (temperaturecode > 0)
-				tag->T_temp = tag->parseTCode(temperaturecode);
+
 		}
 	}
 }

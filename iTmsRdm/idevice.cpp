@@ -46,8 +46,8 @@ void iDevice::IOT_init()
 
 	client->connectToHost();
 
-	PUB_topic = QString("/sys/%1/%2/thing/event/property/post").arg(RDM->productkey).arg(RDM->devicename);
-	PUB_event = QString("/sys/%1/%2/thing/event/{tsl.event.TemperatureAlarm}/post").arg(RDM->productkey).arg(RDM->devicename);
+	PubParameterTopic = QString("/sys/%1/%2/thing/event/property/post").arg(RDM->productkey).arg(RDM->devicename);
+	PubParameterEvent = QString("/sys/%1/%2/thing/event/{tsl.event.TemperatureAlarm}/post").arg(RDM->productkey).arg(RDM->devicename);
 
 	PubOTAVersionTopic = QString("/ota/device/inform/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 	PubOTAProgressTopic = QString("/ota/device/progress/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
@@ -148,7 +148,7 @@ void iDevice::PUB_tag_data(iTag* tag)
 
 	//QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"IndoorTemperature\":%1},\"method\":\"thing.event.property.post\"}").arg(temp, 0, 'f', 1);
 	QString MESSAGE_FORMAT = QString("{\"params\":{\"IndoorTemperature\":%1}}").arg(tag->T_temp, 0, 'f', 1);
-	client->publish(PUB_topic, MESSAGE_FORMAT.toUtf8());
+	client->publish(PubParameterTopic, MESSAGE_FORMAT.toUtf8());
 }
 void iDevice::PUB_tag_event(iTag* tag)
 {	

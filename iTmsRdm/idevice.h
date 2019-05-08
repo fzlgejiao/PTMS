@@ -29,11 +29,12 @@ protected:
 private:
 	iRDM*			RDM;
 	QMqttClient *	client;
-	QString			PUB_topic;
-	QString			PUB_event;
+	QString			PubParameterTopic;
+	QString			PubParameterEvent;
+	QString			SubParameterTopic;
+
 	QString			PubOTAVersionTopic;
 	QString			PubOTAProgressTopic;
-	QString			SubParameterTopic;
 	QString			SubOTARequestTopic;
 
 
