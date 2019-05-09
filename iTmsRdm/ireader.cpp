@@ -40,7 +40,7 @@ iReader::iReader(QString comName, QObject *parent)
 	str.value = string;
 
 	TMR_Region region = TMR_REGION_PRC;
-	int power = 2000;
+	int power = 3000;
 	int t4 = 3000;
 
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);

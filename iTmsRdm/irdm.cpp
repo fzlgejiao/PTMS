@@ -3,18 +3,19 @@
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)
 {
-	QString comName;
 #ifdef WIN32
 	comName = "tmr:///com3";
 #else
 	comName = "tmr:///dev/ttyUSB0";
 #endif
+	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
+	Cfg_load(xml);
 
 	reader		= new iReader(comName, this);
 	iotdevice	= new iDevice(this);
 
-	QString xml;
-	Cfg_load(xml);
+	iotdevice->IOT_init();
+
 	timerId_2s	= startTimer(2000);
 }
 
@@ -24,26 +25,177 @@ iRDM::~iRDM()
 bool iRDM::Cfg_load(const QString& xml)
 {
 	//parse xml 
+	QFile file(xml);
+	if (!file.open(QFile::ReadOnly | QFile::Text)) {
+		//std::cerr << "Error: Cannot read file " << qPrintable(xml)
+		//	<< ": " << qPrintable(file.errorString())
+		//	<< std::endl;
+		return false;
+	}
+	QXmlStreamReader xmlReader;
+	xmlReader.setDevice(&file);
 
+	xmlReader.readNext();
+	while (!xmlReader.atEnd())
+	{
+		if (xmlReader.isStartElement())
+		{
+			if (xmlReader.name() == "rdm")
+			{
+				//get data file name
+				QString mac = xmlReader.attributes().value("mac").toString();
+				QString name = xmlReader.attributes().value("name").toString();
 
-	//todo: load iot info
-	productkey	= "a19j8IwnnuH";
-	devicename	= "4zDwkhgFGGSIYzTuiwkE";
-	devicesecret= "tjtPWptju0WnDefExfSIGEwEodkAbwBj";
-	regionid	= "cn-shanghai";
-	iotdevice->IOT_init();
+				Cfg_readrdm(xmlReader);																//read rdm
+			}
+			else
+			{
+				xmlReader.raiseError(QObject::tr("Not a rdm config file"));
+			}
+		}
+		else
+		{
+			xmlReader.readNext();
+		}
+	}
 
+	file.close();
+	if (xmlReader.hasError()) {
+		//std::cerr << "Error: Failed to parse file "
+		//	<< qPrintable(fileName) << ": "
+		//	<< qPrintable(xmlReader.errorString()) << std::endl;
+		return false;
+	}
+	else if (file.error() != QFile::NoError) {
+		//std::cerr << "Error: Cannot read file " << qPrintable(fileName)
+		//	<< ": " << qPrintable(file.errorString())
+		//	<< std::endl;
+		return false;
+	}
+	return true;
+}
+void iRDM::Cfg_readrdm(QXmlStreamReader& xmlReader)
+{
+	xmlReader.readNext();
+	while (!xmlReader.atEnd()) {
+		if (xmlReader.isEndElement()) {
+
+			xmlReader.readNext();
+			break;
+		}
+
+		if (xmlReader.isStartElement()) {
+			if (xmlReader.name() == "cfg")
+			{
+				Cfg_readcfg(xmlReader);
+			}
+			else if (xmlReader.name() == "tags")
+			{
+				Cfg_readtags(xmlReader);
+			}
+			else
+			{
+				Cfg_skipUnknownElement(xmlReader);
+			}
+		}
+		else {
+			xmlReader.readNext();
+		}
+	}
+}
+void iRDM::Cfg_readcfg(QXmlStreamReader& xmlReader)
+{
+	xmlReader.readNext();
+	while (!xmlReader.atEnd()) {
+		if (xmlReader.isEndElement()) {
+			xmlReader.readNext();
+			break;
+		}
+
+		if (xmlReader.isStartElement()) {
+			if (xmlReader.name() == "com") {
+				comName = xmlReader.readElementText();											//read com port
+
+				if (xmlReader.isEndElement())
+					xmlReader.readNext();
+			}
+			else if (xmlReader.name() == "iot")
+			{
+				productkey = xmlReader.attributes().value("productkey").toString();
+				devicename = xmlReader.attributes().value("devicename").toString();
+				devicesecret = xmlReader.attributes().value("devicesecret").toString();
+				regionid = xmlReader.attributes().value("regionid").toString();
+				QString iot = xmlReader.readElementText();
+				if (xmlReader.isEndElement())
+					xmlReader.readNext();
+			}
+			else
+			{
+				Cfg_skipUnknownElement(xmlReader);
+			}
+		}
+		else {
+			xmlReader.readNext();
+		}
+	}
+}
+void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
+{
 	//reset tag list
 	qDeleteAll(taglist);
 	taglist.clear();
 
-	int sid;
-	quint64 uid = 1;
-	QString epc;
-	//todo: load tag info
-	Tag_add(sid, uid, epc);
+	xmlReader.readNext();
+	while (!xmlReader.atEnd()) {
+		if (xmlReader.isEndElement()) {
+			xmlReader.readNext();
+			break;
+		}
 
-	return true;
+		if (xmlReader.isStartElement()) {
+			if (xmlReader.name() == "tag")
+			{
+				int sid;
+				quint64 uid;
+				QString epc;
+				sid = xmlReader.attributes().value("sid").toString().toInt();
+				uid = xmlReader.attributes().value("uid").toString().toULongLong();
+				epc = xmlReader.attributes().value("epc").toString();
+				regionid = xmlReader.attributes().value("regionid").toString();
+
+				//todo: load tag info
+				Tag_add(sid, uid, epc);
+
+				QString iot = xmlReader.readElementText();
+				if (xmlReader.isEndElement())
+					xmlReader.readNext();
+			}
+			else
+			{
+				Cfg_skipUnknownElement(xmlReader);
+			}
+		}
+		else {
+			xmlReader.readNext();
+		}
+	}
+}
+void iRDM::Cfg_skipUnknownElement(QXmlStreamReader& xmlReader)
+{
+	xmlReader.readNext();
+	while (!xmlReader.atEnd()) {
+		if (xmlReader.isEndElement()) {
+			xmlReader.readNext();
+			break;
+		}
+
+		if (xmlReader.isStartElement()) {
+			Cfg_skipUnknownElement(xmlReader);
+		}
+		else {
+			xmlReader.readNext();
+		}
+	}
 }
 void iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 {
