@@ -1,4 +1,5 @@
 #include "irdm.h"
+#include <QDebug> 
 
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)
@@ -145,6 +146,8 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 	qDeleteAll(taglist);
 	taglist.clear();
 
+	qDebug() << "Cfg_readtags:" << endl;
+
 	xmlReader.readNext();
 	while (!xmlReader.atEnd()) {
 		if (xmlReader.isEndElement()) {
@@ -161,10 +164,14 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				sid = xmlReader.attributes().value("sid").toString().toInt();
 				uid = xmlReader.attributes().value("uid").toString().toULongLong();
 				epc = xmlReader.attributes().value("epc").toString();
-				regionid = xmlReader.attributes().value("regionid").toString();
+
 
 				//todo: load tag info
 				Tag_add(sid, uid, epc);
+
+				qDebug() << "tag : sid = " << sid 
+						<< " uid = " << uid 
+					    << " epc = " << epc << endl;
 
 				QString iot = xmlReader.readElementText();
 				if (xmlReader.isEndElement())
@@ -218,9 +225,26 @@ void iRDM::timerEvent(QTimerEvent *event)
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
-			iotdevice->PUB_tag_data(tag);
+			if(tag->isonline())
+				iotdevice->PUB_tag_data(tag);
 			iotdevice->PUB_tag_event(tag);
-
+			if (tag->T_ticks)
+			{
+				tag->T_ticks--;
+				if (tag->T_ticks == 0)
+				{
+					qDebug() << "tag : sid = " << tag->T_sid 
+						<< " uid = " << tag->T_uid 
+						<< " Alarm : Offline" << endl;
+					tag->T_alarm_offline = true;													//offline
+				}
+			}
+			if (tag->T_ticks == 0)
+			{
+				qDebug() << "tag : sid = " << tag->T_sid
+					<< " uid = " << tag->T_uid
+					<< " Offline" << endl;
+			}
 		}
 	}
 }

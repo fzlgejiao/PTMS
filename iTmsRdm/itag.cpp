@@ -3,12 +3,14 @@
 iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	: QObject(parent)
 {
-	T_available	= false;
+	T_ticks	= 0;
 	T_sid = sid;
 	T_uid = uid;
 	T_epc = epc;
 	T_caldata.all= 0;
 	T_temp= 0;
+	T_alarm_offline = false;
+	T_alarm_outofrange = false;
 }
 
 iTag::~iTag()

@@ -146,17 +146,18 @@ void iDevice::PUB_tag_data(iTag* tag)
 	if (status != QMqttClient::Connected) 
 		return;
 
+	//todo: for each tag , there is a property on server to save the temperature
 	//QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"IndoorTemperature\":%1},\"method\":\"thing.event.property.post\"}").arg(temp, 0, 'f', 1);
 	QString MESSAGE_FORMAT = QString("{\"params\":{\"IndoorTemperature\":%1}}").arg(tag->T_temp, 0, 'f', 1);
 	client->publish(PubParameterTopic, MESSAGE_FORMAT.toUtf8());
 }
 void iDevice::PUB_tag_event(iTag* tag)
 {	
-	if (tag->T_alarm)
+	if (tag->T_alarm_offline)
 	{
 		//to publish the event
 
-		tag->T_alarm = false;
+		tag->T_alarm_offline = false;
 	}
 }
 void iDevice::PUB_rdm_data()

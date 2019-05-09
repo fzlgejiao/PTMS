@@ -178,8 +178,11 @@ void iReader::readtag()
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
+		qDebug() << "read tag : FAILED - " << errormessage << endl;
 		return;
 	}
+	qDebug() << "read tag : SUCCESS" << endl;
+
 	while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 	{
 		TMR_TagReadData trd;
@@ -229,15 +232,25 @@ void iReader::readtag()
 			if (tid == 0) continue;
 			
 			iTag * tag = RDM->Tag_get(tid);
-
 			if (tag )
 			{
+				tag->T_ticks = TAG_TICKS;
+				tag->T_alarm_offline = false;
 				tag->T_epc = epc;
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
 				if (temperaturecode > 0)
 					tag->T_temp = tag->parseTCode(temperaturecode);
+
+				qDebug() << "tag : sid = " << tag->T_sid
+					<< " uid = " << tag->T_uid
+					<< " epc = " << tag->T_epc 
+					<< " temperature = " << tag->T_temp << endl;
+			}
+			else
+			{
+				qDebug() << "unknown tag : uid = " << tid << endl;
 			}
 
 		}
