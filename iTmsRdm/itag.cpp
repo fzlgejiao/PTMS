@@ -3,6 +3,7 @@
 iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	: QObject(parent)
 {
+	T_enable = true;
 	T_ticks	= 0;
 	T_sid = sid;
 	T_uid = uid;

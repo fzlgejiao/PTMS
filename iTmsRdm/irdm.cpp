@@ -161,10 +161,10 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				int sid;
 				quint64 uid;
 				QString epc;
+				int enable;
 				sid = xmlReader.attributes().value("sid").toString().toInt();
 				uid = xmlReader.attributes().value("uid").toString().toULongLong();
-				epc = xmlReader.attributes().value("epc").toString();
-
+				epc = xmlReader.attributes().value("epc").toString();			
 
 				//todo: load tag info
 				Tag_add(sid, uid, epc);
@@ -207,8 +207,10 @@ void iRDM::Cfg_skipUnknownElement(QXmlStreamReader& xmlReader)
 void iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 {
 	iTag *tag = new iTag(sid,uid,epc, this);
-	if(tag)
+	if (tag)
+	{
 		taglist.insert(tag->T_uid, tag);
+	}
 
 }
 void iRDM::timerEvent(QTimerEvent *event)
@@ -225,6 +227,9 @@ void iRDM::timerEvent(QTimerEvent *event)
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
+			if (tag->T_enable == false)
+				continue;
+
 			if(tag->isonline())
 				iotdevice->PUB_tag_data(tag);
 			iotdevice->PUB_tag_event(tag);

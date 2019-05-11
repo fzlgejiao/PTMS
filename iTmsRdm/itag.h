@@ -33,13 +33,15 @@ private:
 	friend class iReader;
 	friend class iDevice;
 
+	bool			T_enable;
 	int				T_sid;																			//squence id of tag[1 - ], ordered by uid
 	int				T_ticks;																		//ticks to check online(0: offline, >0: online)	
 	bool			T_updated;																		//data changed ,but not transmitted
-	bool			T_alarm_offline;																//alarm or not(<online -> offline> ==> alarm)
-	bool			T_alarm_outofrange;
+	bool			T_alarm_offline;																//offline alarm or not(<online -> offline> ==> alarm)
+	bool			T_alarm_outofrange;																//temperature out of range alarm
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
 	float			T_temp;																			//temperature
+	int				T_max;																			//max temperature
 	CalibrationData T_caldata;
 };
