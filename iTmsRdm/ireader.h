@@ -18,6 +18,7 @@ public:
 	void readtag();
 
 protected:
+	void	init();
 	quint64 readtagTid(TMR_TagFilter *filter);
 	quint64 readtagCalibration(TMR_TagFilter *filter);
 	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);

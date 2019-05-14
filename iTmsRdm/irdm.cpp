@@ -17,6 +17,12 @@ iRDM::iRDM(QObject *parent)
 
 	iotdevice->IOT_init();
 
+	//set tag flags for send the tag info to system
+	for (iTag *tag : taglist)
+	{
+		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch;
+	}
+
 	timerId_2s	= startTimer(2000);
 }
 
@@ -223,16 +229,16 @@ void iRDM::timerEvent(QTimerEvent *event)
 		//upload rdm data
 		iotdevice->PUB_rdm_event();
 
-
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
 			if (tag->T_enable == false)
 				continue;
 
-			if(tag->isonline())
-				iotdevice->PUB_tag_data(tag);
-			iotdevice->PUB_tag_event(tag);
+			if (tag->isonline())
+				tag->T_data_flag |= Tag_Temperature;
+			
+
 			if (tag->T_ticks)
 			{
 				tag->T_ticks--;
@@ -242,6 +248,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 						<< " uid = " << tag->T_uid 
 						<< " Alarm : Offline" << endl;
 					tag->T_alarm_offline = true;													//offline
+					tag->T_data_flag |= Tag_Online;
 				}
 			}
 			if (tag->T_ticks == 0)
@@ -250,6 +257,9 @@ void iRDM::timerEvent(QTimerEvent *event)
 					<< " uid = " << tag->T_uid
 					<< " Offline" << endl;
 			}
+
+			iotdevice->PUB_tag_data(tag);
+			iotdevice->PUB_tag_event(tag);
 		}
 	}
 }

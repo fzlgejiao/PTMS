@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QtMqtt/QtMqtt>
 #include <QMessageAuthenticationCode>
+#include "itag.h"
 
 class iRDM;
 class iTag;

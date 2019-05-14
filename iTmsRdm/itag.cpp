@@ -12,6 +12,10 @@ iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	T_temp= 0;
 	T_alarm_offline = false;
 	T_alarm_outofrange = false;
+	T_uplimit = 75;
+
+	T_data_flag = 0;
+	T_event_flag = 0;
 }
 
 iTag::~iTag()

@@ -1,6 +1,6 @@
 #include "idevice.h"
 #include "irdm.h"
-#include "itag.h"
+
 
 iDevice::iDevice(QObject *parent)
 	: QObject(parent)
@@ -143,13 +143,31 @@ void iDevice::PUB_tag_data(iTag* tag)
 {
 	//to publish the data of tag
 	QMqttClient::ClientState status = client->state();
-	if (status != QMqttClient::Connected) 
+	if (status != QMqttClient::Connected)
 		return;
 
 	//todo: for each tag , there is a property on server to save the temperature
 	//QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"IndoorTemperature\":%1},\"method\":\"thing.event.property.post\"}").arg(temp, 0, 'f', 1);
-	QString MESSAGE_FORMAT = QString("{\"params\":{\"IndoorTemperature\":%1}}").arg(tag->T_temp, 0, 'f', 1);
-	client->publish(PubParameterTopic, MESSAGE_FORMAT.toUtf8());
+
+	QString msg;
+
+	if (tag->T_data_flag & Tag_Upperlimit)
+	{
+		msg = QString("{\"params\":{\"Tag%1_Upperlimit\":%2}}").arg(tag->T_sid).arg(tag->T_uplimit);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+
+	if (tag->T_data_flag & Tag_Temperature)
+	{
+		msg = QString("{\"params\":{\"Tag%1_CurrentTemperature\":%2}}").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->T_data_flag & Tag_Online)
+	{
+		msg = QString("{\"params\":{\"Tag%1_online\":%2}}").arg(tag->T_sid).arg(tag->isonline());
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	tag->T_data_flag = 0;
 }
 void iDevice::PUB_tag_event(iTag* tag)
 {	

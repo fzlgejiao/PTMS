@@ -8,13 +8,23 @@ iReader::iReader(QString comName, QObject *parent)
 	RDM = (iRDM *)parent;
 	m_uri = comName;
 
-	TMR_Status ret;
 	tmrReader = new TMR_Reader();
+
+	init();
+}
+
+iReader::~iReader()
+{
+	TMR_destroy(tmrReader);
+}
+void iReader::init()
+{
+	TMR_Status ret;
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
 
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_connect(tmrReader);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 
 	//Get reader's  hardware ,software, modle type
 	TMR_String str;
@@ -23,19 +33,19 @@ iReader::iReader(QString comName, QObject *parent)
 	str.max = 50;
 
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_PRODUCT_GROUP, &str);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	group = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_HARDWARE, &str);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	hardware = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_SOFTWARE, &str);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	software = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_MODEL, &str);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	modleversion = QString(str.value);
 	str.value = string;
 
@@ -44,30 +54,31 @@ iReader::iReader(QString comName, QObject *parent)
 	int t4 = 3000;
 
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_READPOWER, &power);
-	if (ret != TMR_SUCCESS) return;
-	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
+	//if (ret != TMR_SUCCESS) goto Failed;
+
 	//To do :set simple plan ,read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0xE, 1);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 
 	quint8 antennaCount = 2;		//M6E micro support 2 antenna
 	antennaList[0] = 1;
 	antennaList[1] = 2;
 
 	ret = TMR_RP_init_simple(&plan, antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 1000);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 
 	ret = TMR_RP_set_filter(&plan, &tempselect);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_RP_set_tagop(&plan, &tempread);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
-	if (ret != TMR_SUCCESS) return;
+	if (ret != TMR_SUCCESS) goto Failed;
 
 	//set async read mode	
 	//setCReader();
@@ -84,16 +95,16 @@ iReader::iReader(QString comName, QObject *parent)
 	//reb.cookie = NULL;
 
 	//ret = TMR_addReadListener(reader, &rlb);
-	//if (ret != TMR_SUCCESS) return;
+	//if (ret != TMR_SUCCESS) goto Failed;
 	//ret = TMR_addReadExceptionListener(reader, &reb);
-	//if (ret != TMR_SUCCESS) return;
+	//if (ret != TMR_SUCCESS) goto Failed;
 	//ret = TMR_startReading(reader);
-	//if (ret != TMR_SUCCESS) return;
-}
+	//if (ret != TMR_SUCCESS) goto Failed;
+	return;
 
-iReader::~iReader()
-{
-	TMR_destroy(tmrReader);
+Failed:
+	QString errormessage = QString(TMR_strerr(tmrReader, ret));
+	qDebug() << "reader init : FAILED - " << errormessage << endl;
 }
 bool iReader::wirteEpc(iTag *tag, QString epcstr)
 {
@@ -237,6 +248,7 @@ void iReader::readtag()
 				tag->T_ticks = TAG_TICKS;
 				tag->T_alarm_offline = false;
 				tag->T_epc = epc;
+				tag->T_data_flag = Tag_Online;
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
