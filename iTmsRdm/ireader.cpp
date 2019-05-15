@@ -57,8 +57,8 @@ void iReader::init()
 	if (ret != TMR_SUCCESS) goto Failed;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_READPOWER, &power);
 	if (ret != TMR_SUCCESS) goto Failed;
-	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
-	//if (ret != TMR_SUCCESS) goto Failed;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
+	if (ret != TMR_SUCCESS) goto Failed;
 
 	//To do :set simple plan ,read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
@@ -248,7 +248,7 @@ void iReader::readtag()
 				tag->T_ticks = TAG_TICKS;
 				tag->T_alarm_offline = false;
 				tag->T_epc = epc;
-				tag->T_data_flag = Tag_Online;
+				tag->T_data_flag |= Tag_Online;
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];

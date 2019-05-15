@@ -5,6 +5,12 @@
 #include <QMessageAuthenticationCode>
 #include "itag.h"
 
+enum OTADataFlag {
+	OTA_Version		= 0x0001,
+	OTA_Progress	= 0x0002,
+
+};
+
 class iRDM;
 class iTag;
 class iDevice : public QObject
@@ -21,6 +27,7 @@ public:
 	void PUB_tag_event(iTag* tag);
 	void PUB_rdm_data();
 	void PUB_rdm_event();
+	void PUB_ota_data(ushort flag);
 
 protected:
 	QString MakeJsonMessage(QString key, QJsonValue value);
@@ -40,6 +47,6 @@ private:
 
 
 private slots:
-	void OnStateChanged();
+	void OnStateChanged(QMqttClient::ClientState);
 	void OnMessageReceived(const QByteArray &message, const QMqttTopicName &topic = QMqttTopicName());
 };

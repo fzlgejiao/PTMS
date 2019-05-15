@@ -19,7 +19,7 @@ iDevice::~iDevice()
 void iDevice::IOT_init()
 {
 	//init MQTT client
-	client->disconnect();
+	//client->disconnect();
 
 	QMap<QCryptographicHash::Algorithm, QString> signmethodmap;
 	signmethodmap.insert(QCryptographicHash::Md5, "hmacmd5");
@@ -48,21 +48,19 @@ void iDevice::IOT_init()
 
 	PubParameterTopic = QString("/sys/%1/%2/thing/event/property/post").arg(RDM->productkey).arg(RDM->devicename);
 	PubParameterEvent = QString("/sys/%1/%2/thing/event/{tsl.event.TemperatureAlarm}/post").arg(RDM->productkey).arg(RDM->devicename);
+	SubParameterTopic = QString("/sys/%1/%2/thing/service/property/set").arg(RDM->productkey).arg(RDM->devicename);
 
 	PubOTAVersionTopic = QString("/ota/device/inform/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
-	PubOTAProgressTopic = QString("/ota/device/progress/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
-
-	SubParameterTopic = QString("/sys/%1/%2/thing/service/property/set").arg(RDM->productkey).arg(RDM->devicename);
+	PubOTAProgressTopic= QString("/ota/device/progress/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 	SubOTARequestTopic = QString("/ota/device/upgrade/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 }
-void iDevice::OnStateChanged()
+void iDevice::OnStateChanged(QMqttClient::ClientState state)
 {
 	QMqttClient::ClientState status = client->state();
 	if (status == QMqttClient::Connected)					//if first connected, publish my version
 	{
-		QString version = "V1.0.0";
-		QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
-		client->publish(PubOTAVersionTopic, MESSAGE_FORMAT.toUtf8());
+		PUB_ota_data(OTA_Version);
+
 		//if connected, subscription the topics
 		client->subscribe(SubParameterTopic);
 		client->subscribe(SubOTARequestTopic);
@@ -151,6 +149,16 @@ void iDevice::PUB_tag_data(iTag* tag)
 
 	QString msg;
 
+	if (tag->T_data_flag & Tag_UID)
+	{
+		msg = QString("{\"params\":{\"Tag%1_UID\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_uid);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->T_data_flag & Tag_EPC)
+	{
+		msg = QString("{\"params\":{\"Tag%1_EPC\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_epc);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
 	if (tag->T_data_flag & Tag_Upperlimit)
 	{
 		msg = QString("{\"params\":{\"Tag%1_Upperlimit\":%2}}").arg(tag->T_sid).arg(tag->T_uplimit);
@@ -165,6 +173,11 @@ void iDevice::PUB_tag_data(iTag* tag)
 	if (tag->T_data_flag & Tag_Online)
 	{
 		msg = QString("{\"params\":{\"Tag%1_online\":%2}}").arg(tag->T_sid).arg(tag->isonline());
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->T_data_flag & Tag_Switch)
+	{
+		msg = QString("{\"params\":{\"Tag%1_switch\":%2}}").arg(tag->T_sid).arg(tag->T_enable);
 		client->publish(PubParameterTopic, msg.toUtf8());
 	}
 	tag->T_data_flag = 0;
@@ -189,5 +202,14 @@ void iDevice::PUB_rdm_event()
 	if (RDM->RDM_alarm)
 	{
 		RDM->RDM_alarm = false;
+	}
+}
+void iDevice::PUB_ota_data(ushort flag)
+{
+	if (flag & OTA_Version)
+	{
+		QString version = "V1.0.0";
+		QString msg = QString("{\"id\":3,\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
+		client->publish(PubOTAVersionTopic, msg.toUtf8());
 	}
 }
