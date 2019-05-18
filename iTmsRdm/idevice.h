@@ -22,6 +22,8 @@ public:
 	~iDevice();
 
 	void IOT_init();
+	void IOT_tick();
+
 
 	void PUB_tag_data(iTag* tag);
 	void PUB_tag_event(iTag* tag);
@@ -38,7 +40,8 @@ private:
 	iRDM*			RDM;
 	QMqttClient *	client;
 	QString			PubParameterTopic;
-	QString			PubParameterEvent;
+	QString			PubTemperatureEvent;
+	QString			PubTagOfflineEvent;
 	QString			SubParameterTopic;
 
 	QString			PubOTAVersionTopic;

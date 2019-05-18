@@ -7,6 +7,8 @@
 #include "idevice.h"
 #include "itag.h"
 
+#define	RDM_TICKS	3		//max times for online check	
+
 class iRDM : public QObject
 {
 	Q_OBJECT
@@ -34,6 +36,7 @@ private:
 
 	QMap<quint64, iTag *> taglist;																	//tag's ID string map to tag
 	int			timerId_2s;
+	int			RDM_ticks;
 
 	QString		comName;
 

@@ -19,8 +19,6 @@ iDevice::~iDevice()
 void iDevice::IOT_init()
 {
 	//init MQTT client
-	//client->disconnect();
-
 	QMap<QCryptographicHash::Algorithm, QString> signmethodmap;
 	signmethodmap.insert(QCryptographicHash::Md5, "hmacmd5");
 	signmethodmap.insert(QCryptographicHash::Sha1, "hmacsha1");
@@ -47,23 +45,58 @@ void iDevice::IOT_init()
 	client->connectToHost();
 
 	PubParameterTopic = QString("/sys/%1/%2/thing/event/property/post").arg(RDM->productkey).arg(RDM->devicename);
-	PubParameterEvent = QString("/sys/%1/%2/thing/event/{tsl.event.TemperatureAlarm}/post").arg(RDM->productkey).arg(RDM->devicename);
+	PubTemperatureEvent = QString("/sys/%1/%2/thing/event/TemperatureException/post").arg(RDM->productkey).arg(RDM->devicename);
+	PubTagOfflineEvent = QString("/sys/%1/%2/thing/event/OfflineException/post").arg(RDM->productkey).arg(RDM->devicename);
 	SubParameterTopic = QString("/sys/%1/%2/thing/service/property/set").arg(RDM->productkey).arg(RDM->devicename);
 
 	PubOTAVersionTopic = QString("/ota/device/inform/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 	PubOTAProgressTopic= QString("/ota/device/progress/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 	SubOTARequestTopic = QString("/ota/device/upgrade/%1/%2").arg(RDM->productkey).arg(RDM->devicename);
 }
+void iDevice::IOT_tick()
+{
+
+	if (client->state() == QMqttClient::Connected)
+	{
+		RDM->RDM_ticks = RDM_TICKS;
+	}
+	else
+	{
+		if (RDM->RDM_ticks)
+		{
+			RDM->RDM_ticks--;
+			if (RDM->RDM_ticks == 0)
+			{
+				RDM->RDM_ticks = RDM_TICKS;
+				client->disconnectFromHost();
+				client->connectToHost();
+			}
+		}
+	}
+}
 void iDevice::OnStateChanged(QMqttClient::ClientState state)
 {
 	QMqttClient::ClientState status = client->state();
 	if (status == QMqttClient::Connected)					//if first connected, publish my version
 	{
+		qDebug() << "RDM : connected" << endl;
+		RDM->RDM_available = true;
+
 		PUB_ota_data(OTA_Version);
 
-		//if connected, subscription the topics
+		//if connected, subscribe the topics
 		client->subscribe(SubParameterTopic);
 		client->subscribe(SubOTARequestTopic);
+	}
+	else if (status == QMqttClient::Disconnected)
+	{
+		qDebug() << "RDM : disconnected" << endl;
+		RDM->RDM_available = false;
+	}
+	else if (status == QMqttClient::Connecting)
+	{
+		qDebug() << "RDM : connecting" << endl;
+		RDM->RDM_available = false;
 	}
 }
 void iDevice::OnMessageReceived(const QByteArray &message, const QMqttTopicName &topic)
@@ -148,47 +181,55 @@ void iDevice::PUB_tag_data(iTag* tag)
 	//QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"IndoorTemperature\":%1},\"method\":\"thing.event.property.post\"}").arg(temp, 0, 'f', 1);
 
 	QString msg;
-
-	if (tag->T_data_flag & Tag_UID)
-	{
-		msg = QString("{\"params\":{\"Tag%1_UID\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_uid);
-		client->publish(PubParameterTopic, msg.toUtf8());
-	}
-	if (tag->T_data_flag & Tag_EPC)
-	{
-		msg = QString("{\"params\":{\"Tag%1_EPC\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_epc);
-		client->publish(PubParameterTopic, msg.toUtf8());
-	}
-	if (tag->T_data_flag & Tag_Upperlimit)
-	{
-		msg = QString("{\"params\":{\"Tag%1_Upperlimit\":%2}}").arg(tag->T_sid).arg(tag->T_uplimit);
-		client->publish(PubParameterTopic, msg.toUtf8());
-	}
-
-	if (tag->T_data_flag & Tag_Temperature)
-	{
-		msg = QString("{\"params\":{\"Tag%1_CurrentTemperature\":%2}}").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
-		client->publish(PubParameterTopic, msg.toUtf8());
-	}
-	if (tag->T_data_flag & Tag_Online)
-	{
-		msg = QString("{\"params\":{\"Tag%1_online\":%2}}").arg(tag->T_sid).arg(tag->isonline());
-		client->publish(PubParameterTopic, msg.toUtf8());
-	}
-	if (tag->T_data_flag & Tag_Switch)
+	if (tag->hasDataFlag(Tag_Switch))
 	{
 		msg = QString("{\"params\":{\"Tag%1_switch\":%2}}").arg(tag->T_sid).arg(tag->T_enable);
 		client->publish(PubParameterTopic, msg.toUtf8());
 	}
-	tag->T_data_flag = 0;
+	if (tag->hasDataFlag(Tag_UID))
+	{
+		msg = QString("{\"params\":{\"Tag%1_UID\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_uid,16,16);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->hasDataFlag(Tag_EPC))
+	{
+		msg = QString("{\"params\":{\"Tag%1_EPC\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_epc);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->hasDataFlag(Tag_Upperlimit))
+	{
+		msg = QString("{\"params\":{\"Tag%1_Upperlimit\":%2}}").arg(tag->T_sid).arg(tag->T_uplimit);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+	if (tag->hasDataFlag(Tag_Online))
+	{
+		msg = QString("{\"params\":{\"Tag%1_online\":%2}}").arg(tag->T_sid).arg(tag->isonline());
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+
+	if (tag->hasDataFlag(Tag_Temperature) && tag->T_enable)
+	{
+		msg = QString("{\"params\":{\"Tag%1_CurrentTemperature\":%2}}").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+		client->publish(PubParameterTopic, msg.toUtf8());
+	}
+
+
 }
 void iDevice::PUB_tag_event(iTag* tag)
 {	
-	if (tag->T_alarm_offline)
+	QString msg;
+	if (tag->T_alarm_offline && tag->T_enable)
 	{
 		//to publish the event
-
+		msg = QString("{\"params\":{\"Tag_SID\":%1}}").arg(tag->T_sid);
+		client->publish(PubTagOfflineEvent, msg.toUtf8());
 		tag->T_alarm_offline = false;
+	}
+	if (tag->T_alarm_temperature && tag->T_enable)
+	{
+		msg = QString("{\"params\":{\"Tag_SID\":%1,\"Temperature\":%2}}").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+		client->publish(PubTemperatureEvent, msg.toUtf8());
+		tag->T_alarm_temperature = false;
 	}
 }
 void iDevice::PUB_rdm_data()

@@ -11,7 +11,7 @@ iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	T_caldata.all= 0;
 	T_temp= 0;
 	T_alarm_offline = false;
-	T_alarm_outofrange = false;
+	T_alarm_temperature = false;
 	T_uplimit = 75;
 
 	T_data_flag = 0;
@@ -27,4 +27,13 @@ float iTag::parseTCode(ushort tcode)
 	short delta = tcode - T_caldata.bits.code1;
 
 	return (0.1f*(k * delta + T_caldata.bits.temp1 - 800));
+}
+bool	iTag::hasDataFlag(ushort flag)
+{
+	if (T_data_flag & flag)
+	{
+		T_data_flag &= ~flag;
+		return true;
+	}
+	return false;
 }

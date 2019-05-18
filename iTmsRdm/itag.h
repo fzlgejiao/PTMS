@@ -37,8 +37,9 @@ class iTag : public QObject
 public:
 	iTag(int sid,quint64 uid, const QString& epc,QObject *parent);
 	~iTag();
-	bool isonline() { return T_ticks > 0; }
-	float parseTCode(ushort tcode);
+	bool	isonline() { return T_ticks > 0; }
+	float	parseTCode(ushort tcode);
+	bool	hasDataFlag(ushort flag);
 
 private:
 	friend class iRDM;
@@ -50,7 +51,7 @@ private:
 	int				T_ticks;																		//ticks to check online(0: offline, >0: online)	
 	bool			T_updated;																		//data changed ,but not transmitted
 	bool			T_alarm_offline;																//offline alarm or not(<online -> offline> ==> alarm)
-	bool			T_alarm_outofrange;																//temperature out of range alarm
+	bool			T_alarm_temperature;															//temperature out of range alarm
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
 	float			T_temp;																			//temperature
