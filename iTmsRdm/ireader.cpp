@@ -10,21 +10,29 @@ iReader::iReader(QString comName, QObject *parent)
 
 	tmrReader = new TMR_Reader();
 
-	init();
+	if (!init())
+		checkerror();
 }
 
 iReader::~iReader()
 {
 	TMR_destroy(tmrReader);
 }
-void iReader::init()
+void iReader::checkerror()
 {
-	TMR_Status ret;
+	if (ret != TMR_SUCCESS)
+	{
+		QString errormessage = QString(TMR_strerr(tmrReader, ret));
+		qDebug() << "reader init : FAILED - " << errormessage << endl;
+	}
+}
+bool iReader::init()
+{	
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
 
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_connect(tmrReader);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 
 	//Get reader's  hardware ,software, modle type
 	TMR_String str;
@@ -33,52 +41,52 @@ void iReader::init()
 	str.max = 50;
 
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_PRODUCT_GROUP, &str);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	group = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_HARDWARE, &str);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	hardware = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_SOFTWARE, &str);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	software = QString(str.value);
 	str.value = string;
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_MODEL, &str);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	modleversion = QString(str.value);
 	str.value = string;
 
 	TMR_Region region = TMR_REGION_PRC;
 	int power = 3000;
-	int t4 = 3000;
+	//int t4 = 3000;
 
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_READPOWER, &power);
-	if (ret != TMR_SUCCESS) goto Failed;
-	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
+	//if (ret != TMR_SUCCESS) return false;
 
 	//To do :set simple plan ,read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0xE, 1);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 
 	quint8 antennaCount = 2;		//M6E micro support 2 antenna
 	antennaList[0] = 1;
 	antennaList[1] = 2;
 
 	ret = TMR_RP_init_simple(&plan, antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 1000);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 
 	ret = TMR_RP_set_filter(&plan, &tempselect);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_tagop(&plan, &tempread);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
-	if (ret != TMR_SUCCESS) goto Failed;
+	if (ret != TMR_SUCCESS) return false;
 
 	//set async read mode	
 	//setCReader();
@@ -100,11 +108,7 @@ void iReader::init()
 	//if (ret != TMR_SUCCESS) goto Failed;
 	//ret = TMR_startReading(reader);
 	//if (ret != TMR_SUCCESS) goto Failed;
-	return;
-
-Failed:
-	QString errormessage = QString(TMR_strerr(tmrReader, ret));
-	qDebug() << "reader init : FAILED - " << errormessage << endl;
+	return true;
 }
 bool iReader::wirteEpc(iTag *tag, QString epcstr)
 {
@@ -151,7 +155,7 @@ quint64 iReader::readtagTid(TMR_TagFilter *filter)
 	if (tiddata.len < 8) return 0;
 
 	QByteArray idbytes;
-	byte b0 = byts[0];		//Epc TID first byte may be 0xE0 or 0xE2 in Gen2
+	quint8 b0 = byts[0];		//Epc TID first byte may be 0xE0 or 0xE2 in Gen2
 
 	if (b0 == 0xE2)
 		idbytes = byts.right(8);

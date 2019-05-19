@@ -18,19 +18,20 @@ public:
 	void readtag();
 
 protected:
-	void	init();
+	bool	init();
 	quint64 readtagTid(TMR_TagFilter *filter);
 	quint64 readtagCalibration(TMR_TagFilter *filter);
 	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);
 	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
 	quint64 bytes2longlong(QByteArray& bytes);
+	void checkerror();
 
 private:
 	iRDM*		RDM;
 	TMR_Reader  *tmrReader;
 	QString		m_uri;
 	quint8		antennaList[2];
-
+	TMR_Status  ret;
 
 	//reader parameters
 	QString		group;
