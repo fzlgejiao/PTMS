@@ -41,6 +41,9 @@
     <ClCompile Include="itag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OTA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h">
@@ -53,6 +56,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="itag.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OTA.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

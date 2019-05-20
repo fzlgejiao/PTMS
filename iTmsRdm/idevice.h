@@ -13,6 +13,7 @@ enum OTADataFlag {
 
 class iRDM;
 class iTag;
+class OTA;
 class iDevice : public QObject
 {
 	Q_OBJECT
@@ -30,11 +31,12 @@ public:
 	void PUB_rdm_data();
 	void PUB_rdm_event();
 	void PUB_ota_data(ushort flag);
+	void PublishOTAProgress(int step, QString & desc);
 
 protected:
 	QString MakeJsonMessage(QString key, QJsonValue value);
 	QJsonValue JsonParser(QString node, QString subnode, const QByteArray &message);
-	void OTA_Process();
+	void OTA_Process(const QByteArray &message);
 
 private:
 	iRDM*			RDM;
@@ -47,6 +49,8 @@ private:
 	QString			PubOTAVersionTopic;
 	QString			PubOTAProgressTopic;
 	QString			SubOTARequestTopic;
+
+	OTA				*ota;
 
 
 private slots:

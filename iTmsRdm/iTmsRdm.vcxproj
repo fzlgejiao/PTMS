@@ -103,6 +103,7 @@
     <ClCompile Include="ireader.cpp" />
     <ClCompile Include="itag.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OTA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h" />
@@ -115,6 +116,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="itag.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="OTA.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

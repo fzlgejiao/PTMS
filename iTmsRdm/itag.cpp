@@ -8,6 +8,7 @@ iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	T_sid = sid;
 	T_uid = uid;
 	T_epc = epc;
+	T_rssi = 0;
 	T_caldata.all= 0;
 	T_temp= 0;
 	T_alarm_offline = false;

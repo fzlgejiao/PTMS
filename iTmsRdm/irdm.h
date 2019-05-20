@@ -17,6 +17,8 @@ public:
 	iRDM(QObject *parent=NULL);
 	~iRDM();
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
+	void    stopTimer() { this->killTimer(timerId_2s); }
+	void    restartTimer() { timerId_2s = this->startTimer(2000); }
 
 protected:
 	bool	Cfg_load(const QString& xml);															//load rdm configuration from xml file
@@ -30,7 +32,8 @@ protected:
 	virtual void timerEvent(QTimerEvent *event);
 
 private:
-	friend class iDevice;
+	friend class iDevice;	
+
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
 

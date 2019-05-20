@@ -1,12 +1,13 @@
 #include "idevice.h"
 #include "irdm.h"
-
+#include <QCoreApplication>
+#include "OTA.h"
 
 iDevice::iDevice(QObject *parent)
 	: QObject(parent)
 {
 	RDM = (iRDM *)parent;
-
+	ota = NULL;
 	client = new QMqttClient();
 
 	connect(client, &QMqttClient::stateChanged, this, &iDevice::OnStateChanged);
@@ -119,7 +120,7 @@ void iDevice::OnMessageReceived(const QByteArray &message, const QMqttTopicName 
 	}
 	else if (topicname == SubOTARequestTopic)
 	{
-		OTA_Process();
+		OTA_Process(message);
 	}
 }
 QJsonValue iDevice::JsonParser(QString node, QString subnode, const QByteArray &message)
@@ -166,9 +167,30 @@ QString iDevice::MakeJsonMessage(QString key, QJsonValue value)
 	return strJson;
 }
 
-void iDevice::OTA_Process()
+void iDevice::OTA_Process(const QByteArray &message)
 {
-	//get url version size	md5
+	QString url, version, md5;
+	int size;
+
+	auto jsonurl = JsonParser("data", "url", message);
+	if (!jsonurl.isString()) return;
+	url = jsonurl.toString();
+
+	auto jsonsize = JsonParser("data", "size", message);
+	if (!jsonsize.isDouble()) return;
+	size = jsonsize.toVariant().toInt();
+
+	auto jsonversion = JsonParser("data", "version", message);
+	if (!jsonversion.isString()) return;
+	version = jsonversion.toString();
+
+	auto jsonmd5 = JsonParser("data", "md5", message);
+	if (!jsonmd5.isString()) return;
+	md5 = jsonmd5.toString();
+
+	ota = new OTA(url, version, size, this);
+	RDM->stopTimer();
+	ota->OTAstart();
 }
 void iDevice::PUB_tag_data(iTag* tag)
 {
@@ -249,8 +271,18 @@ void iDevice::PUB_ota_data(ushort flag)
 {
 	if (flag & OTA_Version)
 	{
-		QString version = "V1.0.0";
-		QString msg = QString("{\"id\":3,\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
+		QString version = QCoreApplication::applicationVersion();
+		qDebug() << "App version=" << version << endl;
+		QString msg = QString("{\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
 		client->publish(PubOTAVersionTopic, msg.toUtf8());
 	}
+}
+void iDevice::PublishOTAProgress(int step, QString & desc)
+{
+	QMqttClient::ClientState status = client->state();
+	if (status != QMqttClient::Connected) return;
+
+	QString MESSAGE_FORMAT = QString("{\"params\":{\"step\":\"%1\",\"desc\":\"%2\"}}").arg(step).arg(desc);
+	qDebug() << "Pub ota progress " << step << "%" << endl;
+	client->publish(PubOTAProgressTopic, MESSAGE_FORMAT.toUtf8());
 }

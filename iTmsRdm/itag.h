@@ -54,6 +54,7 @@ private:
 	bool			T_alarm_temperature;															//temperature out of range alarm
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
+	int				T_rssi;																			//RSSI
 	float			T_temp;																			//temperature
 	int				T_uplimit;																		//up limit for temperature
 	CalibrationData T_caldata;

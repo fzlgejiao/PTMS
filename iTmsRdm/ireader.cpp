@@ -252,6 +252,7 @@ void iReader::readtag()
 				tag->T_ticks = TAG_TICKS;
 				tag->T_alarm_offline = false;
 				tag->T_epc = epc;
+				tag->T_rssi = trd.rssi;
 				tag->T_data_flag |= Tag_Online;
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
@@ -262,6 +263,7 @@ void iReader::readtag()
 				qDebug() << "tag : sid = " << tag->T_sid
 					<< " uid = " << tag->T_uid
 					<< " epc = " << tag->T_epc 
+					<< " rssi = " << tag->T_rssi
 					<< " temperature = " << tag->T_temp << endl;
 			}
 			else
