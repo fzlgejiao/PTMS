@@ -202,39 +202,37 @@ void iDevice::PUB_tag_data(iTag* tag)
 	//todo: for each tag , there is a property on server to save the temperature
 	//QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"IndoorTemperature\":%1},\"method\":\"thing.event.property.post\"}").arg(temp, 0, 'f', 1);
 
-	QString msg;
+	QString msg,para;
 	if (tag->hasDataFlag(Tag_Switch))
 	{
-		msg = QString("{\"params\":{\"Tag%1_switch\":%2}}").arg(tag->T_sid).arg(tag->T_enable);
-		client->publish(PubParameterTopic, msg.toUtf8());
+		para += QString("\"Tag%1_switch\":%2,").arg(tag->T_sid).arg(tag->T_enable);
 	}
 	if (tag->hasDataFlag(Tag_UID))
 	{
-		msg = QString("{\"params\":{\"Tag%1_UID\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_uid,16,16);
-		client->publish(PubParameterTopic, msg.toUtf8());
+		para += QString("\"Tag%1_UID\":%2,").arg(tag->T_sid).arg(tag->T_uid, 16, 16);
 	}
 	if (tag->hasDataFlag(Tag_EPC))
 	{
-		msg = QString("{\"params\":{\"Tag%1_EPC\":\"%2\"}}").arg(tag->T_sid).arg(tag->T_epc);
-		client->publish(PubParameterTopic, msg.toUtf8());
+		para += QString("\"Tag%1_EPC\":%2,").arg(tag->T_sid).arg(tag->T_epc);
 	}
 	if (tag->hasDataFlag(Tag_Upperlimit))
 	{
-		msg = QString("{\"params\":{\"Tag%1_Upperlimit\":%2}}").arg(tag->T_sid).arg(tag->T_uplimit);
-		client->publish(PubParameterTopic, msg.toUtf8());
+		para += QString("\"Tag%1_Upperlimit\":%2,").arg(tag->T_sid).arg(tag->T_uplimit);
 	}
 	if (tag->hasDataFlag(Tag_Online))
 	{
-		msg = QString("{\"params\":{\"Tag%1_online\":%2}}").arg(tag->T_sid).arg(tag->isonline());
-		client->publish(PubParameterTopic, msg.toUtf8());
+		para += QString("\"Tag%1_online\":%2,").arg(tag->T_sid).arg(tag->isonline());
 	}
 
 	if (tag->hasDataFlag(Tag_Temperature) && tag->T_enable)
 	{
-		msg = QString("{\"params\":{\"Tag%1_CurrentTemperature\":%2}}").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+		para += QString("\"Tag%1_CurrentTemperature\":%2,").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+	}
+	if (para.count())
+	{
+		msg = QString("{\"params\":{%1}}").arg(para);
 		client->publish(PubParameterTopic, msg.toUtf8());
 	}
-
 
 }
 void iDevice::PUB_tag_event(iTag* tag)
