@@ -26,7 +26,7 @@ iRDM::iRDM(QObject *parent)
 	}
 
 	RDM_ticks = RDM_TICKS;
-	timerId_2s	= startTimer(2000);
+	Tmr_start();
 }
 
 iRDM::~iRDM()
@@ -53,8 +53,8 @@ bool iRDM::Cfg_load(const QString& xml)
 			if (xmlReader.name() == "rdm")
 			{
 				//get data file name
-				QString mac = xmlReader.attributes().value("mac").toString();
-				QString name = xmlReader.attributes().value("name").toString();
+				RDM_mac = xmlReader.attributes().value("mac").toString();
+				RDM_name = xmlReader.attributes().value("name").toString();
 
 				Cfg_readrdm(xmlReader);																//read rdm
 			}
@@ -224,7 +224,7 @@ void iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
-	if (event->timerId() == timerId_2s)
+	if (event->timerId() == timerId)
 	{
 		//read tags
 		reader->readtag();

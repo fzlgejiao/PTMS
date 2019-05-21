@@ -189,7 +189,7 @@ void iDevice::OTA_Process(const QByteArray &message)
 	md5 = jsonmd5.toString();
 
 	ota = new OTA(url, version, size, this);
-	RDM->stopTimer();
+	RDM->Tmr_stop();
 	ota->OTAstart();
 }
 void iDevice::PUB_tag_data(iTag* tag)
@@ -270,12 +270,12 @@ void iDevice::PUB_ota_data(ushort flag)
 	if (flag & OTA_Version)
 	{
 		QString version = QCoreApplication::applicationVersion();
-		qDebug() << "App version=" << version << endl;
+		qDebug() << "RDM : " << version << endl;
 		QString msg = QString("{\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
 		client->publish(PubOTAVersionTopic, msg.toUtf8());
 	}
 }
-void iDevice::PublishOTAProgress(int step, QString & desc)
+void iDevice::PUB_ota_progress(int step, QString & desc)
 {
 	QMqttClient::ClientState status = client->state();
 	if (status != QMqttClient::Connected) return;

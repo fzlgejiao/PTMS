@@ -56,14 +56,14 @@ void OTA::OTAstart()
 	QString filename = url.fileName();
 	if (filename.isEmpty())
 	{
-		rdm->restartTimer();
+		rdm->Tmr_start();
 		return;
 	}
 
 	file = openFileForWrite(directory+filename);
 	if (!file)
 	{
-		rdm->restartTimer();
+		rdm->Tmr_start();
 		return;
 	}
 		
@@ -86,7 +86,7 @@ void OTA::networkReplyProgress(qint64 bytesReceived, qint64 bytesTotal)
 	if ((percent >= OTA_PROGRESS::IOT_OTAP_FETCH_PERCENTAGE_MIN) && (percent <= OTA_PROGRESS::IOT_OTAP_FETCH_PERCENTAGE_MAX))
 	{
 		qDebug() << "Received " << percent << "%" << endl;
-		iot->PublishOTAProgress(percent, message);		
+		iot->PUB_ota_progress(percent, message);
 	}
 }
 
@@ -104,8 +104,8 @@ void OTA::httpFinished()
 		QString message = QString("Error:%1").arg(reply->errorString());
 		//publish error 
 		int step = OTA_PROGRESS::IOT_FETCH_FAILED;
-		iot->PublishOTAProgress(step, message);
-		rdm->restartTimer();
+		iot->PUB_ota_progress(step, message);
+		rdm->Tmr_start();
 		return;
 	}
 	//download ok 

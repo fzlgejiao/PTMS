@@ -31,7 +31,7 @@ public:
 	void PUB_rdm_data();
 	void PUB_rdm_event();
 	void PUB_ota_data(ushort flag);
-	void PublishOTAProgress(int step, QString & desc);
+	void PUB_ota_progress(int step, QString & desc);
 
 protected:
 	QString MakeJsonMessage(QString key, QJsonValue value);

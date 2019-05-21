@@ -7,7 +7,8 @@
 #include "idevice.h"
 #include "itag.h"
 
-#define	RDM_TICKS	3		//max times for online check	
+#define	RDM_TICKS	3		//max times for online check
+#define RDM_TIMER	5000
 
 class iRDM : public QObject
 {
@@ -17,8 +18,8 @@ public:
 	iRDM(QObject *parent=NULL);
 	~iRDM();
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
-	void    stopTimer() { this->killTimer(timerId_2s); }
-	void    restartTimer() { timerId_2s = this->startTimer(2000); }
+	void    Tmr_stop() { this->killTimer(timerId); }
+	void    Tmr_start() { timerId = this->startTimer(RDM_TIMER); }
 
 protected:
 	bool	Cfg_load(const QString& xml);															//load rdm configuration from xml file
@@ -38,7 +39,7 @@ private:
 	iDevice*	iotdevice;																			//IOT device
 
 	QMap<quint64, iTag *> taglist;																	//tag's ID string map to tag
-	int			timerId_2s;
+	int			timerId;
 	int			RDM_ticks;
 
 	QString		comName;
@@ -51,5 +52,9 @@ private:
 
 	bool		RDM_available;
 	bool		RDM_alarm;
+
+	//RDM info
+	QString		RDM_mac;
+	QString		RDM_name;
 
 };
