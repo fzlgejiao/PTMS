@@ -209,11 +209,11 @@ void iDevice::PUB_tag_data(iTag* tag)
 	}
 	if (tag->hasDataFlag(Tag_UID))
 	{
-		para += QString("\"Tag%1_UID\":%2,").arg(tag->T_sid).arg(tag->T_uid, 16, 16);
+		para += QString("\"Tag%1_UID\":\"%2\",").arg(tag->T_sid).arg(tag->T_uid, 16, 16);
 	}
 	if (tag->hasDataFlag(Tag_EPC))
 	{
-		para += QString("\"Tag%1_EPC\":%2,").arg(tag->T_sid).arg(tag->T_epc);
+		para += QString("\"Tag%1_EPC\":\"%2\",").arg(tag->T_sid).arg(tag->T_epc);
 	}
 	if (tag->hasDataFlag(Tag_Upperlimit))
 	{
@@ -230,6 +230,7 @@ void iDevice::PUB_tag_data(iTag* tag)
 	}
 	if (para.count())
 	{
+		para.chop(1);										//remove the end char ¡®,¡¯
 		msg = QString("{\"params\":{%1}}").arg(para);
 		client->publish(PubParameterTopic, msg.toUtf8());
 	}
