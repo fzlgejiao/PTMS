@@ -28,7 +28,7 @@ protected:
 	void	Cfg_readtags(QXmlStreamReader& xmlReader);
 	void	Cfg_skipUnknownElement(QXmlStreamReader& xmlReader);
 
-	void	Tag_add(int sid,quint64 uid,const QString& epc);
+	iTag*	Tag_add(int sid,quint64 uid,const QString& epc);
 
 	virtual void timerEvent(QTimerEvent *event);
 

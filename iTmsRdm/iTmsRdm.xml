@@ -6,9 +6,9 @@
         <gui ip="192.168.0.2" port="2871" version="v0.0.1"/>
     </cfg>
     <tags>
-        <tag sid="1" uid="2305845019301804433" epc="tag1">tag_note_1</tag>
-  	<tag sid="2" uid="2305845019301803042" epc="tag2">tag_note_2</tag>
-  	<tag sid="3" uid="2305845019301817011" epc="tag3">tag_note_3</tag>
-  	<tag sid="4" uid="2305845019301793987" epc="tag4">tag_without_baseboard</tag>
+        <tag sid="1" uid="2305845019301804433" epc="tag1" max="75">tag_note_1</tag>
+  	<tag sid="2" uid="2305845019301803042" epc="tag2" max="70">tag_note_2</tag>
+  	<tag sid="3" uid="2305845019301817011" epc="tag3" max="75">tag_note_3</tag>
+  	<tag sid="4" uid="2305845019301793987" epc="tag4" max="70">tag_without_baseboard</tag>
     </tags>
 </rdm>

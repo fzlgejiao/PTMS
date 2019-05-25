@@ -171,13 +171,17 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				quint64 uid;
 				QString epc;
 				int enable;
+				int max = TAG_T_MAX;
 				sid = xmlReader.attributes().value("sid").toString().toInt();
 				uid = xmlReader.attributes().value("uid").toString().toULongLong();
-				epc = xmlReader.attributes().value("epc").toString();			
+				epc = xmlReader.attributes().value("epc").toString();
+				if(xmlReader.attributes().value("max").isEmpty() == false)
+					max = xmlReader.attributes().value("max").toString().toInt();
 
 				//todo: load tag info
-				Tag_add(sid, uid, epc);
-
+				iTag *tag = Tag_add(sid, uid, epc);
+				if (tag)
+					tag->T_uplimit = max;
 				qDebug() << "tag : sid = " << sid 
 						<< " uid = " << uid 
 					    << " epc = " << epc << endl;
@@ -213,14 +217,14 @@ void iRDM::Cfg_skipUnknownElement(QXmlStreamReader& xmlReader)
 		}
 	}
 }
-void iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
+iTag* iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 {
 	iTag *tag = new iTag(sid,uid,epc, this);
 	if (tag)
 	{
 		taglist.insert(tag->T_uid, tag);
 	}
-
+	return tag;
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {

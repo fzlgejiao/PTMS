@@ -258,13 +258,23 @@ void iReader::readtag()
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
 				if (temperaturecode > 0)
-					tag->T_temp = tag->parseTCode(temperaturecode);
+				{
+					float Temp = tag->parseTCode(temperaturecode);
+					if (tag->T_temp == 0.0															//init temperature
+					|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))							//reasonable temperature
+					{
+						tag->T_temp = Temp;
+						if (tag->T_temp > tag->T_uplimit)											//bigger than up limit
+							tag->T_alarm_temperature = true;
+						qDebug() << "tag : sid = " << tag->T_sid
+							<< " uid = " << tag->T_uid
+							<< " epc = " << tag->T_epc
+							<< " rssi = " << tag->T_rssi
+							<< " temperature = " << tag->T_temp 
+							<< " temp_alarmed = " << tag->T_alarm_temperature << endl;
+					}
+				}
 
-				qDebug() << "tag : sid = " << tag->T_sid
-					<< " uid = " << tag->T_uid
-					<< " epc = " << tag->T_epc 
-					<< " rssi = " << tag->T_rssi
-					<< " temperature = " << tag->T_temp << endl;
 			}
 			else
 			{
