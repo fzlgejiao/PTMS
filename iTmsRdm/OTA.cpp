@@ -130,8 +130,8 @@ void OTA::httpFinished()
 		QString xcmd = QString("chmod +x %1%2").arg(directory).arg(appname);
 		system(xcmd.toStdString().c_str());
 
-		qDebug() << "Restart the b2qt sevice" << endl;
-		system("systemctl restart b2qt");
+		qDebug() << "Restart the rdm sevice" << endl;
+		system("systemctl restart rdm");
 		//execl(directory+"/iTmsRdm", "iTmsRdm", NULL);
 #endif
 	}

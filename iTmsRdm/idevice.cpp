@@ -228,6 +228,10 @@ void iDevice::PUB_tag_data(iTag* tag)
 	{
 		para += QString("\"Tag%1_CurrentTemperature\":%2,").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
 	}
+	if (tag->hasDataFlag(Tag_Rssi) && tag->T_enable)
+	{
+		para += QString("\"Tag%1_rssi\":%2,").arg(tag->T_sid).arg(tag->T_rssi);
+	}
 	if (para.count())
 	{
 		para.chop(1);										//remove the end char ¡®,¡¯

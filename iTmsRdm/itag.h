@@ -10,8 +10,8 @@ enum TagDataFlag {
 	Tag_EPC			= 0x0004,
 	Tag_Upperlimit	= 0x0008,
 	Tag_Online		= 0x0010,
-	Tag_Switch		= 0x0020
-
+	Tag_Switch		= 0x0020,
+	Tag_Rssi		= 0x0040
 };
 
 typedef union
@@ -54,7 +54,7 @@ private:
 	bool			T_alarm_temperature;															//temperature out of range alarm
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
-	int				T_rssi;																			//RSSI
+	qint8			T_rssi;																			//RSSI
 	float			T_temp;																			//temperature
 	int				T_uplimit;																		//up limit for temperature
 	CalibrationData T_caldata;

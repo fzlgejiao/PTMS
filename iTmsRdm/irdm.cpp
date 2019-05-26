@@ -22,7 +22,7 @@ iRDM::iRDM(QObject *parent)
 	//set tag flags for send the tag info to system
 	for (iTag *tag : taglist)
 	{
-		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch;
+		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi;
 	}
 
 	RDM_ticks = RDM_TICKS;
