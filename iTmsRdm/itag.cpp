@@ -13,7 +13,7 @@ iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	T_temp= 0;
 	T_alarm_offline = false;
 	T_alarm_temperature = false;
-	T_uplimit = 75;
+	T_uplimit = TAG_T_MAX;
 
 	T_data_flag = 0;
 	T_event_flag = 0;

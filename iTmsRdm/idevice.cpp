@@ -205,7 +205,7 @@ void iDevice::PUB_tag_data(iTag* tag)
 	QString msg,para;
 	if (tag->hasDataFlag(Tag_Switch))
 	{
-		para += QString("\"Tag%1_switch\":%2,").arg(tag->T_sid).arg(tag->T_enable);
+		para += QString("\"Tag%1_switch\":\"%2\",").arg(tag->T_sid).arg(tag->T_enable);
 	}
 	if (tag->hasDataFlag(Tag_UID))
 	{
@@ -226,7 +226,7 @@ void iDevice::PUB_tag_data(iTag* tag)
 
 	if (tag->hasDataFlag(Tag_Temperature) && tag->T_enable)
 	{
-		para += QString("\"Tag%1_CurrentTemperature\":%2,").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
+		para += QString("\"Tag%1_CurrentTemperature\":%2").arg(tag->T_sid).arg(tag->T_temp, 0, 'f', 1);
 	}
 	if (tag->hasDataFlag(Tag_Rssi) && tag->T_enable)
 	{
