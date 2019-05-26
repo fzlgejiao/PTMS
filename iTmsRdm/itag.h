@@ -3,7 +3,7 @@
 #include <QObject>
 
 #define	TAG_TICKS	3		//max times for online check	
-#define TAG_T_MAX	75		//max temperature 
+#define TAG_T_MAX	75		//alarm temperature 
 
 enum TagDataFlag {
 	Tag_Temperature = 0x0001,
@@ -12,7 +12,8 @@ enum TagDataFlag {
 	Tag_Upperlimit	= 0x0008,
 	Tag_Online		= 0x0010,
 	Tag_Switch		= 0x0020,
-	Tag_Rssi		= 0x0040
+	Tag_Rssi		= 0x0040,
+	Tag_Alarm		= 0x0080
 };
 
 typedef union
@@ -39,6 +40,7 @@ public:
 	iTag(int sid,quint64 uid, const QString& epc,QObject *parent);
 	~iTag();
 	bool	isonline() { return T_ticks > 0; }
+	bool	isAlarm() {	return T_temp > T_uplimit;	}
 	float	parseTCode(ushort tcode);
 	bool	hasDataFlag(ushort flag);
 

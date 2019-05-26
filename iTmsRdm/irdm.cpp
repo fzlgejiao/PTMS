@@ -22,7 +22,7 @@ iRDM::iRDM(QObject *parent)
 	//set tag flags for send the tag info to system
 	for (iTag *tag : taglist)
 	{
-		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi;
+		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi | Tag_Temperature;
 	}
 
 	RDM_ticks = RDM_TICKS;
@@ -245,7 +245,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 
 			tag->T_data_flag |= Tag_Online;
 			if (tag->isonline())
-				tag->T_data_flag |= Tag_Temperature;
+				tag->T_data_flag |= Tag_Temperature|Tag_Rssi|Tag_Alarm;
 			
 
 			if (tag->T_ticks)
