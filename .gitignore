@@ -261,3 +261,6 @@ __pycache__/
 *.pyc
 /iTmsGui/GeneratedFiles
 /iTmsRdm/GeneratedFiles
+/iTmsRdm/build_linux/obj/*.o
+/iTmsRdm/build_linux/MOC/*.*
+/iTmsRdm/*.stash
