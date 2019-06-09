@@ -58,6 +58,7 @@ private:
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
 	qint8			T_rssi;																			//RSSI
+	qint8			T_OC_rssi;																		//On-chip RSSI
 	float			T_temp;																			//temperature
 	int				T_uplimit;																		//up limit for temperature
 	CalibrationData T_caldata;

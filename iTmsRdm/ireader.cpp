@@ -20,7 +20,7 @@ iReader::~iReader()
 }
 void iReader::checkerror()
 {
-	if (ret != TMR_SUCCESS)
+	//if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
 		qDebug() << "reader init : FAILED - " << errormessage << endl;
@@ -60,6 +60,9 @@ bool iReader::init()
 	TMR_Region region = TMR_REGION_PRC;
 	int power = 3000;
 	//int t4 = 3000;
+	bool uniquebydata = true;
+	bool checkport = true;
+
 
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
 	if (ret != TMR_SUCCESS) return false;
@@ -67,26 +70,72 @@ bool iReader::init()
 	if (ret != TMR_SUCCESS) return false;
 	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
 	//if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGREADDATA_UNIQUEBYDATA, &uniquebydata);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_ANTENNA_CHECKPORT, &checkport);
+	if (ret != TMR_SUCCESS) return false;
+		
+	quint8 antennaCount = 2;		//M6E micro support 2 antenna
+	antennaList[0] = 1;
+	antennaList[1] = 2;
+	//Auto check connected antennas
+	quint8 antennalist[2];
+	TMR_uint8List connectedantennalist;
+	connectedantennalist.list = antennalist;
+	connectedantennalist.max = sizeof(antennalist);
+	connectedantennalist.len = 0;
 
-	//To do :set simple plan ,read tag temperature	
+	ret = TMR_paramGet(tmrReader, TMR_PARAM_ANTENNA_CONNECTEDPORTLIST, &connectedantennalist);
+	if (ret != TMR_SUCCESS) return false;
+
+	//update antennas
+	if (connectedantennalist.len == 0) return false;
+
+	antennaCount = connectedantennalist.len;
+	memcpy(antennaList, connectedantennalist.list, antennaCount);
+	//set OP antenna,use the first one
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGOP_ANTENNA, &antennaList[0]);
+	if (ret != TMR_SUCCESS) return false;
+
+
+	for (int i = 0; i<SubPlanCnt; i++)
+	{
+		ret = TMR_RP_init_simple(&subplan[i], antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 0);
+		if (ret != TMR_SUCCESS) return false;
+		subplanPtrs[i] = &subplan[i];
+	}
+
+	int subplanindex = 0;
+
+	//Read On-chip RSSI
+	OC_rssi_mask = 0x1F;
+	ret = TMR_TF_init_gen2_select(&OC_rssi_select, false, TMR_GEN2_BANK_USER, 0xD0, 8, &OC_rssi_mask);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_TagOp_init_GEN2_ReadData(&OC_rssi_read, TMR_GEN2_BANK_RESERVED, 0xD, 1);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_RP_set_filter(&subplan[subplanindex], &OC_rssi_select);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_RP_set_tagop(&subplan[subplanindex], &OC_rssi_read);
+	if (ret != TMR_SUCCESS) return false;
+
+	subplanindex++;
+	//Read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0xE, 1);
 	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_RP_set_filter(&subplan[subplanindex], &tempselect);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_RP_set_tagop(&subplan[subplanindex], &tempread);
+	if (ret != TMR_SUCCESS) return false;
+	subplanindex++;
 
-	quint8 antennaCount = 2;		//M6E micro support 2 antenna
-	antennaList[0] = 1;
-	antennaList[1] = 2;
-
-	ret = TMR_RP_init_simple(&plan, antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 1000);
+	ret = TMR_RP_init_multi(&multiplan, subplanPtrs, SubPlanCnt, 0);
 	if (ret != TMR_SUCCESS) return false;
 
-	ret = TMR_RP_set_filter(&plan, &tempselect);
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &multiplan);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_RP_set_tagop(&plan, &tempread);
-	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
-	if (ret != TMR_SUCCESS) return false;
+
 
 	//set async read mode	
 	//setCReader();
@@ -189,7 +238,7 @@ void iReader::readtag()
 {
 	TMR_Status		ret;
 
-	ret = TMR_read(tmrReader, 500, NULL);
+	ret = TMR_read(tmrReader, 75, NULL);
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
@@ -203,21 +252,11 @@ void iReader::readtag()
 		TMR_TagReadData trd;
 		//prepare data buff
 		//quint8 dataBuff[256];
-		quint8 temperatureBuff[4];
-		//quint8 TidBuff[32];
-		//quint8 userBuff[32];
+		quint8 databuffer[4];
 		//ret = TMR_TRD_init_data(&trd, sizeof(dataBuff), dataBuff);		
-
-		/*trd.tidMemData.max = sizeof(TidBuff);
-		trd.tidMemData.list = TidBuff;
-		trd.tidMemData.len = 0;
-
-		trd.userMemData.max = sizeof(userBuff);
-		trd.userMemData.list = userBuff;
-		trd.userMemData.len = 0;*/
-
-		trd.data.max = sizeof(temperatureBuff);
-		trd.data.list = temperatureBuff;
+		
+		trd.data.max = sizeof(databuffer);
+		trd.data.list = databuffer;
 		trd.data.len = 0;
 
 		ret = TMR_getNextTag(tmrReader, &trd);
@@ -229,18 +268,7 @@ void iReader::readtag()
 
 		ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
 		if (ret != TMR_SUCCESS) continue;
-
-
-		/*if (trd.tidMemData.len > 0)
-		{
-			QByteArray tidmemdbytes((char *)trd.tidMemData.list);
-			QByteArray tid = tidmemdbytes.right(8);
-		}
-		if (trd.userMemData.len > 0)
-		{
-			QByteArray calibratebytes((char *)trd.userMemData.list);
-			QByteArray CaliBytes = calibratebytes.right(8);
-		}*/
+			
 		if (trd.data.len > 0)
 		{
 			quint64 tid = readtagTid(&epcfilter);
@@ -253,28 +281,41 @@ void iReader::readtag()
 				tag->T_alarm_offline = false;
 				tag->T_epc = epc;
 				tag->T_rssi = trd.rssi;
-				tag->T_data_flag |= Tag_Online;
+				tag->T_data_flag |= Tag_Online; 
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
-				ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
-				if (temperaturecode > 0)
-				{
-					float Temp = tag->parseTCode(temperaturecode);
-					if (tag->T_temp == 0.0															//init temperature
-					|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))							//reasonable temperature
+
+				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
+				if (data0!= 0) {
+					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
+					if (temperaturecode > 0)
 					{
-						tag->T_temp = Temp;
-						if (tag->T_temp > tag->T_uplimit)											//bigger than up limit
-							tag->T_alarm_temperature = true;
-						qDebug() << "tag : sid = " << tag->T_sid
-							<< " uid = " << tag->T_uid
-							<< " epc = " << tag->T_epc
-							<< " rssi = " << tag->T_rssi
-							<< " temperature = " << tag->T_temp 
-							<< " temp_alarmed = " << tag->T_alarm_temperature << endl;
+						float Temp = tag->parseTCode(temperaturecode);
+						if (tag->T_temp == 0.0															//init temperature
+							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))							//reasonable temperature
+						{
+							tag->T_temp = Temp;
+							if (tag->T_temp > tag->T_uplimit)											//bigger than up limit
+								tag->T_alarm_temperature = true;
+							qDebug() << "tag : sid = " << tag->T_sid
+								<< " uid = " << tag->T_uid
+								<< " epc = " << tag->T_epc
+								<< " rssi = " << tag->T_rssi
+								<< " temperature = " << tag->T_temp
+								<< " temp_alarmed = " << tag->T_alarm_temperature << endl;
+						}
 					}
 				}
+				else
+				{
+					tag->T_OC_rssi = trd.data.list[1];
 
+					qDebug() << "tag : sid = " << tag->T_sid
+						<< " uid = " << tag->T_uid
+						<< " epc = " << tag->T_epc
+						<< " rssi = " << tag->T_rssi
+						<< " Oc-rssi = " << tag->T_OC_rssi << endl;
+				}
 			}
 			else
 			{
