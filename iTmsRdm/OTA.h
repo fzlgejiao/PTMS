@@ -58,4 +58,7 @@ private:
 	QFile *openFileForWrite(const QString &fileName);
 
 	iRDM *rdm;
+
+	void delayms(unsigned int msec);
+
 };

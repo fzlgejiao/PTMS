@@ -57,7 +57,7 @@ bool iReader::init()
 	modleversion = QString(str.value);
 	str.value = string;
 
-	TMR_Region region = TMR_REGION_PRC;
+	TMR_Region region = TMR_REGION_PH;
 	int power = 3000;
 	//int t4 = 3000;
 	bool uniquebydata = true;
@@ -314,7 +314,8 @@ void iReader::readtag()
 						<< " uid = " << tag->T_uid
 						<< " epc = " << tag->T_epc
 						<< " rssi = " << tag->T_rssi
-						<< " Oc-rssi = " << tag->T_OC_rssi << endl;
+						<< " Oc-rssi = " << tag->T_OC_rssi
+						<< "frequency =" << trd.frequency << endl;
 				}
 			}
 			else

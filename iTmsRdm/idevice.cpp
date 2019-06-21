@@ -280,8 +280,8 @@ void iDevice::PUB_ota_data(ushort flag)
 	{
 		QString version = QCoreApplication::applicationVersion();
 		qDebug() << "RDM : " << version << endl;
-		QString msg = QString("{\"params\":{\"version\":\"%1\"},\"method\":\"thing.event.property.post\"}").arg(version);
-		client->publish(PubOTAVersionTopic, msg.toUtf8());
+		QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"version\":\"%1\"}}").arg(version);
+		client->publish(PubOTAVersionTopic, MESSAGE_FORMAT.toUtf8());
 	}
 }
 void iDevice::PUB_ota_progress(int step, QString & desc)
@@ -289,7 +289,7 @@ void iDevice::PUB_ota_progress(int step, QString & desc)
 	QMqttClient::ClientState status = client->state();
 	if (status != QMqttClient::Connected) return;
 
-	QString MESSAGE_FORMAT = QString("{\"params\":{\"step\":\"%1\",\"desc\":\"%2\"}}").arg(step).arg(desc);
+	QString MESSAGE_FORMAT = QString("{\"id\":1,\"params\":{\"step\":\"%1\",\"desc\":\"%2\"}}").arg(step).arg(desc);
 	qDebug() << "Pub ota progress " << step << "%" << endl;
 	client->publish(PubOTAProgressTopic, MESSAGE_FORMAT.toUtf8());
 }

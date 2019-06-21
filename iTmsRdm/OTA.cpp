@@ -19,8 +19,8 @@ OTA::OTA(QString &urlstr, QString & version, int size, QObject *parent)
 
 	directory = QCoreApplication::applicationDirPath()+"/";
 
-	qDebug() << qnam.supportedSchemes()<<endl;
-	qDebug() << QSslSocket::supportsSsl()<<endl;
+	//qDebug() << qnam.supportedSchemes()<<endl;
+	//qDebug() << QSslSocket::supportsSsl()<<endl;
 	
 	url = QUrl(ota_url);
 	request.setUrl(url);
@@ -103,6 +103,7 @@ void OTA::httpFinished()
 	if (reply->error()) {
 		QString message = QString("Error:%1").arg(reply->errorString());
 		//publish error 
+		qDebug() << "Reply Error: " << message << endl;
 		int step = OTA_PROGRESS::IOT_FETCH_FAILED;
 		iot->PUB_ota_progress(step, message);
 		rdm->Tmr_start();
@@ -130,7 +131,10 @@ void OTA::httpFinished()
 		QString xcmd = QString("chmod +x %1%2").arg(directory).arg(appname);
 		system(xcmd.toStdString().c_str());
 
-		qDebug() << "Restart the rdm sevice" << endl;
+		delayms(500);
+		system("sync");
+
+		qDebug() << "Restart the rdm service" << endl;
 		system("systemctl restart rdm");
 		//execl(directory+"/iTmsRdm", "iTmsRdm", NULL);
 #endif
@@ -150,4 +154,11 @@ QFile *OTA::openFileForWrite(const QString &fileName)
 				return NULL;
 	}
 	return file.take();
+}
+
+void OTA::delayms(unsigned int msec)
+{
+	QTime dieTime = QTime::currentTime().addMSecs(msec);
+	while (QTime::currentTime() < dieTime)
+		QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 }
