@@ -226,6 +226,15 @@ iTag* iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 	}
 	return tag;
 }
+iTag* iRDM::Tag_getbysid(int sid)
+{
+	for (iTag *tag : taglist)
+	{
+		if (tag->T_sid == sid)
+			return tag;
+	}
+	return NULL;
+}
 void iRDM::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == timerId)

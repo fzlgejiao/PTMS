@@ -24,6 +24,11 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,6 +49,12 @@
     <ClCompile Include="OTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="iview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="itile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h">
@@ -61,5 +72,19 @@
     <QtMoc Include="OTA.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="iview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="itile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="iview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="itile.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

@@ -18,6 +18,7 @@ public:
 	iRDM(QObject *parent=NULL);
 	~iRDM();
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
+	iTag*	Tag_getbysid(int sid);
 	void    Tmr_stop() { this->killTimer(timerId); }
 	void    Tmr_start() { timerId = this->startTimer(RDM_TIMER); }
 

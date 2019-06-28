@@ -1,12 +1,14 @@
-#include <QtCore/QCoreApplication>
+#include <QtWidgets/QApplication>
+#include "iview.h"
 #include "irdm.h"
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication a(argc, argv);
+	QApplication a(argc, argv);
 	a.setApplicationVersion("V0.0.4");
 	a.setApplicationName("PTMS-RDM");
-	iRDM rdm;
-
+	iView view;
+	view.show();
+	view.resize(800, 480);
 	return a.exec();
 }
