@@ -49,6 +49,8 @@ private:
 	friend class iReader;
 	friend class iDevice;
 	friend class iTile;
+	friend class iView;
+
 
 	bool			T_enable;
 	int				T_sid;																			//squence id of tag[1 - ], ordered by uid
@@ -66,4 +68,5 @@ private:
 
 	ushort			T_data_flag;
 	ushort			T_event_flag;
+
 };

@@ -1,4 +1,6 @@
 #include "irdm.h"
+#include "ireader.h"
+#include "itag.h"
 #include <QDebug> 
 
 iRDM::iRDM(QObject *parent)
@@ -42,6 +44,10 @@ bool iRDM::Cfg_load(const QString& xml)
 		//	<< std::endl;
 		return false;
 	}
+	//clear old tag list
+	qDeleteAll(taglist);
+	taglist.clear();
+
 	QXmlStreamReader xmlReader;
 	xmlReader.setDevice(&file);
 

@@ -1,28 +1,48 @@
 #include "iview.h"
+#include "irdm.h"
+#include "ireader.h"
 #include "itile.h"
+#include "itag.h"
 #include <QtWidgets/QGridLayout>
 #include <QPainter> 
 #include <QPaintEvent> 
 
-iView::iView(QWidget *parent)
+iView::iView(iRDM* rdm,QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
+	RDM = rdm;
+
 
 	QGridLayout *layout = new QGridLayout;
-
-	int sid = 0;
-	for (int i = 0; i < 2; ++i)
+	int rows = 2, cols = 3;
+	for (iTag *tag : RDM->taglist)
 	{
-		for (int j = 0; j < 3; ++j) {
+		iTile *tile = new iTile(tag, this);
+		if(tile)
+			tilelist.insert(tag->T_sid, tile);
+	}
+	for (int i = RDM->taglist.count() + 1; i <= rows*cols; i++)
+	{
+		iTile *tile = new iTile(NULL, this);
+		if (tile)
+			tilelist.insert(i, tile);
+	}
+	int sid = 0;
+	for (int i = 0; i < rows; ++i)
+	{
+		for (int j = 0; j < cols; ++j) {
 			sid++;
-			iTile *tile = new iTile(rdm.Tag_getbysid(sid),this);
-			tiles[i * 3 + j] = tile;
-			layout->addWidget(tile, i, j);
-			//layout->addWidget(tiles[i], 1, i + 1);
+			iTile *tile = Tile(sid);
+			if(tile)
+				layout->addWidget(tile, i, j);
 		}
 	}
 	setLayout(layout);
+
+	setWindowTitle("PTMS");
+
+	connect(RDM->reader, &iReader::tagUpdated, this, &iView::OnTagUpdated);
 }
 
 iView::~iView()
@@ -33,4 +53,10 @@ void iView::paintEvent(QPaintEvent *event)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 	painter.fillRect(event->rect(), QBrush(Qt::magenta));
+}
+void iView::OnTagUpdated(iTag* tag)
+{
+	iTile *tile = Tile(tag->T_sid);
+	if (tile)
+		tile->update();
 }

@@ -56,4 +56,7 @@ private:
 	//Async read
 	TMR_ReadListenerBlock rlb;
 	TMR_ReadExceptionListenerBlock reb;
+
+signals:
+	void tagUpdated(iTag*);
 };

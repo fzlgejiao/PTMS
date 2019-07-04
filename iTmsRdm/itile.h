@@ -18,4 +18,7 @@ private:
 	Ui::iTile ui;
 
 	iTag*	_tag;
+
+public slots:
+	void OnDataChanged();
 };

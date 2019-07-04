@@ -286,7 +286,8 @@ void iReader::readtag()
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 
 				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
-				if (data0!= 0) {
+				if (data0!= 0) 
+				{
 					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
 					if (temperaturecode > 0)
 					{
@@ -317,6 +318,7 @@ void iReader::readtag()
 						<< " Oc-rssi = " << tag->T_OC_rssi
 						<< "frequency =" << trd.frequency << endl;
 				}
+				emit tagUpdated(tag);
 			}
 			else
 			{

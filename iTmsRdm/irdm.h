@@ -1,15 +1,15 @@
 #pragma once
-
+#include "idevice.h"
 #include <QObject>
 #include <QList>
 #include <QTimerEvent> 
-#include "ireader.h"
-#include "idevice.h"
-#include "itag.h"
 
 #define	RDM_TICKS	3		//max times for online check
 #define RDM_TIMER	5000
 
+class iReader;
+class iDevice;
+class iTag;
 class iRDM : public QObject
 {
 	Q_OBJECT
@@ -17,6 +17,7 @@ class iRDM : public QObject
 public:
 	iRDM(QObject *parent=NULL);
 	~iRDM();
+
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
 	iTag*	Tag_getbysid(int sid);
 	void    Tmr_stop() { this->killTimer(timerId); }
@@ -34,7 +35,8 @@ protected:
 	virtual void timerEvent(QTimerEvent *event);
 
 private:
-	friend class iDevice;	
+	friend class iDevice;
+	friend class iView;
 
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
@@ -57,5 +59,4 @@ private:
 	//RDM info
 	QString		RDM_mac;
 	QString		RDM_name;
-
 };
