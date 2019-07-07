@@ -39,6 +39,10 @@ class iTag : public QObject
 public:
 	iTag(int sid,quint64 uid, const QString& epc,QObject *parent);
 	~iTag();
+	QString Title() { return QString("Sensor%1").arg(T_sid); }
+	QString Temp() {return isonline() ? QString("%1").arg(T_temp, 0, 'f', 1) : "--.-";}
+	QString RSSI() {return isonline() ? QString("%1").arg(T_rssi) : "----"; }
+
 	bool	isonline() { return T_ticks > 0; }
 	bool	isAlarm() {	return T_temp > T_uplimit;	}
 	float	parseTCode(ushort tcode);
@@ -50,6 +54,7 @@ private:
 	friend class iDevice;
 	friend class iTile;
 	friend class iView;
+	friend class iCfgDlg;
 
 
 	bool			T_enable;

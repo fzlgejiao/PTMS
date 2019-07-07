@@ -2,6 +2,7 @@
 #include <QPainter> 
 #include <QPaintEvent> 
 #include "itag.h"
+#include "iview.h"
 
 #define	TITLE_WIDTH	80
 
@@ -15,6 +16,8 @@ iTile::iTile(iTag* tag,QWidget *parent)
 	newFont.setPixelSize(20);
 	newFont.setBold(true);
 	setFont(newFont);
+
+	connect(this, &iTile::tileDBClicked, (iView *)parent, &iView::OnTileDBClicked);
 }
 
 iTile::~iTile()
@@ -44,7 +47,7 @@ void iTile::paintEvent(QPaintEvent *event)
 	//draw title
 	painter.save();
 	//painter.setPen(Qt::blue);
-	painter.drawText(QRect(QPoint(x,y),QSize(w,h_t)), Qt::AlignCenter, QString("Sensor%1").arg(_tag->T_sid));
+	painter.drawText(QRect(QPoint(x,y),QSize(w,h_t)), Qt::AlignCenter, _tag->Title());
 	y += 27;
 	painter.drawLine(x, y, w+x, y);																	//H-line
 	painter.drawLine(x+w_t-10, y, x+w_t-10, y+h);															//V-line
@@ -66,12 +69,11 @@ void iTile::paintEvent(QPaintEvent *event)
 	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
 	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("ÎÂ¶È"));
-	QString temp = _tag->isonline() ? QString("%1").arg(_tag->T_temp, 0, 'f', 1) : "--.-";
 	if(_tag->isonline())
 		painter.setPen(Qt::green);
 	else
 		painter.setPen(Qt::red);
-	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 %2C").arg(temp,-6).arg(QChar(0x00B0)));
+	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 %2C").arg(_tag->Temp(),-6).arg(QChar(0x00B0)));
 	painter.restore();
 
 	//draw RSSI
@@ -80,15 +82,18 @@ void iTile::paintEvent(QPaintEvent *event)
 	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
 	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("ÐÅºÅ"));
-	QString rssi = _tag->isonline() ? QString("%1").arg(_tag->T_rssi) : "----";
 	if (_tag->isonline())
 		painter.setPen(Qt::green);
 	else
 		painter.setPen(Qt::red);
-	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 dBm").arg(rssi,-6));
+	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 dBm").arg(_tag->RSSI(),-6));
 	painter.restore();
 }
 void iTile::OnDataChanged()
 {
 	update();
+}
+void iTile::mouseDoubleClickEvent(QMouseEvent * event)
+{
+	emit tileDBClicked(this);
 }

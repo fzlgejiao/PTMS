@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	a.setApplicationVersion("V0.0.4");
 	a.setApplicationName("PTMS-RDM");
-	iRDM oRDM;
+
+	iRDM &oRDM = iRDM::Instance();
 	iView view(&oRDM);
 	view.show();
 	view.resize(800, 480);

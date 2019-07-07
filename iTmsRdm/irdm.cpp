@@ -3,6 +3,7 @@
 #include "itag.h"
 #include <QDebug> 
 
+iRDM *iRDM::_RDM = 0;
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)
 {
