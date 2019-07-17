@@ -46,6 +46,7 @@ protected:
 private:
 	friend class iDevice;
 	friend class iView;
+	friend class iCfgDlg;
 
 	iRDM(QObject *parent = NULL);																	//protected from external access
 	static iRDM* _RDM;

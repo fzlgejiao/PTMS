@@ -39,14 +39,14 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>30</y>
+       <y>60</y>
        <width>121</width>
        <height>16</height>
       </rect>
@@ -59,7 +59,7 @@
      <property name="geometry">
       <rect>
        <x>220</x>
-       <y>30</y>
+       <y>60</y>
        <width>171</width>
        <height>22</height>
       </rect>
@@ -75,7 +75,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>90</y>
+       <y>160</y>
        <width>401</width>
        <height>151</height>
       </rect>
@@ -176,6 +176,93 @@
        <string>TCP</string>
       </property>
      </widget>
+    </widget>
+    <widget class="QLineEdit" name="leRdmMac">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>90</y>
+       <width>171</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>90</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Mac Address:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="leRdmName">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>30</y>
+       <width>171</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>System Name:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="leRdmIP">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>120</y>
+       <width>171</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_8">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>120</y>
+       <width>121</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>IP Address:</string>
+     </property>
     </widget>
    </widget>
    <widget class="QWidget" name="page_2">

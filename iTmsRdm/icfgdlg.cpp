@@ -28,6 +28,7 @@ void iCfgDlg::changePage(int row)
 	{
 		ui.stackedWidget->setCurrentIndex(0);
 		ui.lbTitle->setText("General");
+		ui.leRdmName->setText(RDM.RDM_name);
 		ui.leVersion->setText(qApp->applicationVersion());
 
 	}

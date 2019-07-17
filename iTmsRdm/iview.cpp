@@ -14,7 +14,8 @@ iView::iView(iRDM* rdm,QWidget *parent)
 	ui.setupUi(this);
 
 	QGridLayout *layout = new QGridLayout;
-	int rows = 2, cols = 3;
+	int cols = 3;
+	int rows = ceil(RDM.taglist.count() / (float)cols);
 	for (iTag *tag : RDM.taglist)
 	{
 		iTile *tile = new iTile(tag, this);
