@@ -36,14 +36,50 @@
     <ClCompile Include="iTmsGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="irdmview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="icfgpanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="itagview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="addtagdlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iTmsGui.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="irdmview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="icfgpanel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="itagview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="addtagdlg.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="iTmsGui.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="irdmview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="icfgpanel.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="itagview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="addtagdlg.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
