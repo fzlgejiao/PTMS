@@ -49,6 +49,7 @@ private:
 	friend class iReader;
 	friend class iDevice;
 	friend class iTile;
+	friend class CModbus;
 
 	bool			T_enable;
 	int				T_sid;																			//squence id of tag[1 - ], ordered by uid

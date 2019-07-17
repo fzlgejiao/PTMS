@@ -3,7 +3,7 @@
 ######################################################################
 
 QT += gui widgets
-QT += core network mqtt
+QT += core network mqtt serialport serialbus
 
 CONFIG += c++11 release
 # CONFIG -= app_bundle
@@ -32,8 +32,8 @@ DEFINES += QT_DEPRECATED_WARNINGS TMR_ENABLE_SERIAL_READER_ONLY
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h
-SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp main.cpp 
+HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h CModbus.h
+SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp main.cpp 
 FORMS	+= itile.ui iview.ui
 
 unix:!macx: LIBS += -L/home/fan/work/libs/ -lmercuryapi

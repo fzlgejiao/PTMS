@@ -55,6 +55,9 @@
     <ClCompile Include="itile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CModbus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h">
@@ -76,6 +79,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="itile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CModbus.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

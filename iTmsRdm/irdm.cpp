@@ -14,8 +14,13 @@ iRDM::iRDM(QObject *parent)
 
 	reader		= new iReader(comName, this);
 	iotdevice	= new iDevice(this);
+	modbus = new CModbus(this);
 
 	iotdevice->IOT_init();
+	if (modbustype == "RTU")
+		modbus->initModbusRTUSlave(rtuserial, rtuslaveaddress, rtubaudrate, (QSerialPort::Parity)rtuparity);
+	else if (modbustype == "TCP")
+		modbus->initModbusTCP(RDM_ip, TcpPort);
 
 	RDM_available = false;
 
@@ -55,7 +60,7 @@ bool iRDM::Cfg_load(const QString& xml)
 				//get data file name
 				RDM_mac = xmlReader.attributes().value("mac").toString();
 				RDM_name = xmlReader.attributes().value("name").toString();
-
+				RDM_ip = xmlReader.attributes().value("ip").toString();
 				Cfg_readrdm(xmlReader);																//read rdm
 			}
 			else
@@ -136,6 +141,19 @@ void iRDM::Cfg_readcfg(QXmlStreamReader& xmlReader)
 				devicesecret = xmlReader.attributes().value("devicesecret").toString();
 				regionid = xmlReader.attributes().value("regionid").toString();
 				QString iot = xmlReader.readElementText();
+				if (xmlReader.isEndElement())
+					xmlReader.readNext();
+			}
+			else if (xmlReader.name() == "modbus")
+			{
+				modbustype = xmlReader.attributes().value("type").toString();
+				rtuserial = xmlReader.attributes().value("comname").toString();
+				rtuslaveaddress = xmlReader.attributes().value("slaveaddress").toInt();
+				rtubaudrate = xmlReader.attributes().value("baudrate").toInt();
+				rtuparity = xmlReader.attributes().value("parity").toInt();
+				TcpPort = xmlReader.attributes().value("tcpport").toInt();
+				
+				xmlReader.readElementText();
 				if (xmlReader.isEndElement())
 					xmlReader.readNext();
 			}
@@ -278,6 +296,11 @@ void iRDM::timerEvent(QTimerEvent *event)
 
 			iotdevice->PUB_tag_data(tag);
 			iotdevice->PUB_tag_event(tag);
+			modbus->updateRdmRegisters(tag);
 		}
+	}
+	if (event->timerId() == timer_datetime)  //update modbus datetime registers
+	{
+		modbus->updatesystime(QDateTime::currentDateTime());
 	}
 }
