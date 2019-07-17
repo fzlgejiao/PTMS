@@ -54,6 +54,7 @@ private:
 	friend class iDevice;
 	friend class iTile;
 	friend class iView;
+	friend class CModbus;
 	friend class iCfgDlg;
 
 
