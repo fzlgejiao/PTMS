@@ -107,6 +107,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CModbus.cpp" />
+    <ClCompile Include="icfgdlg.cpp" />
     <ClCompile Include="idevice.cpp" />
     <ClCompile Include="irdm.cpp" />
     <ClCompile Include="ireader.cpp" />
@@ -135,6 +136,7 @@
     <QtMoc Include="iview.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="icfgdlg.ui" />
     <QtUic Include="itile.ui" />
     <QtUic Include="iview.ui" />
   </ItemGroup>
@@ -143,6 +145,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="CModbus.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="icfgdlg.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

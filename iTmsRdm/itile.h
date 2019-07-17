@@ -11,11 +11,18 @@ class iTile : public QWidget
 public:
 	iTile(iTag* tag,QWidget *parent = Q_NULLPTR);
 	~iTile();
+
 protected:
 	void paintEvent(QPaintEvent *event);
+	void mouseDoubleClickEvent(QMouseEvent * event);
 
 private:
 	Ui::iTile ui;
 
 	iTag*	_tag;
+
+signals:
+	void tileDBClicked(iTile *);
+public slots:
+	void OnDataChanged();
 };

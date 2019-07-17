@@ -1,32 +1,41 @@
 #pragma once
-
+#include "idevice.h"
 #include <QObject>
 #include <QList>
 #include <QTimerEvent> 
-#include "ireader.h"
-#include "idevice.h"
-#include "itag.h"
 #include "CModbus.h"
 
 #define	RDM_TICKS	3		//max times for online check
 #define RDM_TIMER	5000
 #define DATETIME_TIMER	1000
 
+class iReader;
+class iDevice;
+class iTag;
 class iRDM : public QObject
 {
 	Q_OBJECT
 
 public:
-	iRDM(QObject *parent=NULL);
+	static iRDM &Instance(QObject *parent = NULL)													//for singleton of iStation object
+	{
+		if (0 == _RDM)
+		{
+			_RDM = new iRDM(parent);
+		}
+		return *_RDM;
+	}
 	~iRDM();
+
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
 	iTag*	Tag_getbysid(int sid);
-	int     tagcount() { return taglist.count(); }
+	int		Tag_count() { return taglist.count(); }
 
 	void    Tmr_stop() { this->killTimer(timerId);  this->killTimer(timer_datetime);}
 	void    Tmr_start() { timerId = this->startTimer(RDM_TIMER);timer_datetime= this->startTimer(DATETIME_TIMER);}
 
 protected:
+
 	bool	Cfg_load(const QString& xml);															//load rdm configuration from xml file
 	void	Cfg_readrdm(QXmlStreamReader& xmlReader);
 	void	Cfg_readcfg(QXmlStreamReader& xmlReader);
@@ -38,8 +47,11 @@ protected:
 	virtual void timerEvent(QTimerEvent *event);
 
 private:
-	friend class iDevice;	
+	friend class iDevice;
+	friend class iView;
 
+	iRDM(QObject *parent = NULL);																	//protected from external access
+	static iRDM* _RDM;
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
 	CModbus *	modbus;

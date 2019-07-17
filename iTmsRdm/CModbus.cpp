@@ -14,7 +14,7 @@ CModbus::CModbus(QObject *parent)
 	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=false"));
 
 	Rdm= (iRDM *)parent;
-	totaltagcnt = Rdm->tagcount();
+	totaltagcnt = Rdm->Tag_count();
 	
 	modbusDevice = NULL;	
 	m_connectiontype = NONE;
