@@ -2,6 +2,7 @@
 #include "ireader.h"
 #include "itag.h"
 #include <QDebug> 
+#include <QtNetwork/QUdpSocket>
 
 iRDM *iRDM::_RDM = 0;
 iRDM::iRDM(QObject *parent)
@@ -35,6 +36,11 @@ iRDM::iRDM(QObject *parent)
 
 	RDM_ticks = RDM_TICKS;
 	Tmr_start();
+
+	//udp socket
+	udpSocket = new QUdpSocket(this);
+	udpSocket->bind(2800, QUdpSocket::ShareAddress);
+	connect(udpSocket, SIGNAL(readyRead()), this, SLOT(UDP_read()));
 }
 
 iRDM::~iRDM()
@@ -309,5 +315,42 @@ void iRDM::timerEvent(QTimerEvent *event)
 	if (event->timerId() == timer_datetime)  //update modbus datetime registers
 	{
 		modbus->updatesystime(QDateTime::currentDateTime());
+	}
+}
+
+void iRDM::UDP_read()
+{
+	while (udpSocket->hasPendingDatagrams())
+	{
+		udpSocket->readDatagram((char *)&RxMsg.cmd_pkg, sizeof(RxMsg.cmd_pkg), &RxMsg.rIP,&RxMsg.rPort);
+		UDP_handle(RxMsg);
+	}
+}
+bool iRDM::UDP_send(const MSG_PKG& msg)
+{
+	if (udpSocket && udpSocket->writeDatagram((char *)&msg.cmd_pkg, sizeof(msg.cmd_pkg), msg.rIP, msg.rPort) != sizeof(msg.cmd_pkg))
+	{
+		return false;
+	}
+	return true;
+}
+void iRDM::UDP_handle(const MSG_PKG& msg)
+{
+	switch (msg.cmd_pkg.header.cmd )
+	{
+		case UDP_DISCOVER:
+		{
+			MSG_PKG txMsg;
+			txMsg.cmd_pkg.header.ind = UDP_IND;
+			txMsg.cmd_pkg.header.cmd = UDP_DISCOVER;
+
+			//todo: send back local ip to remote
+			txMsg.cmd_pkg.header.len = 0;
+
+			txMsg.rIP = msg.rIP;
+			txMsg.rPort = msg.rPort;
+			UDP_send(txMsg);
+		}
+		break;
 	}
 }

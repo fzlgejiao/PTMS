@@ -9,9 +9,32 @@
 #define RDM_TIMER	5000
 #define DATETIME_TIMER	1000
 
+#define UDP_IND		0xAA55
+/* command packet and message */
+typedef struct {
+	ushort ind;                         // cmd identifier: 0xAA55 
+	uchar  cmd;
+	uchar  len;
+}CMD_HEADER;
+
+typedef struct {
+	QHostAddress	rIP;
+	quint16			rPort;
+	struct 
+	{
+		CMD_HEADER		header;
+		uchar			data[256];
+	}cmd_pkg;
+}MSG_PKG;
+
+typedef enum {
+	UDP_DISCOVER = 1,
+}UDP_CMD;
+
 class iReader;
 class iDevice;
 class iTag;
+class QUdpSocket;
 class iRDM : public QObject
 {
 	Q_OBJECT
@@ -45,6 +68,9 @@ protected:
 	iTag*	Tag_add(int sid,quint64 uid,const QString& epc);
 
 	virtual void timerEvent(QTimerEvent *event);
+
+	bool	UDP_send(const MSG_PKG& msg);
+	void	UDP_handle(const MSG_PKG& msg);
 
 private:
 	friend class iDevice;
@@ -87,4 +113,10 @@ private:
 	QString		RDM_name;
 	QString		RDM_ip;
 
+	//udp/tcp socket
+	QUdpSocket  *udpSocket;
+	MSG_PKG		RxMsg;
+
+public slots:
+	void UDP_read();
 };
