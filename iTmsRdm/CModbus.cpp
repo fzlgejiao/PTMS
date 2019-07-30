@@ -21,7 +21,6 @@ CModbus::CModbus(QObject *parent)
 
 	m_com = "";
 	m_slaveaddress = 0;
-	TcpPort = 500;
 
 	m_rtubaud = RTU_BAUDRATE::BaudUnknow;
 	m_rtuparity = QSerialPort::UnknownParity;
@@ -153,7 +152,7 @@ void CModbus::setupDeviceData()
 {
 	//HoldingRegisters datas
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaud, m_rtuparity));
-	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, TcpPort);
+	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
 
 	//InputRegister datas,save tag count
 	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_TagCOUNT, totaltagcnt);
@@ -277,14 +276,14 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 
 	case HoldingRegister_TCPPORT:
 	{
-		//ignore it,always keep 500
-		if (m_connectiontype == RTU)
-			modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, TcpPort);
-		else if (m_connectiontype == TCP)
+		//ignore it,always keep default
+		//if (m_connectiontype == RTU)
+			modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
+		//else if (m_connectiontype == TCP)
 		{
-			if (!changeTCPport(value))
+		//	if (!changeTCPport(value))
 			{
-				modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, TcpPort);
+		//		modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
 			}
 		}
 	}

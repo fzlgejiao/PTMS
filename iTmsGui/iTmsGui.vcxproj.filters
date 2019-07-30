@@ -48,6 +48,9 @@
     <ClCompile Include="addtagdlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EthernetCmd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iTmsGui.h">
@@ -63,6 +66,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="addtagdlg.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Model.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="EthernetCmd.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

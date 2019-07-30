@@ -186,6 +186,8 @@ typedef enum {
 	BaudUnknow
 }RTU_BAUDRATE;
 
+#define ModbusTcpPort 2902
+
 class iRDM;
 class CModbus : public QObject
 {
@@ -222,7 +224,6 @@ private:
 	QSerialPort::Parity	 m_rtuparity;
 	QMap<RTU_BAUDRATE,QSerialPort::BaudRate> baudratemap;
 	
-	int TcpPort;
 	
 	void setupDeviceData();
 	void setModBusfilter();

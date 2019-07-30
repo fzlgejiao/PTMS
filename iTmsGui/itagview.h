@@ -14,6 +14,5 @@ public:
 
 private:
 	Ui::iTagView ui;
-
 	QAbstractItemModel *model;
 };
