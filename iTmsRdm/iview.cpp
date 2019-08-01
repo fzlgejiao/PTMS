@@ -40,7 +40,7 @@ iView::iView(iRDM* rdm,QWidget *parent)
 	}
 	setLayout(layout);
 
-	setWindowTitle("PTMS");
+	setWindowTitle(qApp->applicationName());
 
 	connect(RDM.reader, &iReader::tagUpdated, this, &iView::OnTagUpdated);
 }
