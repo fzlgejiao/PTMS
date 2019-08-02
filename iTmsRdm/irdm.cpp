@@ -1,8 +1,8 @@
 #include "irdm.h"
 #include "ireader.h"
 #include "itag.h"
+#include "ibc.h"
 #include <QDebug> 
-#include <QtNetwork/QUdpSocket>
 
 iRDM *iRDM::_RDM = 0;
 iRDM::iRDM(QObject *parent)
@@ -18,7 +18,8 @@ iRDM::iRDM(QObject *parent)
 
 	reader		= new iReader(comName, this);
 	iotdevice	= new iDevice(this);
-	modbus = new CModbus(this);
+	modbus		= new CModbus(this);
+	bc			= new iBC(this);
 
 	iotdevice->IOT_init();
 	if (modbustype == "RTU")
@@ -37,20 +38,6 @@ iRDM::iRDM(QObject *parent)
 	RDM_ticks = RDM_TICKS;
 	Tmr_start();
 
-	//udp socket
-	udpSocket = new QUdpSocket(this);
-	udpSocket->bind(UdpLocalPort, QUdpSocket::ShareAddress);
-	connect(udpSocket, SIGNAL(readyRead()), this, SLOT(UDP_read()));
-	//TCP Server
-	connect(&m_tcpServer, SIGNAL(newConnection()), this, SLOT(acceptConnection()));
-	if (!m_tcpServer.listen(QHostAddress::LocalHost, TcpServerPort))
-	{
-		qDebug() << "Tcp Server Listening Error!";
-	}	
-
-	fileReceived = 0;
-	filesize = 0;
-	savedfile = NULL;
 }
 
 iRDM::~iRDM()
@@ -328,128 +315,4 @@ void iRDM::timerEvent(QTimerEvent *event)
 	}
 }
 
-void iRDM::UDP_read()
-{
-	while (udpSocket->hasPendingDatagrams())
-	{
-		udpSocket->readDatagram((char *)&RxMsg.cmd_pkg, sizeof(RxMsg.cmd_pkg), &RxMsg.rIP,&RxMsg.rPort);
-		CMD_handle(RxMsg);
-	}
-}
-bool iRDM::UDP_send(const MSG_PKG& msg)
-{
-	if (udpSocket && udpSocket->writeDatagram((char *)&msg.cmd_pkg, sizeof(msg.cmd_pkg), msg.rIP, msg.rPort) != sizeof(msg.cmd_pkg))
-	{
-		return false;
-	}
-	return true;
-}
-bool iRDM::TCP_send(const MSG_PKG& msg)
-{
-	if (m_tcpServerConnection->state() != QAbstractSocket::ConnectedState) return false;
 
-	QByteArray outBlock;
-	outBlock.append((char*)&msg.cmd_pkg, sizeof(msg.cmd_pkg));
-	
-	if (m_tcpServerConnection->write(outBlock) < 0) return false;
-	else 	return true;	
-}
-void iRDM::CMD_handle(const MSG_PKG& msg)
-{
-	if (msg.cmd_pkg.header.ind != UDP_IND) return;
-
-	switch (msg.cmd_pkg.header.cmd )
-	{
-		case UDP_DISCOVER:
-		{
-			MSG_PKG txMsg;
-			txMsg.cmd_pkg.header.ind = UDP_IND;
-			txMsg.cmd_pkg.header.cmd = UDP_DISCOVER;
-			//Test datas
-			RDM_Paramters rdm_p;
-			memset(&rdm_p, 0, sizeof(rdm_p));
-			strcpy(rdm_p.RdmIp, "169.254.19.199");
-			strcpy(rdm_p.RdmName, "Rdm_1");
-			strcpy(rdm_p.RdmMAC, "16-92-54-19-19-99");
-
-			//todo: send back local ip to remote
-			txMsg.cmd_pkg.header.len = sizeof(rdm_p);
-			memcpy(txMsg.cmd_pkg.data, &rdm_p, sizeof(rdm_p));
-
-			txMsg.rIP = msg.rIP;
-			txMsg.rPort = msg.rPort;
-			UDP_send(txMsg);
-		}
-		break;
-
-		case UDP_FILEPARAMETER:
-		{
-			if (msg.cmd_pkg.header.len == sizeof(File_Paramters))
-			{
-				File_Paramters *file_para = (File_Paramters *)msg.cmd_pkg.data;
-				if (file_para)
-				{
-					filesize = file_para->filesize;
-					filename = file_para->filename;
-
-					MSG_PKG txMsg;
-					txMsg.cmd_pkg.header.ind = UDP_IND;
-					txMsg.cmd_pkg.header.cmd = UDP_FILEPARAMETER;
-
-					txMsg.cmd_pkg.header.len = 0;										
-					TCP_send(txMsg);
-
-					savedfile= new QFile(QCoreApplication::applicationDirPath() + "/" + filename);
-					if (!savedfile->open(QFile::WriteOnly))
-					{
-						qDebug() << "New file failed!";
-						return;
-					}
-				}
-			}
-		}
-		break;
-	}
-}
-
-void iRDM::acceptConnection()
-{
-	m_tcpServerConnection = m_tcpServer.nextPendingConnection();
-	connect(m_tcpServerConnection, SIGNAL(readyRead()), this, SLOT(TcpServer_readyRead()));
-	connect(m_tcpServerConnection, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onTcpSocketstatechanged(QAbstractSocket::SocketState)));
-	connect(m_tcpServerConnection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onTcpError(QAbstractSocket::SocketError)));	
-}
-void iRDM::onTcpSocketstatechanged(QAbstractSocket::SocketState state)
-{
-	if (state == QAbstractSocket::UnconnectedState)
-	{
-		fileReceived = 0;
-		filesize = 0;
-		if (savedfile)
-			savedfile->close();
-	}
-}
-void iRDM::TcpServer_readyRead()
-{
-	if ((filesize > 0) && (!filename.isEmpty()))
-	{
-		//start save file			
-		fileReceived += m_tcpServerConnection->bytesAvailable();
-		fileblock = m_tcpServerConnection->readAll();
-		savedfile->write(fileblock);
-		fileblock.resize(0);
-		if (fileReceived == filesize)
-		{
-			//saved ok 
-			savedfile->close();
-			fileReceived = 0;
-		}
-	}
-}
-void iRDM::onTcpError(QAbstractSocket::SocketError error)
-{
-	qDebug() << m_tcpServerConnection->errorString();
-	m_tcpServerConnection->close();
-	if(savedfile)
-		savedfile->close();
-}
