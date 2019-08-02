@@ -120,6 +120,7 @@
     <ClCompile Include="itagview.cpp" />
     <ClCompile Include="iTmsGui.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iTmsGui.h" />

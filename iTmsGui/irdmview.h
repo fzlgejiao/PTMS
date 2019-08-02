@@ -4,8 +4,10 @@
 #include "ui_irdmview.h"
 #include "EthernetCmd.h"
 
-class QStandardItemModel;
 class EthernetCmd;
+class CRdm;
+class RdmModel;
+class QSortFilterProxyModel;
 class iRdmView : public QWidget
 {
 	Q_OBJECT
@@ -18,9 +20,14 @@ private slots:
 	void onbtndiscover();
 	void onbtnDownload();
 	void NewRdmfound(MSG_PKG &msg);
+	void OnRdmTableActived(const QModelIndex &index);
 	
+	inline bool hasRdm(QString mac) { return rdmsmap.value(mac, false); }
+
 private:
 	Ui::iRdmView ui;
 	EthernetCmd &m_Enetcmd;
-	QStandardItemModel *model;	
+	RdmModel *Rawrdmmodel;
+	QSortFilterProxyModel *rdmmodel;
+	QMap<QString, CRdm *> rdmsmap;
 };

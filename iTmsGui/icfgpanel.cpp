@@ -27,9 +27,6 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 	QHeaderView *headerView = ui.tableTags->horizontalHeader();
 	headerView->setStretchLastSection(true);
-
-
-
 }
 
 iCfgPanel::~iCfgPanel()
