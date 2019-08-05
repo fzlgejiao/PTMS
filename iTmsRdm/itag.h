@@ -56,6 +56,7 @@ private:
 	friend class iView;
 	friend class CModbus;
 	friend class iCfgDlg;
+	friend class iBC;
 
 
 	bool			T_enable;

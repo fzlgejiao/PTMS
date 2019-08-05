@@ -78,24 +78,31 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 	{
 	case UDP_DISCOVER:
 	{
-		MSG_PKG txMsg;
-		txMsg.cmd_pkg.header.ind = UDP_IND;
-		txMsg.cmd_pkg.header.cmd = UDP_DISCOVER;
+		UDP_cmd_discover(msg);
+	}
+	break;
 
-		//Test datas
-		RDM_Paramters rdm_p;
-		memset(&rdm_p, 0, sizeof(rdm_p));
-		strcpy(rdm_p.RdmIp,		getIP().toLatin1());
-		strcpy(rdm_p.RdmName,	rdm->RDM_name.toLatin1());
-		strcpy(rdm_p.RdmMAC,	getMAC().toLatin1());
+	case UDP_ONLINE:
+	{
+		UDP_cmd_online(msg);
+	}
+	break;
 
-		//todo: send back local ip to remote
-		txMsg.cmd_pkg.header.len = sizeof(rdm_p);
-		memcpy(txMsg.cmd_pkg.data, &rdm_p, sizeof(rdm_p));
+	case UDP_READMODBUSSETTING:
+	{
+		UDP_cmd_modbus(msg);
+	}
+	break;
 
-		txMsg.rIP	= msg.rIP;
-		txMsg.rPort = msg.rPort;
-		UDP_send(txMsg);
+	case UDP_READIOTSETTING:
+	{
+		UDP_cmd_iot(msg);
+	}
+	break;
+
+	case UDP_READTAGS:
+	{
+		UDP_cmd_tags(msg);
 	}
 	break;
 
@@ -144,11 +151,11 @@ void iBC::TCP_connection()
 {
 	tcpConnection = tcpServer->nextPendingConnection();
 	connect(tcpConnection, SIGNAL(readyRead()), this, SLOT(TCP_read()));
-	connect(tcpConnection, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(Tcp_SocketStateChanged(QAbstractSocket::SocketState)));
+	connect(tcpConnection, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(TCP_SocketStateChanged(QAbstractSocket::SocketState)));
 	connect(tcpConnection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(Tcp_Error(QAbstractSocket::SocketError)));
 }
 
-void iBC::Tcp_SocketStateChanged(QAbstractSocket::SocketState state)
+void iBC::TCP_SocketStateChanged(QAbstractSocket::SocketState state)
 {
 	if (state == QAbstractSocket::UnconnectedState)
 	{
@@ -177,10 +184,125 @@ void iBC::TCP_read()
 	}
 }
 
-void iBC::Tcp_Error(QAbstractSocket::SocketError error)
+void iBC::TCP_Error(QAbstractSocket::SocketError error)
 {
 	qDebug() << tcpConnection->errorString();
 	tcpConnection->close();
 	if (savedfile)
 		savedfile->close();
+}
+
+
+void iBC::UDP_cmd_discover(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_DISCOVER;
+
+	//Test datas
+	RDM_Paramters rdm_p;
+	memset(&rdm_p, 0, sizeof(rdm_p));
+	strcpy(rdm_p.RdmIp, getIP().toLatin1());
+	strcpy(rdm_p.RdmName, rdm->RDM_name.toLatin1());
+	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
+
+	//todo: send back local ip to remote
+	txMsg.cmd_pkg.header.len = sizeof(rdm_p);
+	memcpy(txMsg.cmd_pkg.data, &rdm_p, sizeof(rdm_p));
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_online(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_ONLINE;
+	txMsg.cmd_pkg.header.len = 16;
+
+	memcpy(txMsg.cmd_pkg.data, msg.cmd_pkg.data, msg.cmd_pkg.header.len);
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_modbus(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READMODBUSSETTING;
+
+	MODBUS_Paramters modbus;
+	memset(&modbus, 0, sizeof(modbus));
+	modbus.type			= rdm->modbustype == "RTU" ? 0 : 1;
+	strcpy(modbus.rtu_comname, rdm->rtuserial.toLatin1());
+	modbus.rtu_baudrate	= rdm->rtubaudrate;
+	modbus.rtu_address	= rdm->rtuslaveaddress;
+	modbus.rtu_parity	= rdm->rtuparity;
+	modbus.tcp_port		= rdm->TcpPort;
+
+	txMsg.cmd_pkg.header.len = sizeof(modbus);
+	memcpy(txMsg.cmd_pkg.data, &modbus, sizeof(modbus));
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_iot(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
+
+	IOT_Paramters iot;
+	memset(&iot, 0, sizeof(iot));
+	strcpy(iot.devicename, rdm->devicename.toLatin1());
+	strcpy(iot.productkey, rdm->productkey.toLatin1());
+	strcpy(iot.devicesecret, rdm->devicesecret.toLatin1());
+	strcpy(iot.regionid, rdm->regionid.toLatin1());
+
+	txMsg.cmd_pkg.header.len = sizeof(iot);
+	memcpy(txMsg.cmd_pkg.data, &iot, sizeof(iot));
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+
+}
+
+void iBC::UDP_cmd_tags(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READTAGS;
+
+	txMsg.cmd_pkg.header.len = sizeof(Tag_Data_Header) + rdm->taglist.count()*sizeof(Tag_Data);
+
+	Tag_Data_Header tagheader;
+	memset(&tagheader, 0, sizeof(tagheader));
+	tagheader.tagcount = rdm->taglist.count();
+	memcpy(txMsg.cmd_pkg.data, &tagheader, sizeof(tagheader));										//tags header
+
+	for (int sid=1;sid <= rdm->taglist.count();sid++)
+	{
+		Tag_Data tagdata;																			//tag data
+		memset(&tagdata, 0, sizeof(tagdata));
+		iTag *tag = rdm->Tag_getbysid(sid);
+		if(tag)
+		{
+			tagdata.uid = tag->T_uid;
+			tagdata.sid = tag->T_sid;
+			tagdata.upperlimit = tag->T_uplimit;
+			tagdata.rssi = tag->T_rssi;
+			tagdata.oc_rssi = tag->T_OC_rssi;
+			tagdata.temperature = tag->T_temp;
+
+			memcpy(txMsg.cmd_pkg.data + sizeof(Tag_Data_Header) + (sid-1) * sizeof(tagdata), &tagdata, sizeof(tagdata));
+		}
+
+	}
 }
