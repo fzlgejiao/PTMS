@@ -133,13 +133,14 @@ private:
 	QTcpSocket  *tcpClient;
 	int         remoteTcpPort;
 	bool		isconnected;
+
 	//file info
-	QString filename;
-	QFile  *sendfile;
-	uint filesize;
-	uint payload;
-	uint filewritten;
-	uint leftwritten;
-	QByteArray sendblock;
-	bool issendfile;
+	QString		filename;
+	QFile*		sendfile;
+	uint		filesize;
+	uint		payload;
+	uint		filewritten;
+	uint		leftwritten;
+	QByteArray	sendblock;
+	bool		issendfile;
 };

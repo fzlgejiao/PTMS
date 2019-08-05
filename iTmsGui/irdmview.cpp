@@ -38,7 +38,7 @@ iRdmView::~iRdmView()
 }
 void iRdmView::onbtndiscover()
 {
-	model->clear();		
+	model->removeRows(0,model->rowCount());		
 	m_Enetcmd.discoverRdm();
 }
 void iRdmView::onbtnDownload()

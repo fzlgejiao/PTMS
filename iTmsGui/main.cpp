@@ -12,6 +12,6 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	iTmsGui w;
 	w.show();
-	w.resize(1024, 768);
+	w.resize(1200, 800);
 	return a.exec();
 }
