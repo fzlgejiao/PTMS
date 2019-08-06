@@ -19,9 +19,12 @@ iBC::iBC(QObject *parent)
 		qDebug() << "Tcp Server Listening Error!";
 	}
 
-	fileReceived = 0;
-	filesize = 0;
-	savedfile = NULL;
+	recvBytes = 0;
+	totalBytes = 0;
+	fileNameSize = 0;
+	savedFile = NULL;
+
+	connect(this, SIGNAL(fileDone(bool)), this, SLOT(OnFileDone(bool)));
 }
 
 iBC::~iBC()
@@ -76,75 +79,42 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 
 	switch (msg.cmd_pkg.header.cmd)
 	{
-	case UDP_DISCOVER:
-	{
-		UDP_cmd_discover(msg);
-	}
-	break;
-
-	case UDP_ONLINE:
-	{
-		UDP_cmd_online(msg);
-	}
-	break;
-
-	case UDP_READMODBUSSETTING:
-	{
-		UDP_cmd_modbus(msg);
-	}
-	break;
-
-	case UDP_READIOTSETTING:
-	{
-		UDP_cmd_iot(msg);
-	}
-	break;
-
-	case UDP_READTAGS:
-	{
-		UDP_cmd_tags(msg);
-	}
-	break;
-
-	case UDP_FILEPARAMETER:
-	{
-		if (msg.cmd_pkg.header.len == sizeof(File_Paramters))
+		case UDP_DISCOVER:
 		{
-			File_Paramters *file_para = (File_Paramters *)msg.cmd_pkg.data;
-			if (file_para)
-			{
-				filesize = file_para->filesize;
-				filename = file_para->filename;
-
-				MSG_PKG txMsg;
-				txMsg.cmd_pkg.header.ind = UDP_IND;
-				txMsg.cmd_pkg.header.cmd = UDP_FILEPARAMETER;
-
-				txMsg.cmd_pkg.header.len = 0;
-				TCP_send(txMsg);
-
-				savedfile = new QFile(QCoreApplication::applicationDirPath() + "/" + filename);
-				if (!savedfile->open(QFile::WriteOnly))
-				{
-					qDebug() << "New file failed!";
-					return;
-				}
-			}
+			UDP_cmd_discover(msg);
 		}
+		break;
+
+		case UDP_ONLINE:
+		{
+			UDP_cmd_online(msg);
+		}
+		break;
+
+		case UDP_READMODBUSSETTING:
+		{
+			UDP_cmd_modbus(msg);
+		}
+		break;
+
+		case UDP_READIOTSETTING:
+		{
+			UDP_cmd_iot(msg);
+		}
+		break;
+
+		case UDP_READTAGS:
+		{
+			UDP_cmd_tags(msg);
+		}
+		break;
+
+		case UDP_FILEPARAMETER:
+		{
+			UDP_cmd_file(msg);
+		}
+		break;
 	}
-	break;
-	}
-}
-
-bool iBC::TCP_send(const MSG_PKG& msg)
-{
-	if (tcpConnection->state() != QAbstractSocket::ConnectedState) return false;
-
-	QByteArray outBlock;
-	outBlock.append((char*)&msg.cmd_pkg, sizeof(msg.cmd_pkg));
-
-	if (tcpConnection->write(outBlock) < 0) return false;
-	else 	return true;
 }
 
 void iBC::TCP_connection()
@@ -159,28 +129,7 @@ void iBC::TCP_SocketStateChanged(QAbstractSocket::SocketState state)
 {
 	if (state == QAbstractSocket::UnconnectedState)
 	{
-		fileReceived = 0;
-		filesize = 0;
-		if (savedfile)
-			savedfile->close();
-	}
-}
-
-void iBC::TCP_read()
-{
-	if ((filesize > 0) && (!filename.isEmpty()))
-	{
-		//start save file			
-		fileReceived += tcpConnection->bytesAvailable();
-		fileblock = tcpConnection->readAll();
-		savedfile->write(fileblock);
-		fileblock.resize(0);
-		if (fileReceived == filesize)
-		{
-			//saved ok 
-			savedfile->close();
-			fileReceived = 0;
-		}
+		emit fileDone(false);
 	}
 }
 
@@ -188,10 +137,84 @@ void iBC::TCP_Error(QAbstractSocket::SocketError error)
 {
 	qDebug() << tcpConnection->errorString();
 	tcpConnection->close();
-	if (savedfile)
-		savedfile->close();
+
+	emit fileDone(false);
 }
 
+void iBC::TCP_start()
+{
+	OnFileDone(false);
+}
+
+void iBC::TCP_read()
+{
+/*
+	QDataStream in(tcpConnection);
+	in.setVersion(QDataStream::Qt_5_12);
+
+	if (recvBytes <= sizeof(quint32) * 2) {
+		if ((tcpConnection->bytesAvailable() >= sizeof(quint32) * 2)
+			&& (fileNameSize == 0)) {
+
+			in >> totalBytes >> fileNameSize;
+			recvBytes += sizeof(quint32) * 2;
+		}
+		if ((tcpConnection->bytesAvailable() >= fileNameSize)
+			&& (fileNameSize != 0)) {
+
+			in >> fileName;
+			qDebug() << tr("接收文件%1 ...").arg(fileName);
+
+			recvBytes += fileNameSize;
+			savedFile = new QFile(fileName);
+			if (!savedFile->open(QFile::WriteOnly)) {
+				qDebug() << "server: open file error!";
+				return;
+			}
+		}
+		else {
+			return;
+		}
+	}
+*/
+
+	if (recvBytes == 0)
+	{
+		savedFile = new QFile(fileName);
+		if (!savedFile->open(QFile::WriteOnly)) {
+			qDebug() << "server: open file error!";
+			return;
+		}
+	}
+	if (recvBytes < totalBytes) {
+		recvBytes += tcpConnection->bytesAvailable();
+		fileBlock = tcpConnection->readAll();
+		savedFile->write(fileBlock);
+		fileBlock.resize(0);
+	}
+
+	if (recvBytes == totalBytes) {
+		tcpConnection->close();
+	
+		emit fileDone(true);
+
+		qDebug() << tr("接收文件 %1 成功").arg(fileName);
+	}
+}
+
+void iBC::OnFileDone(bool ok)
+{
+	if (savedFile)
+	{
+		if(savedFile->isOpen())
+			savedFile->close();
+		delete savedFile;
+		savedFile = NULL;
+	}
+	recvBytes = 0;
+	totalBytes = 0;
+	fileNameSize = 0;
+}
 
 void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 {
@@ -304,5 +327,29 @@ void iBC::UDP_cmd_tags(const MSG_PKG& msg)
 			memcpy(txMsg.cmd_pkg.data + sizeof(Tag_Data_Header) + (sid-1) * sizeof(tagdata), &tagdata, sizeof(tagdata));
 		}
 
+	}
+}
+
+void iBC::UDP_cmd_file(const MSG_PKG& msg)
+{
+	if (msg.cmd_pkg.header.len == sizeof(File_Paramters))
+	{
+		File_Paramters *file_para = (File_Paramters *)msg.cmd_pkg.data;
+		if (file_para)
+		{
+			totalBytes	= file_para->fileSize;
+			fileName	= file_para->fileName;
+
+			MSG_PKG txMsg;
+			txMsg.cmd_pkg.header.ind = UDP_IND;
+			txMsg.cmd_pkg.header.cmd = UDP_FILEPARAMETER;
+
+			txMsg.cmd_pkg.header.len = 0;
+			txMsg.rIP	= msg.rIP;
+			txMsg.rPort = msg.rPort;
+			UDP_send(txMsg);
+
+			TCP_start();																			//start a new file
+		}
 	}
 }

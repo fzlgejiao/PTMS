@@ -37,10 +37,8 @@ typedef enum {
 
 
 typedef struct {
-	quint32	filesize;
-	char	filename[16];
-	char	savedpath[128];
-	quint16	fileAttribute;
+	quint32	fileSize;
+	char	fileName[16];
 }File_Paramters;
 
 typedef struct {
@@ -108,9 +106,9 @@ protected:
 	void	UDP_cmd_modbus(const MSG_PKG& msg);
 	void	UDP_cmd_iot(const MSG_PKG& msg);
 	void	UDP_cmd_tags(const MSG_PKG& msg);
+	void	UDP_cmd_file(const MSG_PKG& msg);
 
-	bool	TCP_send(const MSG_PKG& msg);
-
+	void	TCP_start();
 private:
 	iRDM	*rdm;
 
@@ -123,13 +121,12 @@ private:
 	QTcpSocket	*tcpConnection;
 
 	//File info
-	QFile		*savedfile;
-	quint32		recvbytes;
-	quint32		totalbytes;
-	QString     filename;
-	quint32		filesize;
-	quint32		fileReceived;
-	QByteArray  fileblock;
+	QFile		*savedFile;
+	quint32		recvBytes;
+	quint32		totalBytes;
+	quint32		fileNameSize;
+	QString     fileName;
+	QByteArray  fileBlock;
 
 public slots:
 	void UDP_read();
@@ -137,9 +134,9 @@ public slots:
 	void TCP_connection();
 	void TCP_Error(QAbstractSocket::SocketError error);
 	void TCP_SocketStateChanged(QAbstractSocket::SocketState state);
+	void OnFileDone(bool ok);
 
 signals:
-	void finished();
-	void receivedprogress(qint64 recevied, qint64 total);
+	void fileDone(bool ok);
 
 };
