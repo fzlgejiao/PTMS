@@ -2,7 +2,7 @@
 #include <QtGui>
 
 iCfgPanel::iCfgPanel(QWidget *parent)
-	: QTabWidget(parent)
+	: QTabWidget(parent), netcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
 
@@ -28,10 +28,20 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	QHeaderView *headerView = ui.tableTags->horizontalHeader();
 	headerView->setStretchLastSection(true);
 
-
+	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnModbusParameters(MSG_PKG&)));
 
 }
 
 iCfgPanel::~iCfgPanel()
 {
+}
+void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
+{
+	MODBUS_Paramters* modbus = (MODBUS_Paramters *)msg.cmd_pkg.data;
+	ui.cbxMbType->setCurrentIndex(modbus->type);
+	ui.leMbRtuAddr->setText(QString::number(modbus->rtu_address));
+	ui.cbxMbBaurate->setCurrentIndex(ui.cbxMbBaurate->findText(QString::number(modbus->rtu_baudrate)));
+	ui.leMbTcpPort->setText(QString::number(modbus->tcp_port));
+	ui.leMbComPort->setText(modbus->rtu_comname);
+	ui.cbxMbParity->setCurrentIndex(modbus->rtu_parity);
 }

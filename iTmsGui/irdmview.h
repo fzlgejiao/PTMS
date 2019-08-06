@@ -14,13 +14,19 @@ public:
 	iRdmView(QWidget *parent = Q_NULLPTR);
 	~iRdmView();
 
+protected:
+	virtual void timerEvent(QTimerEvent *event);
+	QString currentRdm();
+
 private slots:
 	void onbtndiscover();
 	void onbtnDownload();
 	void NewRdmfound(MSG_PKG &msg);
+	void OnRdmSelectChanged();
 	
 private:
 	Ui::iRdmView ui;
 	EthernetCmd &m_Enetcmd;
-	QStandardItemModel *model;	
+
+	int		m_n2sTimerId;
 };

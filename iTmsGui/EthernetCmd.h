@@ -8,6 +8,8 @@
 #define RemoteUdpPort	2900
 #define RemoteTcpPort	2901
 
+#define	TAG_NUM		12
+
 /* command packet and message */
 typedef struct {
 	ushort ind;                         // cmd identifier: 0xAA55 
@@ -39,8 +41,6 @@ typedef enum {
 typedef struct {
 	quint32	filesize;
 	char	filename[16];
-	char	savedpath[128];
-	quint16	fileAttribute;
 }File_Paramters;
 
 typedef struct {
@@ -54,12 +54,12 @@ typedef struct {
 
 typedef struct {
 	quint8	type;				//0--->RTU mode,1---->TCP mode ,others invalid
-	char	comname[16];		
-	quint32	baudrate;
-	quint8	slaveaddress;
-	quint8	parity;
-	quint16	tcpport;			//maybe only can be read
 	quint8	reserved;
+	quint16	tcp_port;			//maybe only can be read
+	char	rtu_comname[16];
+	quint32	rtu_baudrate;
+	quint8	rtu_address;
+	quint8	rtu_parity;
 }MODBUS_Paramters;
 
 typedef struct {
@@ -70,19 +70,37 @@ typedef struct {
 }IOT_Paramters;
 
 typedef struct {
-	quint8	tagcount;
-	quint8	reserved1;
-	quint16	reserved2;
-}Tag_Data_Header;
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint64 uid;
+		quint8	sid;
+		quint8	upperlimit;
+		quint16 reserved;
+		char	name[16];
+		char	note[64];
+	}Tags[TAG_NUM];
+}Tags_Parameters;
 
 typedef struct {
-	quint8	sid;
-	quint64 uid;
-	quint8	upperlimit;
-	qint8	rssi;
-	quint8	oc_rssi;
-	quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
-}Tag_Data;
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint8	sid;
+		quint64 uid;
+		quint8	upperlimit;
+		qint8	rssi;
+		quint8	oc_rssi;
+		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
+	}Tags[TAG_NUM];
+}Tags_Data;
+
 
 class QUdpSocket;
 class QTcpSocket;
@@ -101,27 +119,16 @@ public:
 		return ethernet_cmd;
 	}
 
-	void discoverRdm();
-	void ipset(QString ipaddress);
-	void downloadfile(QString filename);
-
-
-signals:
-	void fileSendready();
-	void newRdmready(MSG_PKG & msg);
+	void UDP_discoverRdm();
+	void UDP_get_modbusparameters(const QString& ip);
+	void UDP_ipset(QString ipaddress);
+	void UDP_fileinfo(QString filename);
 
 protected:
-	bool	UDP_send(const MSG_PKG& msg);
-	void	CMD_handle(const MSG_PKG& msg);
+	bool UDP_send(const MSG_PKG& msg);
+	void CMD_handle(const MSG_PKG& msg);
 
-private slots:	
-	void UDP_read();
-	void onTcpError(QAbstractSocket::SocketError error);
-	void onConnectedServer();
-	void onConnectionstatechanged(QAbstractSocket::SocketState socketState);
-	void onTcp_readyRead();
-	void startTransfer();
-	void updateClientProgress(qint64 bytes);
+
 
 private:
 	//udp socket
@@ -143,4 +150,19 @@ private:
 	uint		leftwritten;
 	QByteArray	sendblock;
 	bool		issendfile;
+
+signals:
+	void newRdmReady(MSG_PKG & msg);
+	void RdmParaReady(MSG_PKG& msg);
+	void ModbusParamReady(MSG_PKG& msg);
+	void IotParaReady(MSG_PKG& msg);
+	void TagsParaReady(MSG_PKG& msg);
+	void TagsDataReady(MSG_PKG& msg);
+
+private slots:	
+	void UDP_read();
+	void TCP_Error(QAbstractSocket::SocketError error);
+	void TCP_SocketStateChanged(QAbstractSocket::SocketState socketState);
+	void startTransfer();
+	void updateClientProgress(qint64 bytes);
 };

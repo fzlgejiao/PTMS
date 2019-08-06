@@ -10,18 +10,16 @@ EthernetCmd::EthernetCmd(QObject *parent)
 	connect(udpSocket, SIGNAL(readyRead()), this, SLOT(UDP_read()));
 
 	tcpClient = new QTcpSocket(this);
-	//connect(tcpClient, SIGNAL(connected()), this, SLOT(onConnectedServer()));
-	connect(tcpClient, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onConnectionstatechanged(QAbstractSocket::SocketState)));
-	connect(tcpClient, SIGNAL(readyRead()), this, SLOT(onTcp_readyRead()));
+	connect(tcpClient, SIGNAL(connected()), this, SLOT(startTransfer()));
+	connect(tcpClient, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(TCP_SocketStateChanged(QAbstractSocket::SocketState)));
 	connect(tcpClient, SIGNAL(bytesWritten(qint64)), this, SLOT(updateClientProgress(qint64)));
-	connect(tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onTcpError(QAbstractSocket::SocketError)));
+	connect(tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(TCP_Error(QAbstractSocket::SocketError)));
 	isconnected = false;
-
-	tcpClient->connectToHost(QHostAddress::LocalHost, RemoteTcpPort);
-	connect(this, SIGNAL(fileSendready()), this, SLOT(startTransfer()));
-	filename = "iTmsRdm.zip";
-	payload = 64 * 1024;			//64K payload size
-	issendfile = false;
+	
+	
+	filename	= "iTmsRdm.zip";
+	payload		= 64 * 1024;			//64K payload size
+	issendfile	= false;
 	filewritten = 0;	
 }
 
@@ -45,12 +43,7 @@ void EthernetCmd::UDP_read()
 		CMD_handle(RxMsg);
 	}
 }
-void EthernetCmd::onTcp_readyRead()
-{
-	QByteArray data = tcpClient->readAll();
-	memcpy(&RxMsg.cmd_pkg, data, data.length());
-	CMD_handle(RxMsg);
-}
+
 void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 {
 	if (msg.cmd_pkg.header.ind != UDP_IND) return;
@@ -61,14 +54,21 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	{
 		if (msg.cmd_pkg.header.len == sizeof(RDM_Paramters))
 		{			
-			emit newRdmready(RxMsg);
+			emit newRdmReady(RxMsg);
 		}
+	}
+	break;
+
+	case UDP_READMODBUSSETTING:
+	{
+		emit ModbusParamReady(RxMsg);
 	}
 	break;
 
 	case UDP_FILEPARAMETER:
 	{
-		emit fileSendready();
+		filewritten = 0;
+		tcpClient->connectToHost(msg.rIP, RemoteTcpPort);											//tcp connect to rdm  when fileinfo udp cmd acked
 	}
 	break;
 
@@ -77,7 +77,7 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 		break;
 	}
 }
-void EthernetCmd::discoverRdm()
+void EthernetCmd::UDP_discoverRdm()
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -85,11 +85,23 @@ void EthernetCmd::discoverRdm()
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = QHostAddress::Broadcast;
+	txmsg.rIP	= QHostAddress::Broadcast;
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::ipset(QString ipaddress)
+void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READMODBUSSETTING;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_ipset(QString ipaddress)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -98,11 +110,11 @@ void EthernetCmd::ipset(QString ipaddress)
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = QHostAddress::Broadcast;
+	txmsg.rIP	= QHostAddress::Broadcast;
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::downloadfile(QString fullpathname)
+void EthernetCmd::UDP_fileinfo(QString fullpathname)
 {
 	sendfile = new QFile(fullpathname);
 	if (!sendfile->open(QFile::ReadOnly))
@@ -111,10 +123,9 @@ void EthernetCmd::downloadfile(QString fullpathname)
 		return;
 	}
 	filesize = sendfile->size();
+
 	//first download file parameters
 	File_Paramters f_para;
-	int p_size = sizeof(f_para);
-
 	f_para.filesize = filesize;
 	memset(f_para.filename, 0, sizeof(f_para.filename));
 	strcpy(f_para.filename, filename.toStdString().c_str());
@@ -122,24 +133,20 @@ void EthernetCmd::downloadfile(QString fullpathname)
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
 	txmsg.cmd_pkg.header.cmd = UDP_FILEPARAMETER;
-	txmsg.cmd_pkg.header.len = p_size;
-	memcpy(txmsg.cmd_pkg.data, (char *)&f_para, p_size);
+	txmsg.cmd_pkg.header.len = sizeof(f_para);
+	memcpy(txmsg.cmd_pkg.data, (char *)&f_para, sizeof(f_para));
 
-	QByteArray sendbytes;
-	sendbytes.append((char*)&txmsg.cmd_pkg, sizeof(txmsg.cmd_pkg));
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP	= QHostAddress::Broadcast;
 
-	tcpClient->write(sendbytes);
+	UDP_send(txmsg);
 }
-void EthernetCmd::onTcpError(QAbstractSocket::SocketError error)
+void EthernetCmd::TCP_Error(QAbstractSocket::SocketError error)
 {
 	qDebug() << tcpClient->errorString();
 	tcpClient->close();
 }
-void EthernetCmd::onConnectedServer()
-{
-	isconnected = true;
-}
-void EthernetCmd::onConnectionstatechanged(QAbstractSocket::SocketState socketState)
+void EthernetCmd::TCP_SocketStateChanged(QAbstractSocket::SocketState socketState)
 {
 	if (socketState == QAbstractSocket::ConnectedState)
 	{
@@ -152,7 +159,7 @@ void EthernetCmd::onConnectionstatechanged(QAbstractSocket::SocketState socketSt
 }
 void EthernetCmd::startTransfer()
 {
-	sendblock = sendfile->read(payload);
+	sendblock	= sendfile->read(payload);
 	leftwritten = filesize - (int)tcpClient->write(sendblock);
 	sendblock.resize(0);
 	issendfile = true;

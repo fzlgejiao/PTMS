@@ -2,6 +2,7 @@
 
 #include <QTabWidget>
 #include "ui_icfgpanel.h"
+#include "EthernetCmd.h"
 
 class QAbstractItemModel;
 class iCfgPanel : public QTabWidget
@@ -16,4 +17,9 @@ private:
 	Ui::iCfgPanel ui;
 
 	QAbstractItemModel *model;
+	EthernetCmd &netcmd;
+
+
+public slots:
+	void OnModbusParameters(MSG_PKG&);
 };
