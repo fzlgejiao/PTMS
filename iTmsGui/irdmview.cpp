@@ -23,8 +23,7 @@ iRdmView::iRdmView(QWidget *parent)
 	headerView->setStretchLastSection(true);
 
 	ui.tableView->setModel(rdmmodel);
-
-
+	
 	ui.btnDiscover->setText(QString::fromLocal8Bit("搜索设备"));
 	ui.btnSave->setText(QString::fromLocal8Bit("保存参数"));
 	ui.btnDownload->setText(QString::fromLocal8Bit("下载参数"));
@@ -56,15 +55,9 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	QString name = rdm->RdmName;
 	QString ip = rdm->RdmIp;
 	QString mac = rdm->RdmMAC;
-	if (!hasRdm(mac))
-	{
-		CRdm *newrdm = new CRdm(name, ip, mac, this);
-		Rawrdmmodel->insertmyrow(0, newrdm);
-		rdmsmap.insert(mac, newrdm);
-	}
+	
 }
 void iRdmView::OnRdmTableActived(const QModelIndex &index)
 {
-	CRdm *rdm = (CRdm *)rdmmodel->data(index, Qt::UserRole).toUInt();
-	if (!rdm) return;
+	
 }
