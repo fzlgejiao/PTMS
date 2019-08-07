@@ -37,10 +37,8 @@ typedef enum {
 
 
 typedef struct {
-	quint32	filesize;
-	char	filename[16];
-	char	savedpath[128];
-	quint16	fileAttribute;
+	quint32	fileSize;
+	char	fileName[16];
 }File_Paramters;
 
 typedef struct {
@@ -54,12 +52,12 @@ typedef struct {
 
 typedef struct {
 	quint8	type;				//0--->RTU mode,1---->TCP mode ,others invalid
-	char	comname[16];
-	quint32	baudrate;
-	quint8	slaveaddress;
-	quint8	parity;
-	quint16	tcpport;			//maybe only can be read
 	quint8	reserved;
+	quint16	tcp_port;			//maybe only can be read
+	char	rtu_comname[16];
+	quint32	rtu_baudrate;
+	quint8	rtu_address;
+	quint8	rtu_parity;
 }MODBUS_Paramters;
 
 typedef struct {
@@ -71,18 +69,19 @@ typedef struct {
 
 typedef struct {
 	quint8	tagcount;
-	quint8	reserved1;
-	quint16	reserved2;
+	quint8	reserved[3];
 }Tag_Data_Header;
 
 typedef struct {
-	quint8	sid;
 	quint64 uid;
+	quint8	sid;
 	quint8	upperlimit;
 	qint8	rssi;
 	quint8	oc_rssi;
 	quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
+	quint8	reserved[2];
 }Tag_Data;
+
 
 class iRDM;
 class QUdpSocket;
@@ -102,8 +101,14 @@ protected:
 	QString getMAC();
 	bool	UDP_send(const MSG_PKG& msg);
 	void	UDP_handle(const MSG_PKG& msg);
-	bool	TCP_send(const MSG_PKG& msg);
+	void	UDP_cmd_discover(const MSG_PKG& msg);
+	void	UDP_cmd_online(const MSG_PKG& msg);
+	void	UDP_cmd_modbus(const MSG_PKG& msg);
+	void	UDP_cmd_iot(const MSG_PKG& msg);
+	void	UDP_cmd_tags(const MSG_PKG& msg);
+	void	UDP_cmd_file(const MSG_PKG& msg);
 
+	void	TCP_start();
 private:
 	iRDM	*rdm;
 
@@ -116,23 +121,22 @@ private:
 	QTcpSocket	*tcpConnection;
 
 	//File info
-	QFile		*savedfile;
-	int			recvbytes;
-	int			totalbytes;
-	QString     filename;
-	int			filesize;
-	int			fileReceived;
-	QByteArray  fileblock;
+	QFile		*savedFile;
+	quint32		recvBytes;
+	quint32		totalBytes;
+	quint32		fileNameSize;
+	QString     fileName;
+	QByteArray  fileBlock;
 
 public slots:
 	void UDP_read();
 	void TCP_read();
 	void TCP_connection();
-	void Tcp_Error(QAbstractSocket::SocketError error);
-	void Tcp_SocketStateChanged(QAbstractSocket::SocketState state);
+	void TCP_Error(QAbstractSocket::SocketError error);
+	void TCP_SocketStateChanged(QAbstractSocket::SocketState state);
+	void OnFileDone(bool ok);
 
 signals:
-	void finished();
-	void receivedprogress(qint64 recevied, qint64 total);
+	void fileDone(bool ok);
 
 };

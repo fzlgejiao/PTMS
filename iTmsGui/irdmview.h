@@ -7,7 +7,7 @@
 class EthernetCmd;
 class CRdm;
 class RdmModel;
-class QSortFilterProxyModel;
+
 class iRdmView : public QWidget
 {
 	Q_OBJECT
@@ -16,18 +16,21 @@ public:
 	iRdmView(QWidget *parent = Q_NULLPTR);
 	~iRdmView();
 
+protected:
+	virtual void timerEvent(QTimerEvent *event);
+
+
 private slots:
 	void onbtndiscover();
 	void onbtnDownload();
 	void NewRdmfound(MSG_PKG &msg);
-	void OnRdmTableActived(const QModelIndex &index);
+	void OnRdmSelectChanged(const QModelIndex & index);
 	
-	inline bool hasRdm(QString mac) { return rdmsmap.value(mac, false); }
-
 private:
 	Ui::iRdmView ui;
 	EthernetCmd &m_Enetcmd;
-	RdmModel *Rawrdmmodel;
-	QSortFilterProxyModel *rdmmodel;
-	QMap<QString, CRdm *> rdmsmap;
+	RdmModel *rdmmodel;
+
+
+	int		m_n2sTimerId;
 };

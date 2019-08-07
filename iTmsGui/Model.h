@@ -61,7 +61,7 @@ private:
 	QString m_ip;
 	QString m_MAC;
 	
-	QMap<quint64, CTag *> readabletaglist;
+	QMap<quint64, CTag *> assignedtaglist;
 	QMap<quint64, CTag *> unassignedtaglist;
 };
 
@@ -82,7 +82,7 @@ public:
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
 	bool insertmyrow(int row, CRdm * rdm);
-	bool removeRows(int row, int count, const QModelIndex & parent);
+	bool removeRows(int row, int count, const QModelIndex & parent= QModelIndex());
 	
 	inline void clear() { listRdm.clear(); }
 

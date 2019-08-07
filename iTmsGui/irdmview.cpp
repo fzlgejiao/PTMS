@@ -3,16 +3,16 @@
 #include "Model.h"
 #include <QSortFilterProxyModel>
 
+#define IP_COL	1
+
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
 	, m_Enetcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
 
-	Rawrdmmodel = new RdmModel(this);
-
-	rdmmodel = new QSortFilterProxyModel(this);
-	rdmmodel->setSourceModel(Rawrdmmodel);
+	rdmmodel = new RdmModel(this);
+		
 
 	ui.tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	ui.tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -28,13 +28,19 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnSave->setText(QString::fromLocal8Bit("保存参数"));
 	ui.btnDownload->setText(QString::fromLocal8Bit("下载参数"));
 	ui.btnUpgrade->setText(QString::fromLocal8Bit("升级设备"));
+	ui.btnSave->setEnabled(false);
+	ui.btnDownload->setEnabled(false);
+	ui.btnUpgrade->setEnabled(false);
 
-	connect(ui.tableView, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmTableActived(const QModelIndex &)));
+	connect(ui.tableView, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
 
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
 
-	connect(&m_Enetcmd, SIGNAL(newRdmready(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
+	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
+//	connect(ui.tableWidget, SIGNAL(currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)), this, SLOT(OnRdmSelectChanged()));
+
+	m_n2sTimerId = startTimer(2000);
 }
 
 iRdmView::~iRdmView()
@@ -42,9 +48,9 @@ iRdmView::~iRdmView()
 }
 void iRdmView::onbtndiscover()
 {
-	rdmmodel->removeRows(0, rdmmodel->rowCount());
-	rdmsmap.clear();
-	m_Enetcmd.discoverRdm();
+	if (rdmmodel->rowCount() > 0)
+		rdmmodel->removeRows(0, rdmmodel->rowCount());
+	m_Enetcmd.UDP_discoverRdm();
 }
 void iRdmView::onbtnDownload()
 {	
@@ -55,9 +61,32 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	QString name = rdm->RdmName;
 	QString ip = rdm->RdmIp;
 	QString mac = rdm->RdmMAC;
-	
+	CRdm *newrdm = new CRdm(name, ip, mac, this);
+
+	rdmmodel->insertmyrow(0, newrdm);	
 }
-void iRdmView::OnRdmTableActived(const QModelIndex &index)
+void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 {
-	
+	CRdm *current_rdm = (CRdm *)rdmmodel->data(index, Qt::UserRole).toUInt();
+	if (!current_rdm) 	
+	{
+		ui.btnDownload->setEnabled(false);
+		ui.btnUpgrade->setEnabled(false);
+		return;
+	}
+	ui.btnDownload->setEnabled(true);
+	ui.btnUpgrade->setEnabled(true);
+
+	m_Enetcmd.UDP_get_modbusparameters(current_rdm->m_ip);															//get modbus parameters
+}
+void iRdmView::timerEvent(QTimerEvent *event)
+{
+	if (event->timerId() == m_n2sTimerId)
+	{
+
+	}
+	else
+	{
+		QObject::timerEvent(event);
+	}
 }
