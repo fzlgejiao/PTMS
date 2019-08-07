@@ -4,8 +4,10 @@
 #include "ui_irdmview.h"
 #include "EthernetCmd.h"
 
-class QStandardItemModel;
 class EthernetCmd;
+class CRdm;
+class RdmModel;
+
 class iRdmView : public QWidget
 {
 	Q_OBJECT
@@ -16,17 +18,19 @@ public:
 
 protected:
 	virtual void timerEvent(QTimerEvent *event);
-	QString currentRdm();
+
 
 private slots:
 	void onbtndiscover();
 	void onbtnDownload();
 	void NewRdmfound(MSG_PKG &msg);
-	void OnRdmSelectChanged();
+	void OnRdmSelectChanged(const QModelIndex & index);
 	
 private:
 	Ui::iRdmView ui;
 	EthernetCmd &m_Enetcmd;
+	RdmModel *rdmmodel;
+
 
 	int		m_n2sTimerId;
 };

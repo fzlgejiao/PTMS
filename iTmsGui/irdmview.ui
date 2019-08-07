@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QTableView" name="tableView">
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
@@ -29,23 +29,14 @@
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <attribute name="verticalHeaderVisible">
-      <bool>true</bool>
+      <bool>false</bool>
      </attribute>
-     <column>
-      <property name="text">
-       <string>设备名称</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>IP地址</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Mac地址</string>
-      </property>
-     </column>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>0</number>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>0</number>
+     </attribute>
     </widget>
    </item>
    <item>

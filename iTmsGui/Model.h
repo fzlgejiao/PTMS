@@ -3,6 +3,69 @@
 #include <QList>
 #include <QAbstractTableModel>
 
+namespace _Model {
+
+	typedef enum
+	{
+		Name = 0,
+		IP,
+		MAC,
+		RdmModelColumnCnt
+	}RdmModelColumns;
+
+	typedef enum
+	{
+		SID = 0,
+		UID,
+		EPC,
+		TEMP,
+		UPLIMIT,
+		RSSI,
+		OCRSSI,
+		TagModelColumnCnt
+	}TagModelColumns;
+}
+
+class CTag :public QObject
+{
+	Q_OBJECT
+
+public:
+	CTag(QObject *parent = 0);
+	~CTag();
+
+private:
+	friend class CRdm;
+
+	int sid;
+	quint64 UID;
+	QString epc;
+	qint8 rssi;
+	quint8 oc_rssi;
+	float temperature;
+};
+
+class CRdm :public QObject
+{
+	Q_OBJECT
+
+public:
+	CRdm(QString &name, QString &ip, QString& mac,QObject *parent = 0);
+	~CRdm();
+
+private:
+	friend class RdmModel;
+	friend class iRdmView;
+
+	QString m_name;
+	QString m_ip;
+	QString m_MAC;
+	
+	QMap<quint64, CTag *> assignedtaglist;
+	QMap<quint64, CTag *> unassignedtaglist;
+};
+
+
 
 class RdmModel : public QAbstractTableModel
 {
@@ -18,12 +81,13 @@ public:
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
+	bool insertmyrow(int row, CRdm * rdm);
+	bool removeRows(int row, int count, const QModelIndex & parent= QModelIndex());
 	
+	inline void clear() { listRdm.clear(); }
 
-private:
-	QList<QString>	listName;													
-	QList<QString>	listIp;												
-	QList<QString>	listMAC;
+private:	
+	QList<CRdm *>	listRdm;
 };
 
 class TagModel : public QAbstractTableModel
@@ -46,6 +110,7 @@ private:
 	QList<int>		listOC_RSSI;
 	QList<int>		listUplimit;
 	QList<float>	listTemperature;
+	QList<CTag *>	listTags;
 };
 
 
