@@ -1,17 +1,5 @@
 #include "Model.h"
-
-CRdm::CRdm(QString &name, QString &ip, QString& mac,QObject *parent)
-	: QObject(parent)
-{
-	m_name = name;
-	m_ip = ip;
-	m_MAC = mac;
-}
-
-CRdm::~CRdm()
-{
-}
-
+#include "irdm.h"
 
 //Rdm model
 RdmModel::RdmModel(QObject *parent)
@@ -41,7 +29,7 @@ QVariant RdmModel::data(const QModelIndex &index, int role) const
 
 	if (role == Qt::DisplayRole)
 	{
-		CRdm *rdm = listRdm.at(index.row());
+		iRdm *rdm = listRdm.at(index.row());
 
 		switch (index.column()) {
 		case _Model::Name:
@@ -53,6 +41,9 @@ QVariant RdmModel::data(const QModelIndex &index, int role) const
 		case _Model::MAC:
 			return rdm->m_MAC;
 
+		case _Model::VERSION:
+			return rdm->m_Version;
+
 		default:
 			return QVariant();
 		}
@@ -63,7 +54,7 @@ QVariant RdmModel::data(const QModelIndex &index, int role) const
 	}
 	else if (role == Qt::UserRole)
 	{
-		CRdm *rdm = listRdm.at(index.row());
+		iRdm *rdm = listRdm.at(index.row());
 		if (rdm) return (uint)rdm;
 	}
 	return QVariant();
@@ -82,7 +73,8 @@ QVariant RdmModel::headerData(int section, Qt::Orientation orientation, int role
 			return QString::fromLocal8Bit("IP地址");
 		case _Model::MAC:
 			return QString::fromLocal8Bit("MAC地址");
-
+		case _Model::VERSION:
+			return QString::fromLocal8Bit("软件版本");
 		default:
 			return QVariant();
 		}
@@ -101,7 +93,7 @@ bool RdmModel::setData(const QModelIndex &index, const QVariant &value, int role
 	}
 	return false;
 }
-bool RdmModel::insertmyrow(int row, CRdm * rdm)
+bool RdmModel::insertmyrow(int row, iRdm * rdm)
 {
 	beginInsertRows(QModelIndex(), row, row);
 	listRdm.insert(row, rdm);
@@ -115,6 +107,7 @@ bool RdmModel::removeRows(int row, int count, const QModelIndex & parent)
 
 	for (int i = 0; i < count; i++)
 	{
+		delete listRdm.at(row);
 		listRdm.removeAt(row);	
 	}
 

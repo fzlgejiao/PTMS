@@ -4,6 +4,7 @@
 #include "ui_itagview.h"
 
 class QAbstractItemModel;
+class iRdm;
 class iTagView : public QTableView
 {
 	Q_OBJECT
@@ -15,4 +16,8 @@ public:
 private:
 	Ui::iTagView ui;
 	QAbstractItemModel *model;
+
+
+public slots:
+	void OnRdmSelected(iRdm *);
 };

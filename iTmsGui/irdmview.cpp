@@ -1,6 +1,7 @@
 #include "irdmview.h"
 #include <QtGui>
 #include "Model.h"
+#include "irdm.h"
 #include <QSortFilterProxyModel>
 
 #define IP_COL	1
@@ -38,7 +39,6 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
 
 	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
-//	connect(ui.tableWidget, SIGNAL(currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)), this, SLOT(OnRdmSelectChanged()));
 
 	m_n2sTimerId = startTimer(2000);
 }
@@ -58,16 +58,13 @@ void iRdmView::onbtnDownload()
 void iRdmView::NewRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
-	QString name = rdm->RdmName;
-	QString ip = rdm->RdmIp;
-	QString mac = rdm->RdmMAC;
-	CRdm *newrdm = new CRdm(name, ip, mac, this);
+	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,this);
 
 	rdmmodel->insertmyrow(0, newrdm);	
 }
 void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 {
-	CRdm *current_rdm = (CRdm *)rdmmodel->data(index, Qt::UserRole).toUInt();
+	iRdm *current_rdm = (iRdm *)rdmmodel->data(index, Qt::UserRole).toUInt();
 	if (!current_rdm) 	
 	{
 		ui.btnDownload->setEnabled(false);
@@ -78,6 +75,10 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 	ui.btnUpgrade->setEnabled(true);
 
 	m_Enetcmd.UDP_get_modbusparameters(current_rdm->m_ip);															//get modbus parameters
+//	while(ui.tableTags->rowCount())
+//		ui.tableTags->removeRow(0);
+
+	emit RdmSelected(current_rdm);
 }
 void iRdmView::timerEvent(QTimerEvent *event)
 {

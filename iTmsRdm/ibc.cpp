@@ -103,9 +103,9 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 		}
 		break;
 
-		case UDP_READTAGS:
+		case UDP_READTAGSDATA:
 		{
-			UDP_cmd_tags(msg);
+			UDP_cmd_tags_data(msg);
 		}
 		break;
 
@@ -228,6 +228,7 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	strcpy(rdm_p.RdmIp, getIP().toLatin1());
 	strcpy(rdm_p.RdmName, rdm->RDM_name.toLatin1());
 	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
+	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
 
 	//todo: send back local ip to remote
 	txMsg.cmd_pkg.header.len = sizeof(rdm_p);
@@ -297,37 +298,32 @@ void iBC::UDP_cmd_iot(const MSG_PKG& msg)
 
 }
 
-void iBC::UDP_cmd_tags(const MSG_PKG& msg)
+void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 {
 	MSG_PKG txMsg;
 	txMsg.cmd_pkg.header.ind = UDP_IND;
-	txMsg.cmd_pkg.header.cmd = UDP_READTAGS;
+	txMsg.cmd_pkg.header.cmd = UDP_READTAGSDATA;
 
-	txMsg.cmd_pkg.header.len = sizeof(Tag_Data_Header) + rdm->taglist.count()*sizeof(Tag_Data);
+	txMsg.cmd_pkg.header.len = sizeof(Tags_Data);
 
-	Tag_Data_Header tagheader;
-	memset(&tagheader, 0, sizeof(tagheader));
-	tagheader.tagcount = rdm->taglist.count();
-	memcpy(txMsg.cmd_pkg.data, &tagheader, sizeof(tagheader));										//tags header
+	Tags_Data *tagsdata = (Tags_Data *)txMsg.cmd_pkg.data;
+	tagsdata->Header.tagcount = rdm->taglist.count();
 
-	for (int sid=1;sid <= rdm->taglist.count();sid++)
+	int idx = 0;
+	for (iTag *tag : rdm->taglist)
 	{
-		Tag_Data tagdata;																			//tag data
-		memset(&tagdata, 0, sizeof(tagdata));
-		iTag *tag = rdm->Tag_getbysid(sid);
-		if(tag)
-		{
-			tagdata.uid = tag->T_uid;
-			tagdata.sid = tag->T_sid;
-			tagdata.upperlimit = tag->T_uplimit;
-			tagdata.rssi = tag->T_rssi;
-			tagdata.oc_rssi = tag->T_OC_rssi;
-			tagdata.temperature = tag->T_temp;
-
-			memcpy(txMsg.cmd_pkg.data + sizeof(Tag_Data_Header) + (sid-1) * sizeof(tagdata), &tagdata, sizeof(tagdata));
-		}
-
+		tagsdata->Tags[idx].uid = tag->T_uid;
+		tagsdata->Tags[idx].sid = tag->T_sid;
+		tagsdata->Tags[idx].alarm = tag->isAlarm() ? 1 : 0;
+		tagsdata->Tags[idx].rssi = tag->T_rssi;
+		tagsdata->Tags[idx].oc_rssi = tag->T_OC_rssi;
+		tagsdata->Tags[idx].temperature = tag->T_temp;
+		idx++;
 	}
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
 }
 
 void iBC::UDP_cmd_file(const MSG_PKG& msg)

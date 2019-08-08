@@ -8,6 +8,8 @@
 #define UDP_PORT	2900
 #define TCP_PORT	2901
 
+#define	TAG_NUM		12
+
 /* command packet and message */
 typedef struct {
 	ushort ind;                         // cmd identifier: 0xAA55 
@@ -30,9 +32,12 @@ typedef enum {
 	UDP_ONLINE				= 2,
 	UDP_READMODBUSSETTING	= 3,
 	UDP_READIOTSETTING		= 4,
-	UDP_READTAGS			= 5,
-	UDP_SETIP				= 6,
-	UDP_FILEPARAMETER		= 0x10
+	UDP_READTAGSSETTING		= 5,
+	UDP_READTAGSONLINE		= 6,
+	UDP_READTAGSDATA		= 7,
+	UDP_SETTAGEPC			= 8,
+	UDP_SETRDMIP			= 9,
+	UDP_FILEPARAMETER = 0x10
 }UDP_CMD;
 
 
@@ -68,19 +73,21 @@ typedef struct {
 }IOT_Paramters;
 
 typedef struct {
-	quint8	tagcount;
-	quint8	reserved[3];
-}Tag_Data_Header;
-
-typedef struct {
-	quint64 uid;
-	quint8	sid;
-	quint8	upperlimit;
-	qint8	rssi;
-	quint8	oc_rssi;
-	quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
-	quint8	reserved[2];
-}Tag_Data;
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint64 uid;
+		quint8	sid;
+		quint8	alarm;
+		qint8	rssi;
+		quint8	oc_rssi;
+		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
+		quint16	reserved;
+	}Tags[TAG_NUM];
+}Tags_Data;
 
 
 class iRDM;
@@ -105,7 +112,7 @@ protected:
 	void	UDP_cmd_online(const MSG_PKG& msg);
 	void	UDP_cmd_modbus(const MSG_PKG& msg);
 	void	UDP_cmd_iot(const MSG_PKG& msg);
-	void	UDP_cmd_tags(const MSG_PKG& msg);
+	void	UDP_cmd_tags_data(const MSG_PKG& msg);
 	void	UDP_cmd_file(const MSG_PKG& msg);
 
 	void	TCP_start();

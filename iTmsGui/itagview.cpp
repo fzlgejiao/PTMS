@@ -1,4 +1,5 @@
 #include "itagview.h"
+#include "irdm.h"
 #include <QtGui>
 
 iTagView::iTagView(QWidget *parent)
@@ -25,4 +26,8 @@ iTagView::iTagView(QWidget *parent)
 
 iTagView::~iTagView()
 {
+}
+void iTagView::OnRdmSelected(iRdm *Rdm)
+{
+
 }

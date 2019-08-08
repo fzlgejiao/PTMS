@@ -1,23 +1,23 @@
-<UI version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>iTagView</class>
- <widget class="QTableView" name="iTagView" >
-  <property name="objectName" >
-   <string notr="true">iTagView</string>
-  </property>
-  <property name="geometry" >
+ <widget class="QTableView" name="iTagView">
+  <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>400</width>
-	<height>300</height>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>iTagView</string>
   </property>
+  <attribute name="verticalHeaderVisible">
+   <bool>false</bool>
+  </attribute>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
-</UI>
+</ui>
