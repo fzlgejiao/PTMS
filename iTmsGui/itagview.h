@@ -5,6 +5,7 @@
 
 class QAbstractItemModel;
 class iRdm;
+class TagModel;
 class iTagView : public QTableView
 {
 	Q_OBJECT
@@ -15,7 +16,7 @@ public:
 
 private:
 	Ui::iTagView ui;
-	QAbstractItemModel *model;
+	TagModel *model;
 
 
 public slots:

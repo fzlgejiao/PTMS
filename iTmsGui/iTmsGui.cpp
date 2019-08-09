@@ -29,5 +29,6 @@ iTmsGui::iTmsGui(QWidget *parent)
 	setCentralWidget(splitter);
 
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), cfgpanel, SLOT(OnRdmSelected(iRdm *)));
+	connect(rdmview, SIGNAL(tagAdded(iTag *)), cfgpanel, SLOT(OnTagAdded(iTag *)));
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), tagview, SLOT(OnRdmSelected(iRdm *)));
 }

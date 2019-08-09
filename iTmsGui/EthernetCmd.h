@@ -23,7 +23,7 @@ typedef struct {
 	struct
 	{
 		CMD_HEADER		header;
-		uchar			data[256];
+		uchar			data[1200];
 	}cmd_pkg;
 }MSG_PKG;
 
@@ -171,8 +171,9 @@ signals:
 	void RdmParaReady(MSG_PKG& msg);
 	void ModbusParamReady(MSG_PKG& msg);
 	void IotParaReady(MSG_PKG& msg);
-	void TagsParaReady(MSG_PKG& msg);
-	void TagsDataReady(MSG_PKG& msg);
+	void OnlineTagsReady(MSG_PKG& msg);
+	void DataTagsReady(MSG_PKG& msg);
+	void ParaTagsReady(MSG_PKG& msg);
 
 private slots:	
 	void UDP_read();

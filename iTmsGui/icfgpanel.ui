@@ -359,7 +359,7 @@
        <enum>QAbstractItemView::SingleSelection</enum>
       </property>
       <attribute name="horizontalHeaderVisible">
-       <bool>true</bool>
+       <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
@@ -369,7 +369,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QPushButton" name="btnAddTags">
+       <widget class="QPushButton" name="btnEditTag">
         <property name="maximumSize">
          <size>
           <width>150</width>
@@ -377,7 +377,7 @@
          </size>
         </property>
         <property name="text">
-         <string>添加标签...</string>
+         <string>修改标签</string>
         </property>
        </widget>
       </item>

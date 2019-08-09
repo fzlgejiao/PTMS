@@ -115,7 +115,9 @@ bool RdmModel::removeRows(int row, int count, const QModelIndex & parent)
 	return true;
 }
 
+//--------------------------------------------------------------------------------------------------
 //Tag Model 
+//--------------------------------------------------------------------------------------------------
 TagModel::TagModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
@@ -124,7 +126,7 @@ TagModel::TagModel(QObject *parent)
 int TagModel::rowCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
-	return listEpc.count();
+	return listTags.count();
 }
 
 int TagModel::columnCount(const QModelIndex &parent) const
@@ -138,12 +140,34 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (index.row() >= listEpc.count() || index.row() < 0)
+	if (index.row() >= listTags.count() || index.row() < 0)
 		return QVariant();
 
 	if (role == Qt::DisplayRole)
 	{
+		iTag *tag = listTags.at(index.row());
 
+		switch (index.column()) 
+		{
+		case _Model::SID:
+			return tag->t_sid;
+		case _Model::UID:
+			return tag->t_uid;
+		case _Model::EPC:
+			return tag->t_epc;
+		case _Model::TEMP:
+			return tag->t_temperature;
+		case _Model::UPLIMIT:
+			return tag->t_uplimit;
+		case _Model::RSSI:
+			return tag->t_rssi;
+		case _Model::OCRSSI:
+			return tag->t_oc_rssi;
+		case _Model::NOTE:
+			return tag->t_note;
+		default:
+			return QVariant();
+		}
 	}
 	else if (role == Qt::DecorationRole)
 	{
@@ -151,7 +175,9 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 	}
 	else if (role == Qt::UserRole)
 	{
-
+		iTag *tag = listTags.at(index.row());
+		if (tag) 
+			return (uint)tag;
 	}
 	return QVariant();
 }
@@ -164,11 +190,11 @@ QVariant TagModel::headerData(int section, Qt::Orientation orientation, int role
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
 		case _Model::SID:
-			return QString::fromLocal8Bit("序号");
+			return QString::fromLocal8Bit("序号(SID)");
 		case _Model::UID:
-			return QString::fromLocal8Bit("识别号");
+			return QString::fromLocal8Bit("识别号(UID)");
 		case _Model::EPC:
-			return QString::fromLocal8Bit("名称");
+			return QString::fromLocal8Bit("名称(EPC)");
 		case _Model::TEMP:
 			return QString::fromLocal8Bit("温度");
 		case _Model::UPLIMIT:
@@ -177,6 +203,8 @@ QVariant TagModel::headerData(int section, Qt::Orientation orientation, int role
 			return QString::fromLocal8Bit("反射信号强度");
 		case _Model::OCRSSI:
 			return QString::fromLocal8Bit("接受信号强度");
+		case _Model::NOTE:
+			return QString::fromLocal8Bit("备注");
 		default:
 			return QVariant();
 		}
@@ -192,6 +220,36 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	if (role == Qt::DisplayRole)
 	{
 		
+	}
+	return false;
+}
+bool TagModel::removeRows(int row, int count, const QModelIndex & parent)
+{
+	Q_UNUSED(parent);
+	beginRemoveRows(QModelIndex(), row, row + count - 1);
+
+	for (int i = 0; i < count; i++)
+	{
+		delete listTags.at(row);
+		listTags.removeAt(row);
+	}
+
+	endRemoveRows();
+	return true;
+}
+bool TagModel::insertRow(int row, iTag * tag)
+{
+	beginInsertRows(QModelIndex(), row, row);
+	listTags.insert(row, tag);
+	endInsertRows();
+	return true;
+}
+bool TagModel::hasTag(quint64 uid)
+{ 
+	for (iTag *tag : listTags)
+	{
+		if (tag->t_uid == uid)
+			return true;
 	}
 	return false;
 }
