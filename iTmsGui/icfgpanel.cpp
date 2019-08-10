@@ -15,10 +15,11 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 
 	model = new TagModel(this);
+	model->setEditColumns((1 << _Model::UPLIMIT) | (1 << _Model::NOTE));
 
-	//ui.tableTags->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
-	//ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableTags->setAlternatingRowColors(true);
 
 	QHeaderView *headerView = ui.tableTags->horizontalHeader();
@@ -76,22 +77,22 @@ void iCfgPanel::OnRemoveTag()
 void iCfgPanel::OnEditTag()
 {
 	//todo:test code
-	Tags_Parameters tags;
-	memset(&tags, 0, sizeof(tags));
-	tags.Header.tagcount = 2;
-	tags.Tags[0].uid = 12345;
-	strcpy(tags.Tags[0].name, "ABCD");
-	strcpy(tags.Tags[0].note, "Note1");
-	tags.Tags[1].uid = 67890;
-	strcpy(tags.Tags[1].name, "EFGH");
-	strcpy(tags.Tags[1].note, "Note2");
-	MSG_PKG msg;
-	memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	OnParaTagsFound(msg);
+	//Tags_Parameters tags;
+	//memset(&tags, 0, sizeof(tags));
+	//tags.Header.tagcount = 2;
+	//tags.Tags[0].uid = 12345;
+	//strcpy(tags.Tags[0].name, "ABCD");
+	//strcpy(tags.Tags[0].note, "Note1");
+	//tags.Tags[1].uid = 67890;
+	//strcpy(tags.Tags[1].name, "EFGH");
+	//strcpy(tags.Tags[1].note, "Note2");
+	//MSG_PKG msg;
+	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
+	//OnParaTagsFound(msg);
 
 
 	int row = ui.tableTags->currentIndex().row();
-	QModelIndex index = ui.tableTags->model()->index(row, 0, QModelIndex());
+	QModelIndex index = ui.tableTags->model()->index(row, _Model::UPLIMIT, QModelIndex());
 	ui.tableTags->edit(index);
 }
 void iCfgPanel::OnRdmSelected(iRdm *rdm)

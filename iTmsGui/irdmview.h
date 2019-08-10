@@ -26,6 +26,7 @@ protected:
 private slots:
 	void onbtndiscover();
 	void onbtnDownload();
+	void onbtnChangeIP();
 	void OnbtnFindTags();
 	void onbtnChangeEpc();
 	void onbtnAddToSys();

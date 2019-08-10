@@ -4,7 +4,6 @@
 #include "irdm.h"
 #include <QSortFilterProxyModel>
 
-#define IP_COL	1
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
@@ -15,9 +14,9 @@ iRdmView::iRdmView(QWidget *parent)
 	//table rdms
 	rdmmodel = new RdmModel(this);
 		
-	ui.tableRdms->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui.tableRdms->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableRdms->setSelectionBehavior(QAbstractItemView::SelectRows);
-	//ui.tableRdms->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui.tableRdms->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableRdms->setAlternatingRowColors(true);
 
 	QHeaderView *headerRdms = ui.tableRdms->horizontalHeader();
@@ -27,9 +26,11 @@ iRdmView::iRdmView(QWidget *parent)
 	
 	//table online tags
 	tagModel = new TagModel(this);
-	//ui.tableTags->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	tagModel->setEditColumns(1 << _Model::EPC);
+	
+	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
-	//ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableTags->setAlternatingRowColors(true);
 
 	QHeaderView *headerTags = ui.tableTags->horizontalHeader();
@@ -57,6 +58,7 @@ iRdmView::iRdmView(QWidget *parent)
 
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
+	connect(ui.btnChangeIP, SIGNAL(clicked()), this, SLOT(onbtnChangeIP()));
 
 	connect(ui.btnFindTags, SIGNAL(clicked()), this, SLOT(OnbtnFindTags()));
 	connect(ui.btnChangeEpc, SIGNAL(clicked()), this, SLOT(onbtnChangeEpc()));
@@ -92,6 +94,12 @@ void iRdmView::onbtnDownload()
 	if (rdm)
 		emit RdmDownloaded(rdm);
 }
+void iRdmView::onbtnChangeIP()
+{
+	int row = ui.tableRdms->currentIndex().row();
+	QModelIndex index = ui.tableRdms->model()->index(row, _Model::IP, QModelIndex());
+	ui.tableRdms->edit(index);
+}
 void iRdmView::OnbtnFindTags()
 {
 	if (tagModel->rowCount() > 0)
@@ -110,6 +118,9 @@ void iRdmView::OnbtnFindTags()
 }
 void iRdmView::onbtnChangeEpc()
 {
+	int row = ui.tableTags->currentIndex().row();
+	QModelIndex index = ui.tableTags->model()->index(row, _Model::EPC, QModelIndex());
+	ui.tableTags->edit(index);
 }
 void iRdmView::onbtnAddToSys()
 {
@@ -145,11 +156,13 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 	{
 		ui.btnDownload->setEnabled(false);
 		ui.btnUpgrade->setEnabled(false);
+		ui.btnChangeIP->setEnabled(false);
 	}
 	else
 	{
 		ui.btnDownload->setEnabled(true);
 		ui.btnUpgrade->setEnabled(true);
+		ui.btnChangeIP->setEnabled(true);
 
 		m_Enetcmd.UDP_get_modbusparameters(rdm->m_ip);												//get modbus parameters
 
