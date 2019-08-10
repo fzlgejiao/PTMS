@@ -20,9 +20,11 @@ namespace _Model {
 		UID,
 		EPC,
 		TEMP,
+		ALARM,
 		UPLIMIT,
 		RSSI,
 		OCRSSI,
+		NOTE,
 		TagModelColumnCnt
 	}TagModelColumns;
 }
@@ -65,13 +67,12 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+	bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex());
 	
+	bool insertRow(int row, iTag * tag);
+
+	bool hasTag(quint64 uid);
 private:
-	QList<QString>	listEpc;
-	QList<int>		listRSSI;
-	QList<int>		listOC_RSSI;
-	QList<int>		listUplimit;
-	QList<float>	listTemperature;
 	QList<iTag *>	listTags;
 };
 

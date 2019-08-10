@@ -23,7 +23,7 @@ typedef struct {
 	struct
 	{
 		CMD_HEADER		header;
-		uchar			data[256];
+		uchar			data[1200];
 	}cmd_pkg;
 }MSG_PKG;
 
@@ -102,6 +102,8 @@ typedef struct {
 		quint8	oc_rssi;
 		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
 		quint16	reserved;
+		char	name[16];
+		char	note[32];
 	}Tags[TAG_NUM];
 }Tags_Data;
 
@@ -171,8 +173,9 @@ signals:
 	void RdmParaReady(MSG_PKG& msg);
 	void ModbusParamReady(MSG_PKG& msg);
 	void IotParaReady(MSG_PKG& msg);
-	void TagsParaReady(MSG_PKG& msg);
-	void TagsDataReady(MSG_PKG& msg);
+	void OnlineTagsReady(MSG_PKG& msg);
+	void DataTagsReady(MSG_PKG& msg);
+	void ParaTagsReady(MSG_PKG& msg);
 
 private slots:	
 	void UDP_read();

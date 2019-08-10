@@ -6,6 +6,8 @@
 
 class QAbstractItemModel;
 class iRdm;
+class iTag;
+class TagModel;
 class iCfgPanel : public QTabWidget
 {
 	Q_OBJECT
@@ -17,12 +19,19 @@ public:
 private:
 	Ui::iCfgPanel ui;
 
-	QAbstractItemModel *model;
+	TagModel *model;
 	EthernetCmd &netcmd;
 
 
 public slots:
 	void OnModbusParameters(MSG_PKG&);
+	void OnParaTagsFound(MSG_PKG&);
 	void OnRemoveTag();
+	void OnEditTag();
 	void OnRdmSelected(iRdm *);
+	void OnRdmSaved(iRdm *);
+	void OnRdmDownloaded(iRdm *);
+	void OnTagAdded(iTag *);
+	void OnTagSelectChanged(const QModelIndex &index);
+
 };

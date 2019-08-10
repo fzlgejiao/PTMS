@@ -8,18 +8,26 @@ class iTag :public QObject
 	Q_OBJECT
 
 public:
-	iTag(QObject *parent = 0);
+	iTag(quint64 uid,const QString& epc,QObject *parent = 0);
+	iTag(const iTag& tag);
 	~iTag();
+	quint64 uid() { return t_uid; }
 
 private:
 	friend class iRdm;
+	friend class TagModel;
+	friend class iCfgPanel;
+	friend class iTagView;
 
-	int sid;
-	quint64 UID;
-	QString epc;
-	qint8 rssi;
-	quint8 oc_rssi;
-	float temperature;
+	int		t_sid;
+	quint64 t_uid;
+	QString t_epc;
+	qint8	t_rssi;
+	quint8	t_oc_rssi;
+	float	t_temperature;
+	QString t_note;
+	quint8	t_uplimit;
+	quint8	t_alarm;
 };
 
 class iRdm :public QObject
@@ -40,8 +48,5 @@ private:
 	QString m_ip;
 	QString m_MAC;
 	QString m_Version;
-
-	QMap<quint64, iTag *> assignedtaglist;
-	QMap<quint64, iTag *> unassignedtaglist;
 };
 
