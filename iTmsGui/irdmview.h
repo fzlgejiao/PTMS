@@ -5,7 +5,7 @@
 #include "EthernetCmd.h"
 
 class EthernetCmd;
-class CRdm;
+class iRdm;
 class RdmModel;
 
 class iRdmView : public QWidget
@@ -33,4 +33,7 @@ private:
 
 
 	int		m_n2sTimerId;
+
+signals:
+	void RdmSelected(iRdm *);
 };

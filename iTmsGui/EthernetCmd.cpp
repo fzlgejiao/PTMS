@@ -105,7 +105,7 @@ void EthernetCmd::UDP_ipset(QString ipaddress)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
-	txmsg.cmd_pkg.header.cmd = UDP_SETIP;
+	txmsg.cmd_pkg.header.cmd = UDP_SETRDMIP;
 	//to do : set ip address to Rdm
 	txmsg.cmd_pkg.header.len = 0;
 

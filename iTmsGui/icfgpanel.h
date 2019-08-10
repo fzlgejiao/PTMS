@@ -5,6 +5,7 @@
 #include "EthernetCmd.h"
 
 class QAbstractItemModel;
+class iRdm;
 class iCfgPanel : public QTabWidget
 {
 	Q_OBJECT
@@ -22,4 +23,6 @@ private:
 
 public slots:
 	void OnModbusParameters(MSG_PKG&);
+	void OnRemoveTag();
+	void OnRdmSelected(iRdm *);
 };

@@ -64,7 +64,7 @@ private:
 	CModbus *	modbus;
 	iBC*		bc;
 
-	QMap<quint64, iTag *> taglist;																	//tag's ID string map to tag
+	QMap<quint64, iTag *> taglist;																	//<UID,tag>
 	int			timerId;
 	int         timer_datetime;
 	int			RDM_ticks;

@@ -10,6 +10,7 @@ namespace _Model {
 		Name = 0,
 		IP,
 		MAC,
+		VERSION,
 		RdmModelColumnCnt
 	}RdmModelColumns;
 
@@ -26,47 +27,7 @@ namespace _Model {
 	}TagModelColumns;
 }
 
-class CTag :public QObject
-{
-	Q_OBJECT
-
-public:
-	CTag(QObject *parent = 0);
-	~CTag();
-
-private:
-	friend class CRdm;
-
-	int sid;
-	quint64 UID;
-	QString epc;
-	qint8 rssi;
-	quint8 oc_rssi;
-	float temperature;
-};
-
-class CRdm :public QObject
-{
-	Q_OBJECT
-
-public:
-	CRdm(QString &name, QString &ip, QString& mac,QObject *parent = 0);
-	~CRdm();
-
-private:
-	friend class RdmModel;
-	friend class iRdmView;
-
-	QString m_name;
-	QString m_ip;
-	QString m_MAC;
-	
-	QMap<quint64, CTag *> assignedtaglist;
-	QMap<quint64, CTag *> unassignedtaglist;
-};
-
-
-
+class iRdm;
 class RdmModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -81,15 +42,16 @@ public:
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 
-	bool insertmyrow(int row, CRdm * rdm);
+	bool insertmyrow(int row, iRdm * rdm);
 	bool removeRows(int row, int count, const QModelIndex & parent= QModelIndex());
 	
 	inline void clear() { listRdm.clear(); }
 
 private:	
-	QList<CRdm *>	listRdm;
+	QList<iRdm *>	listRdm;
 };
 
+class iTag;
 class TagModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -110,7 +72,7 @@ private:
 	QList<int>		listOC_RSSI;
 	QList<int>		listUplimit;
 	QList<float>	listTemperature;
-	QList<CTag *>	listTags;
+	QList<iTag *>	listTags;
 };
 
 

@@ -3,6 +3,7 @@
 #include "irdmview.h"
 #include "icfgpanel.h"
 #include "itagview.h"
+#include "irdm.h"
 
 iTmsGui::iTmsGui(QWidget *parent)
 	: QMainWindow(parent)
@@ -26,4 +27,7 @@ iTmsGui::iTmsGui(QWidget *parent)
 	splitter->setStretchFactor(0, 0);
 	splitter->setStretchFactor(1, 1);
 	setCentralWidget(splitter);
+
+	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), cfgpanel, SLOT(OnRdmSelected(iRdm *)));
+	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), tagview, SLOT(OnRdmSelected(iRdm *)));
 }

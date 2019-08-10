@@ -28,13 +28,16 @@ typedef struct {
 }MSG_PKG;
 
 typedef enum {
-	UDP_DISCOVER = 1,
-	UDP_ONLINE = 2,
-	UDP_READMODBUSSETTING = 3,
-	UDP_READIOTSETTING = 4,
-	UDP_READTAGS = 5,
-	UDP_SETIP = 6,
-	UDP_FILEPARAMETER = 0x10
+	UDP_DISCOVER			= 1,
+	UDP_ONLINE				= 2,
+	UDP_READMODBUSSETTING	= 3,
+	UDP_READIOTSETTING		= 4,
+	UDP_READTAGSSETTING		= 5,
+	UDP_READTAGSONLINE		= 6,
+	UDP_READTAGSDATA		= 7,
+	UDP_SETTAGEPC			= 8,
+	UDP_SETRDMIP			= 9,
+	UDP_FILEPARAMETER		= 0x10
 }UDP_CMD;
 
 
@@ -81,7 +84,7 @@ typedef struct {
 		quint8	upperlimit;
 		quint16 reserved;
 		char	name[16];
-		char	note[64];
+		char	note[32];
 	}Tags[TAG_NUM];
 }Tags_Parameters;
 
@@ -92,15 +95,27 @@ typedef struct {
 		quint16	reserved2;
 	}Header;
 	struct {
-		quint8	sid;
 		quint64 uid;
-		quint8	upperlimit;
+		quint8	sid;
+		quint8	alarm;
 		qint8	rssi;
 		quint8	oc_rssi;
 		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
+		quint16	reserved;
 	}Tags[TAG_NUM];
 }Tags_Data;
 
+typedef struct {
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint64 uid;
+		char	name[16];
+	}Tags[TAG_NUM];
+}Tags_Online;
 
 class QUdpSocket;
 class QTcpSocket;

@@ -54,6 +54,9 @@
     <ClCompile Include="Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="irdm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iTmsGui.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="EthernetCmd.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="irdm.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
