@@ -48,9 +48,5 @@ private:
 	QString m_ip;
 	QString m_MAC;
 	QString m_Version;
-
-	QMap<quint64, iTag *> editTags;
-	QMap<quint64, iTag *> dataTags;
-	QMap<quint64, iTag *> onlineTags;
 };
 

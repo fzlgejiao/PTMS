@@ -45,5 +45,7 @@ private:
 
 signals:
 	void RdmSelected(iRdm *);
+	void RdmSaved(iRdm *);
+	void RdmDownloaded(iRdm *);
 	void tagAdded(iTag *);
 };

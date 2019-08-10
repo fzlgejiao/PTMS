@@ -20,6 +20,7 @@ namespace _Model {
 		UID,
 		EPC,
 		TEMP,
+		ALARM,
 		UPLIMIT,
 		RSSI,
 		OCRSSI,

@@ -28,7 +28,10 @@ iTmsGui::iTmsGui(QWidget *parent)
 	splitter->setStretchFactor(1, 1);
 	setCentralWidget(splitter);
 
-	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), cfgpanel, SLOT(OnRdmSelected(iRdm *)));
-	connect(rdmview, SIGNAL(tagAdded(iTag *)), cfgpanel, SLOT(OnTagAdded(iTag *)));
-	connect(rdmview, SIGNAL(RdmSelected(iRdm *)), tagview, SLOT(OnRdmSelected(iRdm *)));
+	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	cfgpanel, SLOT(OnRdmSelected(iRdm *)));
+	connect(rdmview, SIGNAL(RdmSaved(iRdm *)),		cfgpanel, SLOT(OnRdmSaved(iRdm *)));
+	connect(rdmview, SIGNAL(RdmDownloaded(iRdm *)), cfgpanel, SLOT(OnRdmDownloaded(iRdm *)));
+	connect(rdmview, SIGNAL(tagAdded(iTag *)),		cfgpanel, SLOT(OnTagAdded(iTag *)));
+
+	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	tagview, SLOT(OnRdmSelected(iRdm *)));
 }

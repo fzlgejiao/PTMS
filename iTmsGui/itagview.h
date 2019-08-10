@@ -2,6 +2,7 @@
 
 #include <QTableView>
 #include "ui_itagview.h"
+#include "EthernetCmd.h"
 
 class QAbstractItemModel;
 class iRdm;
@@ -17,8 +18,9 @@ public:
 private:
 	Ui::iTagView ui;
 	TagModel *model;
-
+	EthernetCmd &netcmd;
 
 public slots:
 	void OnRdmSelected(iRdm *);
+	void OnDataTagsReady(MSG_PKG&);
 };

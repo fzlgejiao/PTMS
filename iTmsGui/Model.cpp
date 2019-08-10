@@ -157,6 +157,8 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 			return tag->t_epc;
 		case _Model::TEMP:
 			return tag->t_temperature;
+		case _Model::ALARM:
+			return tag->t_alarm;
 		case _Model::UPLIMIT:
 			return tag->t_uplimit;
 		case _Model::RSSI:
@@ -197,6 +199,8 @@ QVariant TagModel::headerData(int section, Qt::Orientation orientation, int role
 			return QString::fromLocal8Bit("名称(EPC)");
 		case _Model::TEMP:
 			return QString::fromLocal8Bit("温度");
+		case _Model::ALARM:
+			return QString::fromLocal8Bit("报警");
 		case _Model::UPLIMIT:
 			return QString::fromLocal8Bit("报警温度");
 		case _Model::RSSI:

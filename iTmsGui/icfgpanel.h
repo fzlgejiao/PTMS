@@ -29,6 +29,9 @@ public slots:
 	void OnRemoveTag();
 	void OnEditTag();
 	void OnRdmSelected(iRdm *);
+	void OnRdmSaved(iRdm *);
+	void OnRdmDownloaded(iRdm *);
 	void OnTagAdded(iTag *);
+	void OnTagSelectChanged(const QModelIndex &index);
 
 };

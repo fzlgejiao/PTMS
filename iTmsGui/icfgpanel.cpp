@@ -2,6 +2,7 @@
 #include "irdm.h"
 #include "Model.h"
 #include <QtGui>
+#include <QMessageBox>
 
 iCfgPanel::iCfgPanel(QWidget *parent)
 	: QTabWidget(parent), netcmd(EthernetCmd::Instance())
@@ -27,8 +28,12 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.tableTags->setModel(model);
 	ui.tableTags->hideColumn(_Model::SID);
 	ui.tableTags->hideColumn(_Model::TEMP);
+	ui.tableTags->hideColumn(_Model::ALARM);
 	ui.tableTags->hideColumn(_Model::RSSI);
 	ui.tableTags->hideColumn(_Model::OCRSSI);
+
+	ui.btnEditTag->setEnabled(false);
+	ui.btnRemoveTag->setEnabled(false);
 
 	setCurrentIndex(0);
 
@@ -37,6 +42,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
 	connect(ui.btnEditTag, SIGNAL(clicked()), this, SLOT(OnEditTag()));
+	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 
 }
 
@@ -88,17 +94,57 @@ void iCfgPanel::OnEditTag()
 	QModelIndex index = ui.tableTags->model()->index(row, 0, QModelIndex());
 	ui.tableTags->edit(index);
 }
-void iCfgPanel::OnRdmSelected(iRdm *Rdm)
+void iCfgPanel::OnRdmSelected(iRdm *rdm)
 {
-	ui.leRdmName->setText(Rdm->m_name);
-	ui.leIPAddress->setText(Rdm->m_ip);
+	//clear editing tags when rdm change selected
+	if (model->rowCount() > 0)
+		model->removeRows(0, model->rowCount());	
+	
+	if (rdm)
+	{
+		ui.leRdmName->setText(rdm->m_name);
+		ui.leIPAddress->setText(rdm->m_ip);
+	}
+	else
+	{
+		ui.leRdmName->setText("");
+		ui.leIPAddress->setText("");
+	}
+
+}
+void iCfgPanel::OnRdmSaved(iRdm *Rdm)
+{
+	//todo: save settings to rdm xml file
+}
+void iCfgPanel::OnRdmDownloaded(iRdm *Rdm)
+{
+	//todo: save settings to rdm xml file and download to rdm
+}
+
+void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
+{
+	if (index.isValid())
+	{
+		ui.btnEditTag->setEnabled(true);
+		ui.btnRemoveTag->setEnabled(true);
+	}
+	else
+	{
+		ui.btnEditTag->setEnabled(false);
+		ui.btnRemoveTag->setEnabled(false);
+	}
 }
 void iCfgPanel::OnTagAdded(iTag *tag)
 {
 	setCurrentIndex(1);																				//switch to tags tab
 	//todo: check if tag already exists
 	if (model->hasTag(tag->uid()))
+	{
+		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("标签已经存在."),QMessageBox::Ok);
+		mbx.setMinimumSize(600, 400);
+		mbx.exec();
 		return;
+	}
 	iTag *newTag = new iTag(*tag);
 	model->insertRow(0, newTag);
 }
@@ -107,7 +153,7 @@ void iCfgPanel::OnParaTagsFound(MSG_PKG& msg)
 	Tags_Parameters *tags = (Tags_Parameters *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-		if (model->hasTag(tags->Tags[i].uid))
+		if (model->hasTag(tags->Tags[i].uid))														//make sure no duplicated tags 
 			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
 		//todo: fill all parameters of tag
