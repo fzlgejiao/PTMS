@@ -28,10 +28,23 @@ iTmsGui::iTmsGui(QWidget *parent)
 	splitter->setStretchFactor(1, 1);
 	setCentralWidget(splitter);
 
+	createStatusBar();
+
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	cfgpanel, SLOT(OnRdmSelected(iRdm *)));
 	connect(rdmview, SIGNAL(RdmSaved(iRdm *)),		cfgpanel, SLOT(OnRdmSaved(iRdm *)));
 	connect(rdmview, SIGNAL(RdmDownloaded(iRdm *)), cfgpanel, SLOT(OnRdmDownloaded(iRdm *)));
 	connect(rdmview, SIGNAL(tagAdded(iTag *)),		cfgpanel, SLOT(OnTagAdded(iTag *)));
 
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	tagview, SLOT(OnRdmSelected(iRdm *)));
+}
+void iTmsGui::createStatusBar()
+{
+	sBarVersion = new QLabel(this);
+	sBarVersion->setMinimumSize(120, 20);
+	sBarVersion->setAlignment(Qt::AlignHCenter);
+	sBarVersion->setText(qApp->applicationVersion());
+	sBarVersion->setFrameShape(QFrame::Panel);
+	sBarVersion->setFrameShadow(QFrame::Sunken);
+
+	statusBar()->insertPermanentWidget(0, sBarVersion);
 }

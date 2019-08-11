@@ -253,11 +253,22 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	else if (role == Qt::EditRole)
 	{
 		if (index.column() == _Model::EPC)
-			tag->t_epc = value.toString();
+		{
+			if (value.toString().count() % 2 != 0)
+				tag->t_epc = value.toString() + QChar(' ');
+			else
+				tag->t_epc = value.toString();
+		}
 		else if (index.column() == _Model::UPLIMIT)
+		{
+			if (value.toInt() < 0 || value.toInt() >= 100)											//data validation for uplimit
+				return false;
 			tag->t_uplimit = value.toInt();
+		}
 		else if (index.column() == _Model::NOTE)
 			tag->t_note = value.toString();
+
+		emit dataChanged(index, index);
 		return true;	
 	}
 	return false;

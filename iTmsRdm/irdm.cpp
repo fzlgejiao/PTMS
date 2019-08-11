@@ -71,6 +71,7 @@ bool iRDM::Cfg_load(const QString& xml)
 				RDM_mac = xmlReader.attributes().value("mac").toString();
 				RDM_name = xmlReader.attributes().value("name").toString();
 				RDM_ip = xmlReader.attributes().value("ip").toString();
+				RDM_note = xmlReader.attributes().value("note").toString();
 				Cfg_readrdm(xmlReader);																//read rdm
 			}
 			else

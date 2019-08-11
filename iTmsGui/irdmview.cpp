@@ -55,6 +55,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
 	//connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
+	connect(tagModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataChanged(const QModelIndex &)));
 
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
@@ -105,16 +106,20 @@ void iRdmView::OnbtnFindTags()
 	if (tagModel->rowCount() > 0)
 		tagModel->removeRows(0, tagModel->rowCount());
 
-	//test code
-	Tags_Online tags;
-	tags.Header.tagcount = 2;
-	tags.Tags[0].uid = 12345;
-	strcpy(tags.Tags[0].name, "ABCD");
-	tags.Tags[1].uid = 67890;
-	strcpy(tags.Tags[1].name, "EFGH");
-	MSG_PKG msg;
-	memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	OnlineTagsFound(msg);
+	iRdm *rdm = selectedRdm();
+	if(rdm)
+		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
+
+	////test code
+	//Tags_Online tags;
+	//tags.Header.tagcount = 2;
+	//tags.Tags[0].uid = 12345;
+	//strcpy(tags.Tags[0].name, "ABCD");
+	//tags.Tags[1].uid = 67890;
+	//strcpy(tags.Tags[1].name, "EFGH");
+	//MSG_PKG msg;
+	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
+	//OnlineTagsFound(msg);
 }
 void iRdmView::onbtnChangeEpc()
 {
@@ -131,7 +136,7 @@ void iRdmView::onbtnAddToSys()
 void iRdmView::NewRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
-	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,this);
+	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,rdm->RdmNote,this);
 
 	rdmmodel->insertmyrow(0, newrdm);	
 }
@@ -165,17 +170,18 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnChangeIP->setEnabled(true);
 
 		m_Enetcmd.UDP_get_modbusparameters(rdm->m_ip);												//get modbus parameters
+		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
 
-		//test code
-		Tags_Online tags;
-		tags.Header.tagcount = 2;
-		tags.Tags[0].uid = 12345;
-		strcpy(tags.Tags[0].name, "ABCD");
-		tags.Tags[1].uid = 67890;
-		strcpy(tags.Tags[1].name, "EFGH");
-		MSG_PKG msg;
-		memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-		OnlineTagsFound(msg);
+		////test code
+		//Tags_Online tags;
+		//tags.Header.tagcount = 2;
+		//tags.Tags[0].uid = 12345;
+		//strcpy(tags.Tags[0].name, "ABCD");
+		//tags.Tags[1].uid = 67890;
+		//strcpy(tags.Tags[1].name, "EFGH");
+		//MSG_PKG msg;
+		//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
+		//OnlineTagsFound(msg);
 	}
 		
 	emit RdmSelected(rdm);
@@ -197,6 +203,14 @@ void iRdmView::OnTagSelectChanged(const QModelIndex & index)
 	iTag *tag = selectedTag();
 	if (!tag)
 	{
+	}
+}
+void iRdmView::OnTagDataChanged(const QModelIndex &index)
+{
+	iTag *tag = (iTag *)index.data(Qt::UserRole).toUInt();
+	if (tag)
+	{
+		//todo: send cmd to rdm to write epc, and get online tags again when write epc cmd acked
 	}
 }
 iRdm* iRdmView::selectedRdm()

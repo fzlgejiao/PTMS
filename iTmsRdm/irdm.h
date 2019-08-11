@@ -93,5 +93,5 @@ private:
 	QString		RDM_mac;
 	QString		RDM_name;
 	QString		RDM_ip;
-
+	QString		RDM_note;
 };

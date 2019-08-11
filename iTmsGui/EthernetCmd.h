@@ -138,7 +138,8 @@ public:
 
 	void UDP_discoverRdm();
 	void UDP_get_modbusparameters(const QString& ip);
-	void UDP_ipset(QString ipaddress);
+	void UDP_get_tagonline(const QString& ip);
+	void UDP_ipset(const QString& mac,const QString& ip);
 	void UDP_fileinfo(QString filename);
 
 protected:

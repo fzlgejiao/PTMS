@@ -105,11 +105,13 @@ void iCfgPanel::OnRdmSelected(iRdm *rdm)
 	{
 		ui.leRdmName->setText(rdm->m_name);
 		ui.leIPAddress->setText(rdm->m_ip);
+		ui.leRdmNote->setText(rdm->m_note);
 	}
 	else
 	{
 		ui.leRdmName->setText("");
 		ui.leIPAddress->setText("");
+		ui.leRdmNote->setText("");
 	}
 
 }

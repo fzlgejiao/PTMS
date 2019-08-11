@@ -81,6 +81,22 @@ typedef struct {
 	struct {
 		quint64 uid;
 		quint8	sid;
+		quint8	upperlimit;
+		quint16 reserved;
+		char	name[16];
+		char	note[32];
+	}Tags[TAG_NUM];
+}Tags_Parameters;
+
+typedef struct {
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint64 uid;
+		quint8	sid;
 		quint8	alarm;
 		qint8	rssi;
 		quint8	oc_rssi;
@@ -89,6 +105,17 @@ typedef struct {
 	}Tags[TAG_NUM];
 }Tags_Data;
 
+typedef struct {
+	struct {
+		quint8	tagcount;
+		quint8	reserved1;
+		quint16	reserved2;
+	}Header;
+	struct {
+		quint64 uid;
+		char	name[16];
+	}Tags[TAG_NUM];
+}Tags_Online;
 
 class iRDM;
 class QUdpSocket;
@@ -112,6 +139,7 @@ protected:
 	void	UDP_cmd_online(const MSG_PKG& msg);
 	void	UDP_cmd_modbus(const MSG_PKG& msg);
 	void	UDP_cmd_iot(const MSG_PKG& msg);
+	void	UDP_cmd_tags_online(const MSG_PKG& msg);
 	void	UDP_cmd_tags_data(const MSG_PKG& msg);
 	void	UDP_cmd_file(const MSG_PKG& msg);
 
