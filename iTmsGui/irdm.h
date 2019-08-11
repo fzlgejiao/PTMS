@@ -18,6 +18,7 @@ private:
 	friend class TagModel;
 	friend class iCfgPanel;
 	friend class iTagView;
+	friend class EthernetCmd;
 
 	int		t_sid;
 	quint64 t_uid;
@@ -43,6 +44,7 @@ private:
 	friend class iRdmView;
 	friend class iCfgPanel;
 	friend class iTagView;
+	friend class EthernetCmd;
 
 	QString m_name;
 	QString m_ip;

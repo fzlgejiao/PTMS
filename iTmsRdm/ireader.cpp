@@ -159,7 +159,7 @@ bool iReader::init()
 	//if (ret != TMR_SUCCESS) goto Failed;
 	return true;
 }
-bool iReader::wirteEpc(iTag *tag, QString epcstr)
+bool iReader::wirteEpc(iTag *tag, const QString& epcstr)
 {
 	TMR_TagData		epc;
 	TMR_TagData		newepc;

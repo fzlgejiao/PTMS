@@ -51,6 +51,7 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnUpgrade->setEnabled(false);
 	ui.btnAddTag->setEnabled(false);
 	ui.btnChangeEpc->setEnabled(false);
+	ui.btnFindTags->setEnabled(false);
 
 	connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
 	//connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
@@ -84,6 +85,11 @@ void iRdmView::onbtndiscover()
 	if (tagModel->rowCount() > 0)
 		tagModel->removeRows(0, tagModel->rowCount());
 
+	ui.btnChangeIP->setEnabled(false);
+	ui.btnDownload->setEnabled(false);
+	ui.btnUpgrade->setEnabled(false);
+	ui.btnFindTags->setEnabled(false);
+
 	//to notify other views to update when rdm cleared before discover
 	emit RdmSelected(NULL);
 
@@ -108,7 +114,7 @@ void iRdmView::OnbtnFindTags()
 
 	iRdm *rdm = selectedRdm();
 	if(rdm)
-		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
+		m_Enetcmd.UDP_get_tagonline(rdm);														//get online tags
 
 	////test code
 	//Tags_Online tags;
@@ -162,15 +168,17 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnDownload->setEnabled(false);
 		ui.btnUpgrade->setEnabled(false);
 		ui.btnChangeIP->setEnabled(false);
+		ui.btnFindTags->setEnabled(false);
 	}
 	else
 	{
 		ui.btnDownload->setEnabled(true);
 		ui.btnUpgrade->setEnabled(true);
 		ui.btnChangeIP->setEnabled(true);
+		ui.btnFindTags->setEnabled(true);
 
-		m_Enetcmd.UDP_get_modbusparameters(rdm->m_ip);												//get modbus parameters
-		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
+		m_Enetcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
+		m_Enetcmd.UDP_get_tagonline(rdm);															//get online tags
 
 		////test code
 		//Tags_Online tags;
@@ -211,6 +219,10 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 	if (tag)
 	{
 		//todo: send cmd to rdm to write epc, and get online tags again when write epc cmd acked
+		if (index.column() == _Model::EPC)
+		{
+			m_Enetcmd.UDP_set_tagepc(selectedRdm(), tag);
+		}
 	}
 }
 iRdm* iRdmView::selectedRdm()

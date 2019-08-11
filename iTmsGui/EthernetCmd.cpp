@@ -1,4 +1,5 @@
 #include "EthernetCmd.h"
+#include "irdm.h"
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QFile>
@@ -94,7 +95,7 @@ void EthernetCmd::UDP_discoverRdm()
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
+void EthernetCmd::UDP_get_modbusparameters(iRdm* rdm)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -102,11 +103,11 @@ void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = ip;
+	txmsg.rIP = rdm->m_ip;
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_get_tagonline(const QString& ip)
+void EthernetCmd::UDP_get_tagonline(iRdm* rdm)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -114,7 +115,22 @@ void EthernetCmd::UDP_get_tagonline(const QString& ip)
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = ip;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_set_tagepc(iRdm* rdm, iTag* tag)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_SETTAGEPC;
+	txmsg.cmd_pkg.header.len = sizeof(Tag_epc);
+
+	Tag_epc *tagEPC = (Tag_epc *)txmsg.cmd_pkg.data;
+	tagEPC->uid = tag->t_uid;
+	strcpy(tagEPC->epc , tag->t_epc.toLatin1());
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
 
 	UDP_send(txmsg);
 }

@@ -119,9 +119,16 @@ typedef struct {
 	}Tags[TAG_NUM];
 }Tags_Online;
 
+typedef struct {
+	quint64 uid;
+	char	epc[16];
+}Tag_epc;
+
 class QUdpSocket;
 class QTcpSocket;
 class QFile;
+class iRdm;
+class iTag;
 class EthernetCmd : public QObject
 {
 	Q_OBJECT
@@ -137,8 +144,9 @@ public:
 	}
 
 	void UDP_discoverRdm();
-	void UDP_get_modbusparameters(const QString& ip);
-	void UDP_get_tagonline(const QString& ip);
+	void UDP_get_modbusparameters(iRdm* rdm);
+	void UDP_get_tagonline(iRdm* rdm);
+	void UDP_set_tagepc(iRdm* rdm,iTag* tag);
 	void UDP_ipset(const QString& mac,const QString& ip);
 	void UDP_fileinfo(QString filename);
 

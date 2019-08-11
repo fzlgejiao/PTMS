@@ -1,5 +1,6 @@
 #include "ibc.h"
 #include "irdm.h"
+#include "ireader.h"
 
 iBC::iBC(QObject *parent)
 	: QObject(parent)
@@ -112,6 +113,12 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 		case UDP_READTAGSONLINE:
 		{
 			UDP_cmd_tags_online(msg);
+		}
+		break;
+
+		case UDP_SETTAGEPC:
+		{
+			UDP_cmd_tag_epc(msg);
 		}
 		break;
 
@@ -359,6 +366,37 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 	txMsg.rIP = msg.rIP;
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
+{
+	//write tag epc
+	Tag_epc *rtagpec = (Tag_epc *)msg.cmd_pkg.data;
+	iTag* tag = rdm->Tag_get(rtagpec->uid);
+	if (!tag)
+		return;
+	
+	bool ret = rdm->reader->wirteEpc(tag, rtagpec->epc);
+	if (ret)
+		tag->T_epc = rtagpec->epc;
+
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_ONLINE;
+	txMsg.cmd_pkg.header.len = sizeof(Tag_epc);
+
+	Tag_epc *tagpec = (Tag_epc *)txMsg.cmd_pkg.data;
+	tagpec->uid = tag->T_uid;
+	strcpy(tagpec->epc , tag->T_epc.toLatin1());
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
+{
+
 }
 
 void iBC::UDP_cmd_file(const MSG_PKG& msg)

@@ -254,6 +254,8 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	{
 		if (index.column() == _Model::EPC)
 		{
+			if (value.toString().count() > 10)
+				return false;
 			if (value.toString().count() % 2 != 0)
 				tag->t_epc = value.toString() + QChar(' ');
 			else
