@@ -206,16 +206,21 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				epc = xmlReader.attributes().value("epc").toString();
 				if(xmlReader.attributes().value("max").isEmpty() == false)
 					max = xmlReader.attributes().value("max").toString().toInt();
+				QString note = xmlReader.readElementText();
 
 				//todo: load tag info
 				iTag *tag = Tag_add(sid, uid, epc);
 				if (tag)
+				{
 					tag->T_uplimit = max;
+					tag->T_note = note;
+				}
 				qDebug() << "tag : sid = " << sid 
 						<< " uid = " << uid 
-					    << " epc = " << epc << endl;
+					    << " epc = " << epc
+						<< " note = " << note << endl;
 
-				QString iot = xmlReader.readElementText();
+
 				if (xmlReader.isEndElement())
 					xmlReader.readNext();
 			}

@@ -1,6 +1,8 @@
 #include "iTmsGui.h"
 #include <QtWidgets/QApplication>
 #include <QTextCodec>
+#include <QStyle> 
+#include <QDesktopWidget> 
 
 int main(int argc, char *argv[])
 {
@@ -15,5 +17,16 @@ int main(int argc, char *argv[])
 	iTmsGui w;
 	w.show();
 	w.resize(1200, 800);
+
+	//Center Window on the Screen
+	w.setGeometry(
+		QStyle::alignedRect(
+			Qt::LeftToRight,
+			Qt::AlignCenter,
+			w.size(),
+			a.desktop()->availableGeometry()
+		)
+	);
+
 	return a.exec();
 }

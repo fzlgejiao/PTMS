@@ -25,7 +25,7 @@ private:
 
 public slots:
 	void OnModbusParameters(MSG_PKG&);
-	void OnParaTagsFound(MSG_PKG&);
+	void OnTagsParaReady(MSG_PKG&);
 	void OnRemoveTag();
 	void OnEditTag();
 	void OnRdmSelected(iRdm *);

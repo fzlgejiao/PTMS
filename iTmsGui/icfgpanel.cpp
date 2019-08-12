@@ -39,7 +39,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	setCurrentIndex(0);
 
 	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnModbusParameters(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(ParaTagsReady(MSG_PKG&)), this, SLOT(OnParaTagsFound(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsParaReady(MSG_PKG&)), this, SLOT(OnTagsParaReady(MSG_PKG&)));
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
 	connect(ui.btnEditTag, SIGNAL(clicked()), this, SLOT(OnEditTag()));
@@ -88,7 +88,7 @@ void iCfgPanel::OnEditTag()
 	//strcpy(tags.Tags[1].note, "Note2");
 	//MSG_PKG msg;
 	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	//OnParaTagsFound(msg);
+	//OnTagsParaReady(msg);
 
 
 	int row = ui.tableTags->currentIndex().row();
@@ -151,7 +151,7 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 	iTag *newTag = new iTag(*tag);
 	model->insertRow(0, newTag);
 }
-void iCfgPanel::OnParaTagsFound(MSG_PKG& msg)
+void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 {
 	Tags_Parameters *tags = (Tags_Parameters *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)

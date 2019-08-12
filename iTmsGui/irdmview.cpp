@@ -67,7 +67,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnAddTag, SIGNAL(clicked()), this, SLOT(onbtnAddToSys()));
 
 	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
-	connect(&m_Enetcmd, SIGNAL(OnlineTagsReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
+	connect(&m_Enetcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
 
 	m_n2sTimerId = startTimer(2000);
 }
@@ -114,7 +114,7 @@ void iRdmView::OnbtnFindTags()
 
 	iRdm *rdm = selectedRdm();
 	if(rdm)
-		m_Enetcmd.UDP_get_tagonline(rdm);														//get online tags
+		m_Enetcmd.UDP_get_tagsonline(rdm);														//get online tags
 
 	////test code
 	//Tags_Online tags;
@@ -145,6 +145,11 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,rdm->RdmNote,this);
 
 	rdmmodel->insertmyrow(0, newrdm);	
+	//todo: select the first rdm
+	if (rdmmodel->rowCount() == 1)
+	{
+
+	}
 }
 void iRdmView::OnlineTagsFound(MSG_PKG & msg)
 {
@@ -178,7 +183,9 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnFindTags->setEnabled(true);
 
 		m_Enetcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
-		m_Enetcmd.UDP_get_tagonline(rdm);															//get online tags
+		m_Enetcmd.UDP_get_tagsonline(rdm);															//get online tags
+		m_Enetcmd.UDP_get_tagspara(rdm);															//get managed tags para
+		m_Enetcmd.UDP_get_tagsdata(rdm);															//get managed tags data
 
 		////test code
 		//Tags_Online tags;
@@ -243,7 +250,9 @@ void iRdmView::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == m_n2sTimerId)
 	{
-
+		iRdm *rdm = selectedRdm();
+		if (rdm)
+			m_Enetcmd.UDP_get_tagsdata(rdm);														//get managed tags data
 	}
 	else
 	{

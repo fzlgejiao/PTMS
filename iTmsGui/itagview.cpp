@@ -21,7 +21,7 @@ iTagView::iTagView(QWidget *parent)
 
 	this->hideColumn(_Model::UPLIMIT);
 
-	connect(&netcmd, SIGNAL(DataTagsReady(MSG_PKG&)), this, SLOT(OnDataTagsReady(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsDataReady(MSG_PKG&)), this, SLOT(OnDataTagsReady(MSG_PKG&)));
 }
 
 iTagView::~iTagView()
@@ -33,27 +33,31 @@ void iTagView::OnRdmSelected(iRdm *rdm)
 	if (model->rowCount() > 0)
 		model->removeRows(0, model->rowCount());
 
-	if (rdm)
-	{
-		//test code
-		Tags_Data tags;
-		memset(&tags, 0, sizeof(tags));
-		tags.Header.tagcount = 2;
-		tags.Tags[0].uid = 12345;
-		tags.Tags[0].temperature = 40;
-		strcpy(tags.Tags[0].name, "ABCD");
-		strcpy(tags.Tags[0].note, "Note1");
-		tags.Tags[1].uid = 67890;
-		tags.Tags[1].temperature = 50;
-		strcpy(tags.Tags[1].name, "EFGH");
-		strcpy(tags.Tags[1].note, "Note2");
-		MSG_PKG msg;
-		memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-		OnDataTagsReady(msg);
-	}
+	//if (rdm)
+	//{
+	//	//test code
+	//	Tags_Data tags;
+	//	memset(&tags, 0, sizeof(tags));
+	//	tags.Header.tagcount = 2;
+	//	tags.Tags[0].uid = 12345;
+	//	tags.Tags[0].temperature = 40;
+	//	strcpy(tags.Tags[0].name, "ABCD");
+	//	strcpy(tags.Tags[0].note, "Note1");
+	//	tags.Tags[1].uid = 67890;
+	//	tags.Tags[1].temperature = 50;
+	//	strcpy(tags.Tags[1].name, "EFGH");
+	//	strcpy(tags.Tags[1].note, "Note2");
+	//	MSG_PKG msg;
+	//	memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
+	//	OnDataTagsReady(msg);
+	//}
 }
 void iTagView::OnDataTagsReady(MSG_PKG& msg)
 {
+	//clear tags when new tags data cmd acked
+	if (model->rowCount() > 0)
+		model->removeRows(0, model->rowCount());
+
 	Tags_Data *tags = (Tags_Data *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
@@ -62,6 +66,8 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
 
 		//todo: fill parameters of tag 
+		tag->t_sid = tags->Tags[i].sid;
+		tag->t_note = tags->Tags[i].note;
 		tag->t_temperature = tags->Tags[i].temperature;
 		tag->t_alarm = tags->Tags[i].alarm;
 
