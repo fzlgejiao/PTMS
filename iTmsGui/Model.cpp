@@ -1,6 +1,7 @@
 #include "Model.h"
 #include "irdm.h"
 
+
 //Rdm model
 RdmModel::RdmModel(QObject *parent)
 	: QAbstractTableModel(parent)
@@ -27,7 +28,7 @@ QVariant RdmModel::data(const QModelIndex &index, int role) const
 	if (index.row() >= listRdm.count() || index.row() < 0)
 		return QVariant();
 
-	if (role == Qt::DisplayRole)
+	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
 		iRdm *rdm = listRdm.at(index.row());
 
@@ -57,6 +58,7 @@ QVariant RdmModel::data(const QModelIndex &index, int role) const
 		iRdm *rdm = listRdm.at(index.row());
 		if (rdm) return (uint)rdm;
 	}
+
 	return QVariant();
 }
 
@@ -86,10 +88,20 @@ bool RdmModel::setData(const QModelIndex &index, const QVariant &value, int role
 	if (!index.isValid())
 		return false;
 	int row = index.row();
+	iRdm *rdm = listRdm.at(row);
+	if (!rdm)
+		return false;
 
 	if (role == Qt::DecorationRole)
 	{
 
+	}
+	else if (role == Qt::EditRole)
+	{
+		if (index.column() == _Model::IP)
+			rdm->m_ip = value.toString();
+
+		return true;
 	}
 	return false;
 }
@@ -114,13 +126,23 @@ bool RdmModel::removeRows(int row, int count, const QModelIndex & parent)
 	endRemoveRows();
 	return true;
 }
+Qt::ItemFlags RdmModel::flags(const QModelIndex &index) const
+{
+	if (!index.isValid())
+		return Qt::ItemIsEnabled;
 
+	if (index.column() == _Model::IP)
+		return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+	else
+		return QAbstractTableModel::flags(index);
+}
 //--------------------------------------------------------------------------------------------------
 //Tag Model 
 //--------------------------------------------------------------------------------------------------
 TagModel::TagModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
+	editColumns = 0;
 }
 
 int TagModel::rowCount(const QModelIndex &parent) const
@@ -143,7 +165,7 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 	if (index.row() >= listTags.count() || index.row() < 0)
 		return QVariant();
 
-	if (role == Qt::DisplayRole)
+	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
 		iTag *tag = listTags.at(index.row());
 
@@ -220,10 +242,34 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	if (!index.isValid())
 		return false;
 	int row = index.row();
+	iTag *tag = listTags.at(row);
+	if (!tag)
+		return false;
 
 	if (role == Qt::DisplayRole)
 	{
-		
+
+	}
+	else if (role == Qt::EditRole)
+	{
+		if (index.column() == _Model::EPC)
+		{
+			if (value.toString().count() % 2 != 0)
+				tag->t_epc = value.toString() + QChar(' ');
+			else
+				tag->t_epc = value.toString();
+		}
+		else if (index.column() == _Model::UPLIMIT)
+		{
+			if (value.toInt() < 0 || value.toInt() >= 100)											//data validation for uplimit
+				return false;
+			tag->t_uplimit = value.toInt();
+		}
+		else if (index.column() == _Model::NOTE)
+			tag->t_note = value.toString();
+
+		emit dataChanged(index, index);
+		return true;	
 	}
 	return false;
 }
@@ -247,6 +293,16 @@ bool TagModel::insertRow(int row, iTag * tag)
 	listTags.insert(row, tag);
 	endInsertRows();
 	return true;
+}
+Qt::ItemFlags TagModel::flags(const QModelIndex &index) const
+{
+	if (!index.isValid())
+		return Qt::ItemIsEnabled;
+
+	if ((1 << index.column()) & editColumns)
+		return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+	else
+		return QAbstractTableModel::flags(index);
 }
 bool TagModel::hasTag(quint64 uid)
 { 

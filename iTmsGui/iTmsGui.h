@@ -7,6 +7,7 @@
 class iRdmView;
 class iCfgPanel;
 class iTagView;
+class QLabel;
 class iTmsGui : public QMainWindow
 {
 	Q_OBJECT
@@ -14,6 +15,10 @@ class iTmsGui : public QMainWindow
 public:
 	iTmsGui(QWidget *parent = Q_NULLPTR);
 
+protected:
+	void createStatusBar();
+
 private:
 	Ui::iTmsGuiClass ui;
+	QLabel*	sBarVersion;
 };

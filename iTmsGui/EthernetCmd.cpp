@@ -65,6 +65,17 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	}
 	break;
 
+	case UDP_READIOTSETTING:
+	{
+		emit IotParaReady(RxMsg);
+	}
+	break;
+
+	case UDP_READTAGSONLINE:
+	{
+		emit OnlineTagsReady(RxMsg);
+	}
+	break;
 	case UDP_FILEPARAMETER:
 	{
 		filewritten = 0;
@@ -101,7 +112,31 @@ void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_ipset(QString ipaddress)
+void EthernetCmd::UDP_get_iotparameters(const QString& ip)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_get_tagonline(const QString& ip)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READTAGSONLINE;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_ipset(const QString& mac, const QString& ip)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;

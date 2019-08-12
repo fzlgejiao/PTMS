@@ -3,11 +3,19 @@
 #include "Model.h"
 #include <QtGui>
 #include <QMessageBox>
+#include <QFile>
+#include <QtXml>
+#include <iostream>
 
 iCfgPanel::iCfgPanel(QWidget *parent)
 	: QTabWidget(parent), netcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
+
+	paritymap.insert(0, QSerialPort::NoParity);
+	paritymap.insert(1, QSerialPort::EvenParity);
+	paritymap.insert(2, QSerialPort::OddParity);
+
 
 	setTabText(0,QString::fromLocal8Bit("通用设置"));
 	setTabText(1, QString::fromLocal8Bit("传感器设置"));
@@ -15,10 +23,11 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 
 	model = new TagModel(this);
+	model->setEditColumns((1 << _Model::UPLIMIT) | (1 << _Model::NOTE));
 
-	//ui.tableTags->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
-	//ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableTags->setAlternatingRowColors(true);
 
 	QHeaderView *headerView = ui.tableTags->horizontalHeader();
@@ -38,6 +47,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	setCurrentIndex(0);
 
 	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnModbusParameters(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(IotParaReady(MSG_PKG&)), this, SLOT(OnIoTParameters(MSG_PKG&)));
 	connect(&netcmd, SIGNAL(ParaTagsReady(MSG_PKG&)), this, SLOT(OnParaTagsFound(MSG_PKG&)));
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
@@ -57,7 +67,16 @@ void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
 	ui.cbxMbBaurate->setCurrentIndex(ui.cbxMbBaurate->findText(QString::number(modbus->rtu_baudrate)));
 	ui.leMbTcpPort->setText(QString::number(modbus->tcp_port));
 	ui.leMbComPort->setText(modbus->rtu_comname);
-	ui.cbxMbParity->setCurrentIndex(modbus->rtu_parity);
+	ui.cbxMbParity->setCurrentIndex(paritymap.key((QSerialPort::Parity)modbus->rtu_parity));
+}
+void iCfgPanel::OnIoTParameters(MSG_PKG& msg)
+{
+	IOT_Paramters* iot = (IOT_Paramters *)msg.cmd_pkg.data;
+
+	ui.lePrdKey->setText(iot->productkey);
+	ui.leDeviceName->setText(iot->devicename);
+	ui.leDeviceSecret->setText(iot->devicesecret);
+	ui.leRegion->setText(iot->regionid);
 }
 void iCfgPanel::OnRemoveTag()
 {
@@ -76,22 +95,22 @@ void iCfgPanel::OnRemoveTag()
 void iCfgPanel::OnEditTag()
 {
 	//todo:test code
-	Tags_Parameters tags;
-	memset(&tags, 0, sizeof(tags));
-	tags.Header.tagcount = 2;
-	tags.Tags[0].uid = 12345;
-	strcpy(tags.Tags[0].name, "ABCD");
-	strcpy(tags.Tags[0].note, "Note1");
-	tags.Tags[1].uid = 67890;
-	strcpy(tags.Tags[1].name, "EFGH");
-	strcpy(tags.Tags[1].note, "Note2");
-	MSG_PKG msg;
-	memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	OnParaTagsFound(msg);
+	//Tags_Parameters tags;
+	//memset(&tags, 0, sizeof(tags));
+	//tags.Header.tagcount = 2;
+	//tags.Tags[0].uid = 12345;
+	//strcpy(tags.Tags[0].name, "ABCD");
+	//strcpy(tags.Tags[0].note, "Note1");
+	//tags.Tags[1].uid = 67890;
+	//strcpy(tags.Tags[1].name, "EFGH");
+	//strcpy(tags.Tags[1].note, "Note2");
+	//MSG_PKG msg;
+	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
+	//OnParaTagsFound(msg);
 
 
 	int row = ui.tableTags->currentIndex().row();
-	QModelIndex index = ui.tableTags->model()->index(row, 0, QModelIndex());
+	QModelIndex index = ui.tableTags->model()->index(row, _Model::UPLIMIT, QModelIndex());
 	ui.tableTags->edit(index);
 }
 void iCfgPanel::OnRdmSelected(iRdm *rdm)
@@ -104,21 +123,39 @@ void iCfgPanel::OnRdmSelected(iRdm *rdm)
 	{
 		ui.leRdmName->setText(rdm->m_name);
 		ui.leIPAddress->setText(rdm->m_ip);
+		ui.leRdmNote->setText(rdm->m_note);
+		ui.leComPort->setText(rdm->m_comname);
 	}
 	else
 	{
 		ui.leRdmName->setText("");
 		ui.leIPAddress->setText("");
+		ui.leRdmNote->setText("");
+		ui.leComPort->setText("");
+
+		ui.cbxMbType->setCurrentIndex(0);
+		ui.leMbRtuAddr->setText("");
+		ui.leMbComPort->setText("");
+		ui.cbxMbBaurate->setCurrentIndex(0);
+		ui.cbxMbParity->setCurrentIndex(0);
+		ui.leMbTcpPort->setText("");
+
+		ui.lePrdKey->setText("");
+		ui.leDeviceName->setText("");
+		ui.leDeviceSecret->setText("");
+		ui.leRegion->setText("");
 	}
 
 }
 void iCfgPanel::OnRdmSaved(iRdm *Rdm)
 {
 	//todo: save settings to rdm xml file
+	saveRdmXml(Rdm);
 }
 void iCfgPanel::OnRdmDownloaded(iRdm *Rdm)
 {
 	//todo: save settings to rdm xml file and download to rdm
+	OnRdmSaved(Rdm);
 }
 
 void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
@@ -160,4 +197,83 @@ void iCfgPanel::OnParaTagsFound(MSG_PKG& msg)
 		tag->t_note = tags->Tags[i].note;
 		model->insertRow(0, tag);
 	}
+}
+bool iCfgPanel::saveRdmXml(iRdm *Rdm)
+{
+	QString mac = Rdm->m_MAC;
+	QString name = QString("./iTmsRdm-%1.xml").arg(mac.remove(':'));
+	QFile file(name);
+	if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+		std::cerr << "Error: Cannot write file "
+			<< qPrintable(file.errorString()) << std::endl;
+		return false;
+	}
+
+	QXmlStreamWriter xmlWriter(&file);
+	xmlWriter.setAutoFormatting(true);
+	xmlWriter.writeStartDocument();
+
+	xmlWriter.writeStartElement("rdm");
+	xmlWriter.writeAttribute("mac", Rdm->m_MAC);
+	xmlWriter.writeAttribute("name", Rdm->m_name);
+	xmlWriter.writeAttribute("org", "herong");
+	xmlWriter.writeAttribute("note", Rdm->m_note);
+	xmlWriter.writeAttribute("ip", Rdm->m_ip);
+	
+	//******************Configs------start************/
+	xmlWriter.writeStartElement("cfg");
+
+	xmlWriter.writeTextElement("com", Rdm->m_comname);
+
+	xmlWriter.writeStartElement("iot");
+	xmlWriter.writeAttribute("productkey", ui.lePrdKey->text().trimmed());
+	xmlWriter.writeAttribute("devicename", ui.leDeviceName->text().trimmed());
+	xmlWriter.writeAttribute("devicesecret", ui.leDeviceSecret->text().trimmed());
+	xmlWriter.writeAttribute("regionid", ui.leRegion->text().trimmed());
+	xmlWriter.writeCharacters("AliIoT");
+	xmlWriter.writeEndElement();					//match "iot" element
+
+	xmlWriter.writeStartElement("gui");
+	xmlWriter.writeAttribute("ip", "192.168.0.2");
+	xmlWriter.writeAttribute("port", "2871");
+	xmlWriter.writeAttribute("version", "v0.0.1");
+	xmlWriter.writeEndElement();					//match "gui" element
+
+	xmlWriter.writeStartElement("modbus");
+	xmlWriter.writeAttribute("type", ui.cbxMbType->currentText());
+	xmlWriter.writeAttribute("comname", ui.leMbComPort->text());
+	xmlWriter.writeAttribute("slaveaddress", ui.leMbRtuAddr->text().trimmed());
+	xmlWriter.writeAttribute("baudrate", ui.cbxMbBaurate->currentText());
+	xmlWriter.writeAttribute("parity", QString::number(paritymap.value(ui.cbxMbParity->currentIndex())));
+	xmlWriter.writeAttribute("tcpport", ui.leMbTcpPort->text().trimmed());
+	xmlWriter.writeCharacters("");
+	xmlWriter.writeEndElement();				//match "modbus" element
+	
+	xmlWriter.writeEndElement();			//Match "cfg" element
+
+	//******************Tags------start************/
+	xmlWriter.writeStartElement("tags");
+	foreach(iTag *tag, model->taglist())
+	{
+		xmlWriter.writeStartElement("tag");
+		xmlWriter.writeAttribute("sid", QString::number(tag->t_sid));
+		xmlWriter.writeAttribute("uid", QString::number(tag->t_uid));
+		xmlWriter.writeAttribute("epc", tag->t_epc);
+		xmlWriter.writeAttribute("max", QString::number(tag->t_alarm));
+		xmlWriter.writeCharacters("");
+		xmlWriter.writeEndElement();
+	}
+	xmlWriter.writeEndElement();
+	//******************Tags------end************/
+
+	xmlWriter.writeEndElement();								//match root element("rdm");
+
+	xmlWriter.writeEndDocument();
+	file.close();
+	if (file.error()) {
+		std::cerr << "Error: Cannot write file "
+			<< qPrintable(file.errorString()) << std::endl;
+		return false;
+	}
+	return true;
 }

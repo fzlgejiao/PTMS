@@ -26,6 +26,7 @@ protected:
 private slots:
 	void onbtndiscover();
 	void onbtnDownload();
+	void onbtnChangeIP();
 	void OnbtnFindTags();
 	void onbtnChangeEpc();
 	void onbtnAddToSys();
@@ -33,6 +34,7 @@ private slots:
 	void OnlineTagsFound(MSG_PKG &msg);
 	void OnRdmSelectChanged(const QModelIndex & index);
 	void OnTagSelectChanged(const QModelIndex & index);
+	void OnTagDataChanged(const QModelIndex &);
 	
 private:
 	Ui::iRdmView ui;

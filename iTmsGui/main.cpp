@@ -10,6 +10,8 @@ int main(int argc, char *argv[])
 	//QTextCodec::setCodecForTr(tc);																//这个函数的作用是设置传给tr函数时的默认字串编码
 
 	QApplication a(argc, argv);
+	a.setApplicationVersion(QObject::tr("X00.00.01"));
+
 	iTmsGui w;
 	w.show();
 	w.resize(1200, 800);

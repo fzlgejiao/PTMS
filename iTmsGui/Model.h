@@ -46,6 +46,7 @@ public:
 
 	bool insertmyrow(int row, iRdm * rdm);
 	bool removeRows(int row, int count, const QModelIndex & parent= QModelIndex());
+	Qt::ItemFlags flags(const QModelIndex &index) const;
 	
 	inline void clear() { listRdm.clear(); }
 
@@ -68,12 +69,18 @@ public:
 
 	bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
 	bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex());
+	Qt::ItemFlags flags(const QModelIndex &index) const;
 	
 	bool insertRow(int row, iTag * tag);
 
 	bool hasTag(quint64 uid);
+	void setEditColumns(int columns) { editColumns |= columns; }
+
+	QList<iTag * >	& taglist() { return listTags; }
+
 private:
 	QList<iTag *>	listTags;
+	int	editColumns;
 };
 
 

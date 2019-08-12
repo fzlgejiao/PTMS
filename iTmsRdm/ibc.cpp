@@ -109,6 +109,12 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 		}
 		break;
 
+		case UDP_READTAGSONLINE:
+		{
+			UDP_cmd_tags_online(msg);
+		}
+		break;
+
 		case UDP_FILEPARAMETER:
 		{
 			UDP_cmd_file(msg);
@@ -229,6 +235,8 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	strcpy(rdm_p.RdmName, rdm->RDM_name.toLatin1());
 	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
 	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
+	strcpy(rdm_p.RdmNote, rdm->RDM_note.toLatin1());
+	strcpy(rdm_p.RdmComName, rdm->comName.toLatin1());
 
 	//todo: send back local ip to remote
 	txMsg.cmd_pkg.header.len = sizeof(rdm_p);
@@ -296,6 +304,34 @@ void iBC::UDP_cmd_iot(const MSG_PKG& msg)
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
 
+}
+
+void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READTAGSONLINE;
+
+	txMsg.cmd_pkg.header.len = sizeof(Tags_Online);
+
+	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
+
+	int idx = 0;
+	for (iTag *tag : rdm->taglist)
+	{
+		if (tag->isonline())
+		{
+			tagsdata->Tags[idx].uid = tag->T_uid;
+			strcpy(tagsdata->Tags[idx].name , tag->T_epc.toLatin1());
+			idx++;
+		}
+
+	}
+	tagsdata->Header.tagcount = idx;																//online tags count
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
 }
 
 void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)

@@ -35,7 +35,7 @@ class iRdm :public QObject
 	Q_OBJECT
 
 public:
-	iRdm(const QString &name, const QString &ip, const QString& mac, const QString& version, QObject *parent = 0);
+	iRdm(const QString &name, const QString &ip, const QString& mac, const QString& version, const QString& note, QObject *parent = 0);
 	~iRdm();
 
 private:
@@ -48,5 +48,7 @@ private:
 	QString m_ip;
 	QString m_MAC;
 	QString m_Version;
+	QString m_note;
+	QString m_comname;
 };
 
