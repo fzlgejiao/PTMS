@@ -53,6 +53,7 @@ typedef struct {
 	char	RdmVersion[8];
 	char	RdmNote[16];
 	char	RdmOrg[16];
+	char	RdmComName[32];
 }RDM_Paramters;
 
 typedef struct {

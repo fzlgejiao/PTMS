@@ -7,6 +7,7 @@
 class QAbstractItemModel;
 class iRdm;
 class TagModel;
+class iTag;
 class iTagView : public QTableView
 {
 	Q_OBJECT

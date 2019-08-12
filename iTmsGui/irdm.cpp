@@ -8,6 +8,7 @@ iRdm::iRdm(const QString &name, const QString &ip, const QString& mac, const QSt
 	m_MAC = mac;
 	m_Version = version;
 	m_note = note;
+	m_comname = "";
 }
 
 iRdm::~iRdm()

@@ -75,6 +75,9 @@ public:
 
 	bool hasTag(quint64 uid);
 	void setEditColumns(int columns) { editColumns |= columns; }
+
+	QList<iTag * >	& taglist() { return listTags; }
+
 private:
 	QList<iTag *>	listTags;
 	int	editColumns;

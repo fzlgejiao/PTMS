@@ -249,6 +249,7 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
 	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
 	strcpy(rdm_p.RdmNote, rdm->RDM_note.toLatin1());
+	strcpy(rdm_p.RdmComName, rdm->comName.toLatin1());
 
 	//todo: send back local ip to remote
 	txMsg.cmd_pkg.header.len = sizeof(rdm_p);

@@ -143,7 +143,7 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
 	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,rdm->RdmNote,this);
-
+	newrdm->m_comname = rdm->RdmComName;
 	rdmmodel->insertmyrow(0, newrdm);	
 	//todo: select the first rdm
 	if (rdmmodel->rowCount() == 1)
@@ -182,6 +182,7 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnChangeIP->setEnabled(true);
 		ui.btnFindTags->setEnabled(true);
 
+		m_Enetcmd.UDP_get_iotparameters(rdm);													//get iot parameters
 		m_Enetcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
 		m_Enetcmd.UDP_get_tagsonline(rdm);															//get online tags
 		m_Enetcmd.UDP_get_tagspara(rdm);															//get managed tags para
@@ -229,7 +230,7 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 		if (index.column() == _Model::EPC)
 		{
 			m_Enetcmd.UDP_set_tagepc(selectedRdm(), tag);
-		}
+	}
 	}
 }
 iRdm* iRdmView::selectedRdm()

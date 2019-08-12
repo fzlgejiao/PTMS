@@ -66,6 +66,12 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	}
 	break;
 
+	case UDP_READIOTSETTING:
+	{
+		emit IotParaReady(RxMsg);
+	}
+	break;
+
 	case UDP_READTAGSONLINE:
 	{
 		emit TagsOnlineReady(RxMsg);
@@ -95,6 +101,18 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	default:
 		break;
 	}
+}
+void EthernetCmd::UDP_get_iotparameters(iRdm* rdm)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
 }
 void EthernetCmd::UDP_discoverRdm()
 {

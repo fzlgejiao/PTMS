@@ -51,5 +51,6 @@ private:
 	QString m_MAC;
 	QString m_Version;
 	QString m_note;
+	QString m_comname;
 };
 

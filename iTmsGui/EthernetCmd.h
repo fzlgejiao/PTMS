@@ -53,6 +53,7 @@ typedef struct {
 	char	RdmVersion[8];
 	char	RdmNote[16];
 	char	RdmOrg[16];
+	char	RdmComName[32];
 }RDM_Paramters;
 
 typedef struct {
@@ -145,6 +146,7 @@ public:
 
 	void UDP_discoverRdm();
 	void UDP_get_modbusparameters(iRdm* rdm);
+	void UDP_get_iotparameters(iRdm* rdm);
 	void UDP_get_tagsonline(iRdm* rdm);
 	void UDP_get_tagspara(iRdm* rdm);
 	void UDP_get_tagsdata(iRdm* rdm);
