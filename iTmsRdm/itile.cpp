@@ -88,6 +88,24 @@ void iTile::paintEvent(QPaintEvent *event)
 		painter.setPen(Qt::red);
 	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 dBm").arg(_tag->RSSI(),-6));
 	painter.restore();
+
+	painter.save();
+	y += 35;
+	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
+	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("¸æ¾¯"));
+	if (_tag->isAlarm() == false)
+	{
+		painter.setPen(Qt::green);
+		painter.setBrush(Qt::green);
+	}
+	else
+	{
+		painter.setPen(Qt::red);
+		painter.setBrush(Qt::red);
+	}
+	rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
+	painter.drawEllipse(rtValue.center(),10,10);
+	painter.restore();
 }
 void iTile::OnDataChanged()
 {

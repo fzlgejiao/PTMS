@@ -37,7 +37,7 @@ QString iBC::getIP()
 	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
 	foreach(QHostAddress address, addresses)
 	{
-		if (address.protocol() == QAbstractSocket::IPv4Protocol)
+		if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost)
 			return address.toString();
 	}
 	return 0;
