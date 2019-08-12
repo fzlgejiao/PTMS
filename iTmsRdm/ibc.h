@@ -103,6 +103,8 @@ typedef struct {
 		quint8	oc_rssi;
 		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
 		quint16	reserved;
+		char	name[16];
+		char	note[32];
 	}Tags[TAG_NUM];
 }Tags_Data;
 
@@ -117,6 +119,11 @@ typedef struct {
 		char	name[16];
 	}Tags[TAG_NUM];
 }Tags_Online;
+
+typedef struct {
+	quint64 uid;
+	char	epc[16];
+}Tag_epc;
 
 class iRDM;
 class QUdpSocket;
@@ -140,8 +147,11 @@ protected:
 	void	UDP_cmd_online(const MSG_PKG& msg);
 	void	UDP_cmd_modbus(const MSG_PKG& msg);
 	void	UDP_cmd_iot(const MSG_PKG& msg);
+	void	UDP_cmd_tags_para(const MSG_PKG& msg);
 	void	UDP_cmd_tags_online(const MSG_PKG& msg);
 	void	UDP_cmd_tags_data(const MSG_PKG& msg);
+	void	UDP_cmd_tag_epc(const MSG_PKG& msg);
+	void	UDP_cmd_rdm_ip(const MSG_PKG& msg);
 	void	UDP_cmd_file(const MSG_PKG& msg);
 
 	void	TCP_start();

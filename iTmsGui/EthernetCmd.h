@@ -120,9 +120,16 @@ typedef struct {
 	}Tags[TAG_NUM];
 }Tags_Online;
 
+typedef struct {
+	quint64 uid;
+	char	epc[16];
+}Tag_epc;
+
 class QUdpSocket;
 class QTcpSocket;
 class QFile;
+class iRdm;
+class iTag;
 class EthernetCmd : public QObject
 {
 	Q_OBJECT
@@ -138,9 +145,12 @@ public:
 	}
 
 	void UDP_discoverRdm();
-	void UDP_get_modbusparameters(const QString& ip);
-	void UDP_get_iotparameters(const QString& ip);	
-	void UDP_get_tagonline(const QString& ip);
+	void UDP_get_modbusparameters(iRdm* rdm);
+	void UDP_get_iotparameters(iRdm* rdm);
+	void UDP_get_tagsonline(iRdm* rdm);
+	void UDP_get_tagspara(iRdm* rdm);
+	void UDP_get_tagsdata(iRdm* rdm);
+	void UDP_set_tagepc(iRdm* rdm,iTag* tag);
 	void UDP_ipset(const QString& mac,const QString& ip);
 	void UDP_fileinfo(QString filename);
 
@@ -176,9 +186,9 @@ signals:
 	void RdmParaReady(MSG_PKG& msg);
 	void ModbusParamReady(MSG_PKG& msg);
 	void IotParaReady(MSG_PKG& msg);
-	void OnlineTagsReady(MSG_PKG& msg);
-	void DataTagsReady(MSG_PKG& msg);
-	void ParaTagsReady(MSG_PKG& msg);
+	void TagsOnlineReady(MSG_PKG& msg);
+	void TagsDataReady(MSG_PKG& msg);
+	void TagsParaReady(MSG_PKG& msg);
 
 private slots:	
 	void UDP_read();

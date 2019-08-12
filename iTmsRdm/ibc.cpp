@@ -1,5 +1,6 @@
 #include "ibc.h"
 #include "irdm.h"
+#include "ireader.h"
 
 iBC::iBC(QObject *parent)
 	: QObject(parent)
@@ -112,6 +113,18 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 		case UDP_READTAGSONLINE:
 		{
 			UDP_cmd_tags_online(msg);
+		}
+		break;
+
+		case UDP_READTAGSSETTING:
+		{
+			UDP_cmd_tags_para(msg);
+		}
+		break;
+
+		case UDP_SETTAGEPC:
+		{
+			UDP_cmd_tag_epc(msg);
 		}
 		break;
 
@@ -333,7 +346,32 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
 }
+void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
+{
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READTAGSSETTING;
 
+	txMsg.cmd_pkg.header.len = sizeof(Tags_Parameters);
+
+	Tags_Parameters *tagsdata = (Tags_Parameters *)txMsg.cmd_pkg.data;
+	tagsdata->Header.tagcount = rdm->taglist.count();
+
+	int idx = 0;
+	for (iTag *tag : rdm->taglist)
+	{
+		tagsdata->Tags[idx].uid = tag->T_uid;
+		tagsdata->Tags[idx].sid = tag->T_sid;
+		tagsdata->Tags[idx].upperlimit = tag->T_uplimit;
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
+		idx++;
+	}
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
 void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 {
 	MSG_PKG txMsg;
@@ -354,12 +392,45 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 		tagsdata->Tags[idx].rssi = tag->T_rssi;
 		tagsdata->Tags[idx].oc_rssi = tag->T_OC_rssi;
 		tagsdata->Tags[idx].temperature = tag->T_temp;
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
 		idx++;
 	}
 
 	txMsg.rIP = msg.rIP;
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
+{
+	//write tag epc
+	Tag_epc *rtagpec = (Tag_epc *)msg.cmd_pkg.data;
+	iTag* tag = rdm->Tag_get(rtagpec->uid);
+	if (!tag)
+		return;
+	
+	bool ret = rdm->reader->wirteEpc(tag, rtagpec->epc);
+	if (ret)
+		tag->T_epc = rtagpec->epc;
+
+	MSG_PKG txMsg;
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_ONLINE;
+	txMsg.cmd_pkg.header.len = sizeof(Tag_epc);
+
+	Tag_epc *tagpec = (Tag_epc *)txMsg.cmd_pkg.data;
+	tagpec->uid = tag->T_uid;
+	strcpy(tagpec->epc , tag->T_epc.toLatin1());
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
+void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
+{
+
 }
 
 void iBC::UDP_cmd_file(const MSG_PKG& msg)

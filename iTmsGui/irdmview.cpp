@@ -51,6 +51,7 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnUpgrade->setEnabled(false);
 	ui.btnAddTag->setEnabled(false);
 	ui.btnChangeEpc->setEnabled(false);
+	ui.btnFindTags->setEnabled(false);
 
 	connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
 	//connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
@@ -66,7 +67,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnAddTag, SIGNAL(clicked()), this, SLOT(onbtnAddToSys()));
 
 	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
-	connect(&m_Enetcmd, SIGNAL(OnlineTagsReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
+	connect(&m_Enetcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
 
 	m_n2sTimerId = startTimer(2000);
 }
@@ -83,6 +84,11 @@ void iRdmView::onbtndiscover()
 	//clear online tags when discover rdms again
 	if (tagModel->rowCount() > 0)
 		tagModel->removeRows(0, tagModel->rowCount());
+
+	ui.btnChangeIP->setEnabled(false);
+	ui.btnDownload->setEnabled(false);
+	ui.btnUpgrade->setEnabled(false);
+	ui.btnFindTags->setEnabled(false);
 
 	//to notify other views to update when rdm cleared before discover
 	emit RdmSelected(NULL);
@@ -108,7 +114,7 @@ void iRdmView::OnbtnFindTags()
 
 	iRdm *rdm = selectedRdm();
 	if(rdm)
-		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
+		m_Enetcmd.UDP_get_tagsonline(rdm);														//get online tags
 
 	////test code
 	//Tags_Online tags;
@@ -139,6 +145,11 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,rdm->RdmNote,this);
 	newrdm->m_comname = rdm->RdmComName;
 	rdmmodel->insertmyrow(0, newrdm);	
+	//todo: select the first rdm
+	if (rdmmodel->rowCount() == 1)
+	{
+
+	}
 }
 void iRdmView::OnlineTagsFound(MSG_PKG & msg)
 {
@@ -162,16 +173,20 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnDownload->setEnabled(false);
 		ui.btnUpgrade->setEnabled(false);
 		ui.btnChangeIP->setEnabled(false);
+		ui.btnFindTags->setEnabled(false);
 	}
 	else
 	{
 		ui.btnDownload->setEnabled(true);
 		ui.btnUpgrade->setEnabled(true);
 		ui.btnChangeIP->setEnabled(true);
+		ui.btnFindTags->setEnabled(true);
 
-		m_Enetcmd.UDP_get_modbusparameters(rdm->m_ip);												//get modbus parameters
-		m_Enetcmd.UDP_get_iotparameters(rdm->m_ip);													//get iot parameters
-		m_Enetcmd.UDP_get_tagonline(rdm->m_ip);														//get online tags
+		m_Enetcmd.UDP_get_iotparameters(rdm);													//get iot parameters
+		m_Enetcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
+		m_Enetcmd.UDP_get_tagsonline(rdm);															//get online tags
+		m_Enetcmd.UDP_get_tagspara(rdm);															//get managed tags para
+		m_Enetcmd.UDP_get_tagsdata(rdm);															//get managed tags data
 
 		////test code
 		//Tags_Online tags;
@@ -212,6 +227,10 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 	if (tag)
 	{
 		//todo: send cmd to rdm to write epc, and get online tags again when write epc cmd acked
+		if (index.column() == _Model::EPC)
+		{
+			m_Enetcmd.UDP_set_tagepc(selectedRdm(), tag);
+	}
 	}
 }
 iRdm* iRdmView::selectedRdm()
@@ -232,7 +251,9 @@ void iRdmView::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == m_n2sTimerId)
 	{
-
+		iRdm *rdm = selectedRdm();
+		if (rdm)
+			m_Enetcmd.UDP_get_tagsdata(rdm);														//get managed tags data
 	}
 	else
 	{

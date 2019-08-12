@@ -1,4 +1,5 @@
 #include "EthernetCmd.h"
+#include "irdm.h"
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QFile>
@@ -73,9 +74,22 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 
 	case UDP_READTAGSONLINE:
 	{
-		emit OnlineTagsReady(RxMsg);
+		emit TagsOnlineReady(RxMsg);
 	}
 	break;
+
+	case UDP_READTAGSSETTING:
+	{
+		emit TagsParaReady(RxMsg);
+	}
+	break;
+
+	case UDP_READTAGSDATA:
+	{
+		emit TagsDataReady(RxMsg);
+	}
+	break;
+
 	case UDP_FILEPARAMETER:
 	{
 		filewritten = 0;
@@ -87,6 +101,18 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	default:
 		break;
 	}
+}
+void EthernetCmd::UDP_get_iotparameters(iRdm* rdm)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
 }
 void EthernetCmd::UDP_discoverRdm()
 {
@@ -100,7 +126,7 @@ void EthernetCmd::UDP_discoverRdm()
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
+void EthernetCmd::UDP_get_modbusparameters(iRdm* rdm)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -108,23 +134,11 @@ void EthernetCmd::UDP_get_modbusparameters(const QString& ip)
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = ip;
+	txmsg.rIP = rdm->m_ip;
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_get_iotparameters(const QString& ip)
-{
-	MSG_PKG txmsg;
-	txmsg.cmd_pkg.header.ind = UDP_IND;
-	txmsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
-	txmsg.cmd_pkg.header.len = 0;
-
-	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = ip;
-
-	UDP_send(txmsg);
-}
-void EthernetCmd::UDP_get_tagonline(const QString& ip)
+void EthernetCmd::UDP_get_tagsonline(iRdm* rdm)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -132,7 +146,46 @@ void EthernetCmd::UDP_get_tagonline(const QString& ip)
 	txmsg.cmd_pkg.header.len = 0;
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP = ip;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_get_tagspara(iRdm* rdm)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READTAGSSETTING;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_get_tagsdata(iRdm* rdm)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_READTAGSDATA;
+	txmsg.cmd_pkg.header.len = 0;
+
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
+
+	UDP_send(txmsg);
+}
+void EthernetCmd::UDP_set_tagepc(iRdm* rdm, iTag* tag)
+{
+	MSG_PKG txmsg;
+	txmsg.cmd_pkg.header.ind = UDP_IND;
+	txmsg.cmd_pkg.header.cmd = UDP_SETTAGEPC;
+	txmsg.cmd_pkg.header.len = sizeof(Tag_epc);
+
+	Tag_epc *tagEPC = (Tag_epc *)txmsg.cmd_pkg.data;
+	tagEPC->uid = tag->t_uid;
+	strcpy(tagEPC->epc , tag->t_epc.toLatin1());
+	txmsg.rPort = RemoteUdpPort;
+	txmsg.rIP = rdm->m_ip;
 
 	UDP_send(txmsg);
 }

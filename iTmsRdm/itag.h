@@ -67,6 +67,7 @@ private:
 	bool			T_alarm_temperature;															//temperature out of range alarm
 	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
+	QString			T_note;																			//note
 	qint8			T_rssi;																			//RSSI
 	qint8			T_OC_rssi;																		//On-chip RSSI
 	float			T_temp;																			//temperature

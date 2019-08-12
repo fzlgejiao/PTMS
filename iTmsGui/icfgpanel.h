@@ -31,8 +31,7 @@ protected:
 
 public slots:
 	void OnModbusParameters(MSG_PKG&);
-	void OnIoTParameters(MSG_PKG&);
-	void OnParaTagsFound(MSG_PKG&);
+	void OnTagsParaReady(MSG_PKG&);
 	void OnRemoveTag();
 	void OnEditTag();
 	void OnRdmSelected(iRdm *);
@@ -40,4 +39,6 @@ public slots:
 	void OnRdmDownloaded(iRdm *);
 	void OnTagAdded(iTag *);
 	void OnTagSelectChanged(const QModelIndex &index);
+	void OnIoTParameters(MSG_PKG& msg);
+
 };

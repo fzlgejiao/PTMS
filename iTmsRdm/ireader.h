@@ -18,7 +18,7 @@ public:
 	iReader(QString comName, QObject *parent);
 	~iReader();
 
-	bool wirteEpc(iTag *tag, QString epcstr);
+	bool wirteEpc(iTag *tag, const QString& epcstr);
 	void readtag();
 
 protected:
