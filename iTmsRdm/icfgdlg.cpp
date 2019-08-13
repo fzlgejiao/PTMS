@@ -43,6 +43,7 @@ void iCfgDlg::changePage(int row)
 			ui.leTagTemp->setText(tag->Temp());
 			ui.lbTempUnit->setText(QString("%1C").arg(QChar(0x00B0)));
 			ui.leTagRSSI->setText(tag->RSSI());
+			ui.leTagNote->setText(tag->T_note);
 		}
 	}
 

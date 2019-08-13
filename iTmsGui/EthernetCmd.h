@@ -197,6 +197,7 @@ signals:
 	void TagsOnlineReady(MSG_PKG& msg);
 	void TagsDataReady(MSG_PKG& msg);
 	void TagsParaReady(MSG_PKG& msg);
+	void TagEpcReady(MSG_PKG& msg);																	//write tag epc acked
 
 private slots:	
 	void UDP_read();

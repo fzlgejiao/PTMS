@@ -91,6 +91,12 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	}
 	break;
 
+	case UDP_SETTAGEPC:
+	{
+		emit TagEpcReady(RxMsg);
+	}
+	break;
+
 	case UDP_FILEPARAMETER:
 	{
 		filewritten = 0;

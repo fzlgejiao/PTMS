@@ -7,6 +7,8 @@
 #include <QtWidgets/QGridLayout>
 #include <QPainter> 
 #include <QPaintEvent> 
+#include <QStyle> 
+#include <QDesktopWidget> 
 
 iView::iView(iRDM* rdm,QWidget *parent)
 	: QWidget(parent), RDM(iRDM::Instance())
@@ -63,5 +65,16 @@ void iView::OnTagUpdated(iTag* tag)
 void iView::OnTileDBClicked(iTile *)
 {
 	iCfgDlg dlg(this);
+	//Center Window on the Screen
+	dlg.setGeometry(
+		QStyle::alignedRect(
+			Qt::LeftToRight,
+			Qt::AlignCenter,
+			dlg.size(),
+			//qApp->desktop()->availableGeometry()
+			this->geometry()
+		)
+	);
+
 	dlg.exec();
 }

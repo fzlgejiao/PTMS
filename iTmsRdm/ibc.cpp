@@ -50,7 +50,7 @@ QString iBC::getIP()
 	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
 	foreach(QHostAddress address, addresses)
 	{
-		if (address.protocol()== QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost)
+		if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost)
 			return address.toString();
 	}
 	return 0;
@@ -443,7 +443,7 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 
 	MSG_PKG txMsg;
 	txMsg.cmd_pkg.header.ind = UDP_IND;
-	txMsg.cmd_pkg.header.cmd = UDP_ONLINE;
+	txMsg.cmd_pkg.header.cmd = UDP_SETTAGEPC;
 	txMsg.cmd_pkg.header.len = sizeof(Tag_epc);
 
 	Tag_epc *tagpec = (Tag_epc *)txMsg.cmd_pkg.data;

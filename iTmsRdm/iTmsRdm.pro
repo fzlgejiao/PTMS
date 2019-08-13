@@ -33,7 +33,7 @@ DEFINES += QT_DEPRECATED_WARNINGS TMR_ENABLE_SERIAL_READER_ONLY
 
 # Input
 HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h CModbus.h icfgdlg.h ibc.h
-SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp icfgdlg.cpp ibc.cpp main.cpp 
+SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp icfgdlg.cpp main.cpp ibc.cpp
 FORMS	+= itile.ui iview.ui icfgdlg.ui
 
 unix:!macx: LIBS += -L/home/fan/work/libs/ -lmercuryapi

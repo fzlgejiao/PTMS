@@ -33,6 +33,7 @@ protected:
 public slots:
 	void OnModbusParameters(MSG_PKG&);
 	void OnTagsParaReady(MSG_PKG&);
+	void OnTagEpc(MSG_PKG&);
 	void OnRemoveTag();
 	void OnEditTag();
 	void OnRdmSelected(iRdm *);
