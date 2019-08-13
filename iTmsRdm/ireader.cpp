@@ -159,7 +159,7 @@ bool iReader::init()
 	//if (ret != TMR_SUCCESS) goto Failed;
 	return true;
 }
-bool iReader::wirteEpc(iTag *tag, const QString& epcstr)
+bool iReader::wirteEpc(const QString& epc_old, const QString& epc_new)
 {
 	TMR_TagData		epc;
 	TMR_TagData		newepc;
@@ -167,11 +167,11 @@ bool iReader::wirteEpc(iTag *tag, const QString& epcstr)
 	TMR_TagFilter	filter;
 	TMR_Status		ret;
 
-	epc.epcByteCount = tag->T_epc.length();
-	memcpy(epc.epc, tag->T_epc.toStdString().c_str(), epc.epcByteCount);
+	epc.epcByteCount = epc_old.length();
+	memcpy(epc.epc, epc_old.toStdString().c_str(), epc.epcByteCount);
 
-	newepc.epcByteCount = epcstr.length();
-	memcpy(newepc.epc, epcstr.toStdString().c_str(), newepc.epcByteCount);
+	newepc.epcByteCount = epc_new.length();
+	memcpy(newepc.epc, epc_new.toStdString().c_str(), newepc.epcByteCount);
 
 	ret = TMR_TagOp_init_GEN2_WriteTag(&tagop, &newepc);
 	if (ret != TMR_SUCCESS) return false;
@@ -237,6 +237,9 @@ quint64 iReader::readtagCalibration(TMR_TagFilter *filter)
 void iReader::readtag()
 {
 	TMR_Status		ret;
+	
+	//clear old online tags before read again
+	RDM->tagOnline.clear();
 
 	ret = TMR_read(tmrReader, 75, NULL);
 	if (ret != TMR_SUCCESS)
@@ -274,6 +277,9 @@ void iReader::readtag()
 			quint64 tid = readtagTid(&epcfilter);
 			if (tid == 0) continue;
 			
+			//add tag into online list
+			RDM->tagOnline.insert(tid, epc);
+
 			iTag * tag = RDM->Tag_get(tid);
 			if (tag )
 			{

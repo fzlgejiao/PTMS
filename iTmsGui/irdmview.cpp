@@ -45,6 +45,7 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.tableTags->hideColumn(_Model::RSSI);
 	ui.tableTags->hideColumn(_Model::OCRSSI);
 	ui.tableTags->hideColumn(_Model::NOTE);
+	ui.tableTags->setColumnWidth(_Model::UID, 180);
 
 	ui.btnChangeIP->setEnabled(false);
 	ui.btnDownload->setEnabled(false);

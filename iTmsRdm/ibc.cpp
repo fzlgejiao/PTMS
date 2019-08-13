@@ -356,16 +356,15 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 
 	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
 
+	qDebug() << "online tags :" << endl;
 	int idx = 0;
-	for (iTag *tag : rdm->taglist)
-	{
-		if (tag->isonline())
-		{
-			tagsdata->Tags[idx].uid = tag->T_uid;
-			strcpy(tagsdata->Tags[idx].name , tag->T_epc.toLatin1());
-			idx++;
-		}
-
+	QMapIterator<quint64, QString> i(rdm->tagOnline);
+	while (i.hasNext()) {
+		i.next();
+		tagsdata->Tags[idx].uid = i.key();
+		strcpy(tagsdata->Tags[idx].name, i.value().toLatin1());
+		idx++;
+		qDebug() << i.key() << ": " << i.value() << endl;
 	}
 	tagsdata->Header.tagcount = idx;																//online tags count
 
@@ -432,23 +431,33 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 {
 	//write tag epc
-	Tag_epc *rtagpec = (Tag_epc *)msg.cmd_pkg.data;
-	iTag* tag = rdm->Tag_get(rtagpec->uid);
-	if (!tag)
-		return;
-	
-	bool ret = rdm->reader->wirteEpc(tag, rtagpec->epc);
-	if (ret)
-		tag->T_epc = rtagpec->epc;
+	Tag_epc *rtagepc = (Tag_epc *)msg.cmd_pkg.data;
 
+	QString epc_old = rdm->tagOnline.value(rtagepc->uid);
+	bool ret = rdm->reader->wirteEpc(epc_old, rtagepc->epc);
+
+	iTag* tag = rdm->Tag_get(rtagepc->uid);
+	if (tag)
+	{
+		if (ret)
+			tag->T_epc = rtagepc->epc;
+		else
+			tag->T_epc = epc_old;
+	}
+
+
+	//ack back
 	MSG_PKG txMsg;
 	txMsg.cmd_pkg.header.ind = UDP_IND;
 	txMsg.cmd_pkg.header.cmd = UDP_SETTAGEPC;
 	txMsg.cmd_pkg.header.len = sizeof(Tag_epc);
 
 	Tag_epc *tagpec = (Tag_epc *)txMsg.cmd_pkg.data;
-	tagpec->uid = tag->T_uid;
-	strcpy(tagpec->epc , tag->T_epc.toLatin1());
+	tagpec->uid = rtagepc->uid;
+	if(ret)
+		strcpy(tagpec->epc , rtagepc->epc);
+	else
+		strcpy(tagpec->epc, epc_old.toLatin1());
 
 	txMsg.rIP = msg.rIP;
 	txMsg.rPort = msg.rPort;

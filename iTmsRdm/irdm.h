@@ -57,6 +57,7 @@ private:
 	friend class iView;
 	friend class iCfgDlg;
 	friend class iBC;
+	friend class iReader;
 
 	iRDM(QObject *parent = NULL);																	//protected from external access
 	static iRDM* _RDM;
@@ -66,6 +67,7 @@ private:
 	iBC*		bc;
 
 	QMap<quint64, iTag *> taglist;																	//<UID,tag>
+	QMap<quint64, QString> tagOnline;																//<UID,epc>
 	int			timerId;
 	int         timer_datetime;
 	int			RDM_ticks;
