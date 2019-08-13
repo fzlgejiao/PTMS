@@ -24,4 +24,5 @@ private:
 public slots:
 	void OnRdmSelected(iRdm *);
 	void OnDataTagsReady(MSG_PKG&);
+	void OnTagEpc(MSG_PKG&);
 };

@@ -20,7 +20,7 @@
    <string>iCfgPanel</string>
   </property>
   <property name="currentIndex">
-   <number>0</number>
+   <number>2</number>
   </property>
   <widget class="QWidget" name="tabGeneral">
    <attribute name="title">
@@ -43,7 +43,7 @@
       <rect>
        <x>200</x>
        <y>60</y>
-       <width>171</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -79,7 +79,7 @@
       <rect>
        <x>200</x>
        <y>30</y>
-       <width>171</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -89,7 +89,7 @@
       <rect>
        <x>200</x>
        <y>90</y>
-       <width>171</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -115,7 +115,7 @@
       <rect>
        <x>200</x>
        <y>120</y>
-       <width>171</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -448,9 +448,9 @@
     <widget class="QLineEdit" name="lePrdKey">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>200</x>
        <y>40</y>
-       <width>211</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -458,9 +458,9 @@
     <widget class="QLineEdit" name="leDeviceName">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>200</x>
        <y>80</y>
-       <width>211</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -481,9 +481,9 @@
     <widget class="QLineEdit" name="leDeviceSecret">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>200</x>
        <y>120</y>
-       <width>211</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>
@@ -504,9 +504,9 @@
     <widget class="QLineEdit" name="leRegion">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>200</x>
        <y>160</y>
-       <width>211</width>
+       <width>260</width>
        <height>20</height>
       </rect>
      </property>

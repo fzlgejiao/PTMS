@@ -143,6 +143,7 @@ TagModel::TagModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
 	editColumns = 0;
+	bModified = false;
 }
 
 int TagModel::rowCount(const QModelIndex &parent) const
@@ -254,7 +255,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	{
 		if (index.column() == _Model::EPC)
 		{
-			if (value.toString().count() > 10)
+			if (value.toString().count() > 10 || value.toString() == tag->t_epc)
 				return false;
 			if (value.toString().count() % 2 != 0)
 				tag->t_epc = value.toString() + QChar(' ');
@@ -271,6 +272,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 			tag->t_note = value.toString();
 
 		emit dataChanged(index, index);
+		setModified(true);																			//model is modified
 		return true;	
 	}
 	return false;
@@ -314,4 +316,15 @@ bool TagModel::hasTag(quint64 uid)
 			return true;
 	}
 	return false;
+}
+void TagModel::setTagEpc(quint64 uid, const QString& epc)
+{
+	for (int i = 0; i < listTags.count(); i++)
+	{
+		if (listTags[i]->t_uid == uid)
+		{
+			setData(index(i, _Model::EPC), epc,Qt::EditRole);
+			return;
+		}
+	}
 }

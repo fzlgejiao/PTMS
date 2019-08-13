@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QLabel" name="label">
@@ -58,9 +58,9 @@
     <widget class="QLineEdit" name="leVersion">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>50</y>
-       <width>131</width>
+       <width>171</width>
        <height>25</height>
       </rect>
      </property>
@@ -86,9 +86,9 @@
      <widget class="QLineEdit" name="leModbusPort">
       <property name="geometry">
        <rect>
-        <x>130</x>
+        <x>100</x>
         <y>110</y>
-        <width>131</width>
+        <width>171</width>
         <height>25</height>
        </rect>
       </property>
@@ -102,9 +102,9 @@
      <widget class="QLineEdit" name="leModbusAddr">
       <property name="geometry">
        <rect>
-        <x>130</x>
+        <x>100</x>
         <y>70</y>
-        <width>131</width>
+        <width>171</width>
         <height>25</height>
        </rect>
       </property>
@@ -180,9 +180,9 @@
     <widget class="QLineEdit" name="leRdmMac">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>80</y>
-       <width>131</width>
+       <width>171</width>
        <height>25</height>
       </rect>
      </property>
@@ -209,9 +209,9 @@
     <widget class="QLineEdit" name="leRdmName">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>20</y>
-       <width>131</width>
+       <width>171</width>
        <height>25</height>
       </rect>
      </property>
@@ -238,9 +238,9 @@
     <widget class="QLineEdit" name="leRdmIP">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>110</y>
-       <width>131</width>
+       <width>171</width>
        <height>25</height>
       </rect>
      </property>
@@ -269,20 +269,20 @@
     <widget class="QLabel" name="lbTagTitle">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>20</x>
        <y>30</y>
        <width>80</width>
        <height>25</height>
       </rect>
      </property>
      <property name="text">
-      <string>标签</string>
+      <string>名称</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>20</x>
        <y>70</y>
        <width>80</width>
        <height>25</height>
@@ -295,7 +295,7 @@
     <widget class="QLabel" name="label_3">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>20</x>
        <y>110</y>
        <width>80</width>
        <height>25</height>
@@ -308,9 +308,9 @@
     <widget class="QLineEdit" name="leTagDesc">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>30</y>
-       <width>131</width>
+       <width>181</width>
        <height>25</height>
       </rect>
      </property>
@@ -324,9 +324,9 @@
     <widget class="QLineEdit" name="leTagTemp">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>70</y>
-       <width>101</width>
+       <width>131</width>
        <height>25</height>
       </rect>
      </property>
@@ -340,9 +340,9 @@
     <widget class="QLineEdit" name="leTagRSSI">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>110</x>
        <y>110</y>
-       <width>101</width>
+       <width>131</width>
        <height>25</height>
       </rect>
      </property>
@@ -377,6 +377,35 @@
      </property>
      <property name="text">
       <string>dBm</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="leTagNote">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>150</y>
+       <width>181</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="lbTagTitle_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>150</y>
+       <width>80</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>备注</string>
      </property>
     </widget>
    </widget>

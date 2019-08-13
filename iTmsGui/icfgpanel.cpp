@@ -40,6 +40,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.tableTags->hideColumn(_Model::ALARM);
 	ui.tableTags->hideColumn(_Model::RSSI);
 	ui.tableTags->hideColumn(_Model::OCRSSI);
+	ui.tableTags->setColumnWidth(_Model::UID, 180);
 
 	ui.btnEditTag->setEnabled(false);
 	ui.btnRemoveTag->setEnabled(false);
@@ -48,6 +49,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnModbusParameters(MSG_PKG&)));
 	connect(&netcmd, SIGNAL(TagsParaReady(MSG_PKG&)), this, SLOT(OnTagsParaReady(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
 	connect(&netcmd, SIGNAL(IotParaReady(MSG_PKG&)), this, SLOT(OnIoTParameters(MSG_PKG&)));
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
@@ -197,6 +199,12 @@ void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 		tag->t_note = tags->Tags[i].note;
 		model->insertRow(0, tag);
 	}
+}
+void iCfgPanel::OnTagEpc(MSG_PKG& msg)
+{
+	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
+
+	model->setTagEpc(tagEpc->uid, tagEpc->epc);
 }
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {

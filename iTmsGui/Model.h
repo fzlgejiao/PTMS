@@ -75,12 +75,16 @@ public:
 
 	bool hasTag(quint64 uid);
 	void setEditColumns(int columns) { editColumns |= columns; }
+	void setTagEpc(quint64 uid, const QString& epc);
 
 	QList<iTag * >	& taglist() { return listTags; }
+	bool isModified() { return bModified; }
+	void setModified(bool modified) { bModified = modified; }
 
 private:
 	QList<iTag *>	listTags;
 	int	editColumns;
+	bool	bModified;
 };
 
 

@@ -71,7 +71,8 @@ void iView::OnTileDBClicked(iTile *)
 			Qt::LeftToRight,
 			Qt::AlignCenter,
 			dlg.size(),
-			qApp->desktop()->availableGeometry()
+			//qApp->desktop()->availableGeometry()
+			this->geometry()
 		)
 	);
 
