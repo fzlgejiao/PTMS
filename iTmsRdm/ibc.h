@@ -10,6 +10,12 @@
 
 #define	TAG_NUM		12
 
+typedef enum {
+	XmlFile = 0,
+	TarFile,
+	Invalid
+}FileType;
+
 /* command packet and message */
 typedef struct {
 	ushort ind;                         // cmd identifier: 0xAA55 
@@ -42,6 +48,8 @@ typedef enum {
 
 
 typedef struct {
+	FileType filetype;
+	quint8	reserved[3];
 	quint32	fileSize;
 	char	fileName[16];
 }File_Paramters;
@@ -170,9 +178,9 @@ private:
 	QFile		*savedFile;
 	quint32		recvBytes;
 	quint32		totalBytes;
-	quint32		fileNameSize;
 	QString     fileName;
 	QByteArray  fileBlock;
+	FileType    filetype;
 
 public slots:
 	void UDP_read();
@@ -181,8 +189,11 @@ public slots:
 	void TCP_Error(QAbstractSocket::SocketError error);
 	void TCP_SocketStateChanged(QAbstractSocket::SocketState state);
 	void OnFileDone(bool ok);
+	void OnUpgradeRdm(QString tarfilename);
 
 signals:
 	void fileDone(bool ok);
+	void reloadXml();
+	void upgrade(QString tarfilename);
 
 };

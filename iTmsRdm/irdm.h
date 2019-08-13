@@ -49,7 +49,8 @@ protected:
 
 	virtual void timerEvent(QTimerEvent *event);
 
-
+public slots:
+	void OnReloadRdmXml();
 
 private:
 	friend class iDevice;

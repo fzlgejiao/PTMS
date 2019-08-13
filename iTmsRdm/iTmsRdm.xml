@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rdm mac="00-23-5A-15-99-42" name="rdm_1" org="herong" note="rdm_note" ip="169.254.10.10">
+<rdm mac="70:5A:0F:84:E6:A9" name="rdm_1" org="herong" note="rdm_note" ip="10.130.70.194">
     <cfg>
-    	<com>tmr:///com23</com>
-    	<iot productkey="a1BthDpVl84" devicename="tag1_1" devicesecret="DUx4XVHmUUX2DYaG6sxJjnGOzcozuc2p" regionid="cn-shanghai"></iot>
-      	<gui ip="192.168.0.2" port="2871" version="v0.0.1"/>
-      	<modbus type="RTU" comname="com2" slaveaddress="1" baudrate="9600" parity="2" tcpport="500"></modbus>
+        <com>tmr:///com3</com>
+        <iot productkey="a1BthDpVl84" devicename="tag1_1" devicesecret="DUx4XVHmUUX2DYaG6sxJjnGOzcozuc2p" regionid="cn-shanghai">AliIoT</iot>
+        <gui ip="192.168.0.2" port="2871" version="v0.0.1"/>
+        <modbus type="RTU" comname="com2" slaveaddress="1" baudrate="9600" parity="2" tcpport="2902"></modbus>
     </cfg>
     <tags>
-        <tag sid="1" uid="2305845019301804433" epc="tag1" max="75">tag_note_1</tag>
-  	<tag sid="2" uid="2305845019301803042" epc="tag2" max="70">tag_note_2</tag>
+        <tag sid="1" uid="2305845019301804433" epc="tag1" max="70">tag_note_1</tag>
+        <tag sid="2" uid="2305845019301803042" epc="tag2" max="70">tag_note_2</tag>
     </tags>
 </rdm>

@@ -43,6 +43,11 @@ iRDM::iRDM(QObject *parent)
 iRDM::~iRDM()
 {
 }
+
+void iRDM::OnReloadRdmXml()
+{
+	
+}
 bool iRDM::Cfg_load(const QString& xml)
 {
 	//parse xml 

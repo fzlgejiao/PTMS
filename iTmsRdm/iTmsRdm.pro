@@ -32,8 +32,8 @@ DEFINES += QT_DEPRECATED_WARNINGS TMR_ENABLE_SERIAL_READER_ONLY
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h CModbus.h icfgdlg.h
-SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp icfgdlg.cpp main.cpp 
+HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h CModbus.h icfgdlg.h ibc.h
+SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp icfgdlg.cpp ibc.cpp main.cpp 
 FORMS	+= itile.ui iview.ui icfgdlg.ui
 
 unix:!macx: LIBS += -L/home/fan/work/libs/ -lmercuryapi

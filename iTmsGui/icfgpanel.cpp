@@ -16,6 +16,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	paritymap.insert(1, QSerialPort::EvenParity);
 	paritymap.insert(2, QSerialPort::OddParity);
 
+	filename = "";
 
 	setTabText(0,QString::fromLocal8Bit("通用设置"));
 	setTabText(1, QString::fromLocal8Bit("传感器设置"));
@@ -150,12 +151,19 @@ void iCfgPanel::OnRdmSelected(iRdm *rdm)
 void iCfgPanel::OnRdmSaved(iRdm *Rdm)
 {
 	//todo: save settings to rdm xml file
-	saveRdmXml(Rdm);
+	//saveRdmXml(Rdm);
 }
 void iCfgPanel::OnRdmDownloaded(iRdm *Rdm)
 {
 	//todo: save settings to rdm xml file and download to rdm
-	OnRdmSaved(Rdm);
+	if (!saveRdmXml(Rdm))
+	{
+		QMessageBox mbx(QMessageBox::Warning, "PTMS", QString::fromLocal8Bit("保存Xml配置文件失败."), QMessageBox::Ok);
+		mbx.setMinimumSize(600, 400);
+		mbx.exec();
+		return;
+	}
+	netcmd.UDP_fileinfo(Rdm, filename, XmlFile);
 }
 
 void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
@@ -201,8 +209,14 @@ void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {
 	QString mac = Rdm->m_MAC;
-	QString name = QString("./iTmsRdm-%1.xml").arg(mac.remove(':'));
-	QFile file(name);
+	QString dirpath = QCoreApplication::applicationDirPath() + "/RdmXmls/";
+	filename = dirpath + QString("iTmsRdm-%1.xml").arg(mac.remove(':'));
+	if (!QDir(dirpath).exists())
+	{
+		if (!QDir().mkdir(dirpath))
+			return false;
+	}
+	QFile file(filename);
 	if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
 		std::cerr << "Error: Cannot write file "
 			<< qPrintable(file.errorString()) << std::endl;
@@ -253,15 +267,18 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 
 	//******************Tags------start************/
 	xmlWriter.writeStartElement("tags");
+	int sid = 1;
 	foreach(iTag *tag, model->taglist())
 	{
+		tag->t_sid = sid;
 		xmlWriter.writeStartElement("tag");
 		xmlWriter.writeAttribute("sid", QString::number(tag->t_sid));
 		xmlWriter.writeAttribute("uid", QString::number(tag->t_uid));
 		xmlWriter.writeAttribute("epc", tag->t_epc);
-		xmlWriter.writeAttribute("max", QString::number(tag->t_alarm));
-		xmlWriter.writeCharacters("");
+		xmlWriter.writeAttribute("max", QString::number(tag->t_uplimit));
+		xmlWriter.writeCharacters(tag->t_note);
 		xmlWriter.writeEndElement();
+		sid++;
 	}
 	xmlWriter.writeEndElement();
 	//******************Tags------end************/

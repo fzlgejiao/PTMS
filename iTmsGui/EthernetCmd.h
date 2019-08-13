@@ -10,6 +10,12 @@
 
 #define	TAG_NUM		12
 
+typedef enum {
+	XmlFile = 0,
+	TarFile,
+	Invalid
+}FileType;
+
 /* command packet and message */
 typedef struct {
 	ushort ind;                         // cmd identifier: 0xAA55 
@@ -42,6 +48,8 @@ typedef enum {
 
 
 typedef struct {
+	FileType filetype;
+	quint8	reserved[3];
 	quint32	filesize;
 	char	filename[16];
 }File_Paramters;
@@ -152,7 +160,7 @@ public:
 	void UDP_get_tagsdata(iRdm* rdm);
 	void UDP_set_tagepc(iRdm* rdm,iTag* tag);
 	void UDP_ipset(const QString& mac,const QString& ip);
-	void UDP_fileinfo(QString filename);
+	void UDP_fileinfo(iRdm* rdm,QString filename, FileType type);
 
 protected:
 	bool UDP_send(const MSG_PKG& msg);

@@ -24,6 +24,7 @@ private:
 	TagModel *model;
 	EthernetCmd &netcmd;
 	QMap<int, QSerialPort::Parity> paritymap;
+	QString filename;
 
 protected:
 	bool saveRdmXml(iRdm *Rdm);

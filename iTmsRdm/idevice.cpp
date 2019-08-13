@@ -16,6 +16,8 @@ iDevice::iDevice(QObject *parent)
 
 iDevice::~iDevice()
 {
+	if(client)
+		client->disconnectFromHost();
 }
 void iDevice::IOT_init()
 {

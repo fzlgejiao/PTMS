@@ -3,7 +3,7 @@
 #include "Model.h"
 #include "irdm.h"
 #include <QSortFilterProxyModel>
-
+#include <QFileDialog> 
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
@@ -61,6 +61,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
 	connect(ui.btnChangeIP, SIGNAL(clicked()), this, SLOT(onbtnChangeIP()));
+	connect(ui.btnUpgrade, SIGNAL(clicked()), this, SLOT(onbtnUpgrade()));
 
 	connect(ui.btnFindTags, SIGNAL(clicked()), this, SLOT(OnbtnFindTags()));
 	connect(ui.btnChangeEpc, SIGNAL(clicked()), this, SLOT(onbtnChangeEpc()));
@@ -259,4 +260,14 @@ void iRdmView::timerEvent(QTimerEvent *event)
 	{
 		QObject::timerEvent(event);
 	}
+}
+void iRdmView::onbtnUpgrade()
+{
+	iRdm* rdm = selectedRdm();
+	if (!rdm) return;
+
+	QString tarfilename = QFileDialog::getOpenFileName(this, tr("Choose Upgrade file"), ".", tr("Gzip File (*.gz)"));
+	if (tarfilename.isEmpty()) return;
+
+	m_Enetcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
 }

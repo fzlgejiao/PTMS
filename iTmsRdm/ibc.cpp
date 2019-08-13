@@ -2,6 +2,10 @@
 #include "irdm.h"
 #include "ireader.h"
 
+#ifdef __linux__
+#include <unistd.h>
+#endif
+
 iBC::iBC(QObject *parent)
 	: QObject(parent)
 {
@@ -15,21 +19,30 @@ iBC::iBC(QObject *parent)
 	//TCP Server
 	tcpServer = new QTcpServer(this);
 	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(TCP_connection()));
-	if (!tcpServer->listen(QHostAddress::LocalHost, TCP_PORT))
+#ifdef __linux__
+	if (!tcpServer->listen(QHostAddress(getIP()), TCP_PORT))	
+#else
+	if (!tcpServer->listen(QHostAddress::LocalHost, TCP_PORT))	
+#endif
 	{
 		qDebug() << "Tcp Server Listening Error!";
 	}
 
 	recvBytes = 0;
 	totalBytes = 0;
-	fileNameSize = 0;
 	savedFile = NULL;
 
 	connect(this, SIGNAL(fileDone(bool)), this, SLOT(OnFileDone(bool)));
+
+	connect(this, SIGNAL(reloadXml()), rdm, SLOT(OnReloadRdmXml()));
+	connect(this, SIGNAL(upgrade(QString )), this, SLOT(OnUpgradeRdm(QString)));	
 }
 
 iBC::~iBC()
 {
+	tcpConnection->close();
+	tcpServer->close();
+	OnFileDone(false);
 }
 
 QString iBC::getIP()
@@ -37,7 +50,7 @@ QString iBC::getIP()
 	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
 	foreach(QHostAddress address, addresses)
 	{
-		if (address.protocol() == QAbstractSocket::IPv4Protocol)
+		if (address.protocol()== QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost)
 			return address.toString();
 	}
 	return 0;
@@ -141,7 +154,7 @@ void iBC::TCP_connection()
 	tcpConnection = tcpServer->nextPendingConnection();
 	connect(tcpConnection, SIGNAL(readyRead()), this, SLOT(TCP_read()));
 	connect(tcpConnection, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(TCP_SocketStateChanged(QAbstractSocket::SocketState)));
-	connect(tcpConnection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(Tcp_Error(QAbstractSocket::SocketError)));
+	connect(tcpConnection, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(TCP_Error(QAbstractSocket::SocketError)));
 }
 
 void iBC::TCP_SocketStateChanged(QAbstractSocket::SocketState state)
@@ -199,8 +212,9 @@ void iBC::TCP_read()
 
 	if (recvBytes == 0)
 	{
-		savedFile = new QFile(fileName);
-		if (!savedFile->open(QFile::WriteOnly)) {
+		QString savepath = QString("%1/").arg(QCoreApplication::applicationDirPath());
+		savedFile = new QFile(savepath + fileName);
+		if (!savedFile->open(QFile::WriteOnly | QFile::Truncate)) {
 			qDebug() << "server: open file error!";
 			return;
 		}
@@ -210,6 +224,7 @@ void iBC::TCP_read()
 		fileBlock = tcpConnection->readAll();
 		savedFile->write(fileBlock);
 		fileBlock.resize(0);
+		qDebug() << tr("Write %1bytes to %2!").arg(recvBytes).arg(fileName);
 	}
 
 	if (recvBytes == totalBytes) {
@@ -217,7 +232,7 @@ void iBC::TCP_read()
 	
 		emit fileDone(true);
 
-		qDebug() << tr("接收文件 %1 成功").arg(fileName);
+		qDebug() << tr("Receive %1 ok!").arg(fileName);
 	}
 }
 
@@ -225,14 +240,26 @@ void iBC::OnFileDone(bool ok)
 {
 	if (savedFile)
 	{
-		if(savedFile->isOpen())
+		if (savedFile->isOpen())
 			savedFile->close();
 		delete savedFile;
 		savedFile = NULL;
 	}
 	recvBytes = 0;
-	totalBytes = 0;
-	fileNameSize = 0;
+	if (ok)
+	{
+		totalBytes = 0;
+		switch (filetype)
+		{
+		case XmlFile:
+			emit reloadXml();
+			break;
+
+		case TarFile:
+			emit upgrade(fileName);
+			break;		
+		}		
+	}
 }
 
 void iBC::UDP_cmd_discover(const MSG_PKG& msg)
@@ -442,6 +469,7 @@ void iBC::UDP_cmd_file(const MSG_PKG& msg)
 		{
 			totalBytes	= file_para->fileSize;
 			fileName	= file_para->fileName;
+			filetype = (FileType)file_para->filetype;
 
 			MSG_PKG txMsg;
 			txMsg.cmd_pkg.header.ind = UDP_IND;
@@ -455,4 +483,23 @@ void iBC::UDP_cmd_file(const MSG_PKG& msg)
 			TCP_start();																			//start a new file
 		}
 	}
+}
+void iBC::OnUpgradeRdm(QString tarfilename)
+{
+#ifdef __linux__
+	QString directory = QCoreApplication::applicationDirPath() + "/";
+	QString appname = "iTmsRdm";
+	QString backupcmd = QString("mv %1%2 %3%4.bk").arg(directory).arg(appname).arg(directory).arg(appname);
+	system(backupcmd.toStdString().c_str());
+
+	QString tarcmd = QString("tar -xzvf %1 -C %2").arg(directory + tarfilename).arg(directory);
+	system(tarcmd.toStdString().c_str());
+	
+	system("sync");
+
+	qDebug() << "Restart the rdm service" << endl;
+	system("systemctl restart rdm");
+#else
+	qDebug() << "OnUpgradeRdm start!";
+#endif
 }

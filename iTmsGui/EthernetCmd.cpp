@@ -3,6 +3,7 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QFile>
+#include <QFileInfo> 
 
 EthernetCmd::EthernetCmd(QObject *parent)
 	: QObject(parent)	
@@ -202,7 +203,7 @@ void EthernetCmd::UDP_ipset(const QString& mac, const QString& ip)
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_fileinfo(QString fullpathname)
+void EthernetCmd::UDP_fileinfo(iRdm* rdm,QString fullpathname, FileType type)
 {
 	sendfile = new QFile(fullpathname);
 	if (!sendfile->open(QFile::ReadOnly))
@@ -210,13 +211,19 @@ void EthernetCmd::UDP_fileinfo(QString fullpathname)
 		qDebug() << "Open file failed!";
 		return;
 	}
-	filesize = sendfile->size();
+	QFileInfo info(fullpathname);
 
+	filesize = info.size();
+	QString filename = info.fileName();
 	//first download file parameters
 	File_Paramters f_para;
+	memset(&f_para, 0, sizeof(f_para));
 	f_para.filesize = filesize;
-	memset(f_para.filename, 0, sizeof(f_para.filename));
-	strcpy(f_para.filename, filename.toStdString().c_str());
+	f_para.filetype = type;
+	if(type== XmlFile)
+		strcpy(f_para.filename, "iTmsRdm.xml");
+	else
+		strcpy(f_para.filename, filename.toStdString().c_str());
 
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
@@ -225,7 +232,7 @@ void EthernetCmd::UDP_fileinfo(QString fullpathname)
 	memcpy(txmsg.cmd_pkg.data, (char *)&f_para, sizeof(f_para));
 
 	txmsg.rPort = RemoteUdpPort;
-	txmsg.rIP	= QHostAddress::Broadcast;
+	txmsg.rIP	= rdm->m_ip;
 
 	UDP_send(txmsg);
 }
