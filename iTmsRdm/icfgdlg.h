@@ -9,13 +9,13 @@ class iCfgDlg : public QDialog
 	Q_OBJECT
 
 public:
-	iCfgDlg(QWidget *parent = Q_NULLPTR);
+	iCfgDlg(iRDM* rdm,QWidget *parent = Q_NULLPTR);
 	~iCfgDlg();
 
 private:
 	Ui::iCfgDlg ui;
 
-	iRDM	&RDM;
+	iRDM*	RDM;
 
 public slots:
 	void changePage(int row);

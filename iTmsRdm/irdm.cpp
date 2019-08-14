@@ -2,11 +2,28 @@
 #include "ireader.h"
 #include "itag.h"
 #include "ibc.h"
+#include "CModbus.h"
 #include <QDebug> 
 
-iRDM *iRDM::_RDM = 0;
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
+{
+	reader		= new iReader(this);
+	iotdevice	= new iDevice(this);
+	modbus		= new CModbus(this);
+	bc			= new iBC(this);
+
+	RDM_init();
+
+	Tmr_start();
+
+}
+
+iRDM::~iRDM()
+{
+}
+
+void iRDM::RDM_init()
 {
 #ifdef WIN32
 	comName = "tmr:///com3";
@@ -16,18 +33,14 @@ iRDM::iRDM(QObject *parent)
 	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
 	Cfg_load(xml);
 
-	reader		= new iReader(comName, this);
-	iotdevice	= new iDevice(this);
-	modbus		= new CModbus(this);
-	bc			= new iBC(this);
-
 	iotdevice->IOT_init();
-	if (modbustype == "RTU")
-		modbus->initModbusRTUSlave(rtuserial, rtuslaveaddress, rtubaudrate, (QSerialPort::Parity)rtuparity);
-	else if (modbustype == "TCP")
-		modbus->initModbusTCP(RDM_ip, TcpPort);
+	if(modbus->MB_init() == false)
+		qDebug() << "modbus init : FAILED - " << endl;
+	if (reader->RD_init() == false)
+		reader->checkerror();
 
 	RDM_available = false;
+	RDM_ticks = RDM_TICKS;
 
 	//set tag flags for send the tag info to system
 	for (iTag *tag : taglist)
@@ -35,18 +48,7 @@ iRDM::iRDM(QObject *parent)
 		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi | Tag_Temperature;
 	}
 
-	RDM_ticks = RDM_TICKS;
-	Tmr_start();
-
-}
-
-iRDM::~iRDM()
-{
-}
-
-void iRDM::OnReloadRdmXml()
-{
-	
+	emit cfgChanged();
 }
 bool iRDM::Cfg_load(const QString& xml)
 {

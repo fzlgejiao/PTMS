@@ -2,16 +2,11 @@
 #include "itag.h"
 #include "irdm.h"
 
-iReader::iReader(QString comName, QObject *parent)
+iReader::iReader(QObject *parent)
 	: QObject(parent)
 {
 	RDM = (iRDM *)parent;
-	m_uri = comName;
-
-	tmrReader = new TMR_Reader();
-
-	if (!init())
-		checkerror();
+	tmrReader = NULL;
 }
 
 iReader::~iReader()
@@ -26,8 +21,13 @@ void iReader::checkerror()
 		qDebug() << "reader init : FAILED - " << errormessage << endl;
 	}
 }
-bool iReader::init()
+bool iReader::RD_init()
 {	
+	m_uri = RDM->comName;
+	if(tmrReader)
+		TMR_destroy(tmrReader);
+
+	tmrReader = new TMR_Reader();
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
 
 	if (ret != TMR_SUCCESS) return false;

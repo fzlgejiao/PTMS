@@ -15,20 +15,20 @@ class iReader : public QObject
 	Q_OBJECT
 
 public:
-	iReader(QString comName, QObject *parent);
+	iReader(QObject *parent);
 	~iReader();
 
+	bool RD_init();
 	bool wirteEpc(const QString& epc_old, const QString& epc_new);
 	void readtag();
+	void checkerror();
 
 protected:
-	bool	init();
 	quint64 readtagTid(TMR_TagFilter *filter);
 	quint64 readtagCalibration(TMR_TagFilter *filter);
 	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);
 	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
 	quint64 bytes2longlong(QByteArray& bytes);
-	void checkerror();
 
 private:
 	iRDM*		RDM;

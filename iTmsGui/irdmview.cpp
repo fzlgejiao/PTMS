@@ -4,6 +4,7 @@
 #include "irdm.h"
 #include <QSortFilterProxyModel>
 #include <QFileDialog> 
+#include <QItemSelectionModel>
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
@@ -54,8 +55,8 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnChangeEpc->setEnabled(false);
 	ui.btnFindTags->setEnabled(false);
 
-	connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
-	//connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
+	//connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
+	connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 	connect(tagModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataChanged(const QModelIndex &)));
 
@@ -150,7 +151,10 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	//todo: select the first rdm
 	if (rdmmodel->rowCount() == 1)
 	{
-
+		//QItemSelectionModel *selectionModel = ui.tableRdms->selectionModel();
+		QModelIndex index = ui.tableRdms->model()->index(0, 0, QModelIndex());
+		//selectionModel->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+		ui.tableRdms->setCurrentIndex(index);
 	}
 }
 void iRdmView::OnlineTagsFound(MSG_PKG & msg)

@@ -197,13 +197,17 @@ public:
 	CModbus(QObject *parent);
 	~CModbus();
 
-	bool initModbusRTUSlave(QString comname, quint8 slaveaddress, int baudrate, QSerialPort::Parity parity);
-	bool initModbusTCP(QString ipaddress,int port);
+	bool MB_init();
 	ModbusConnection connectiontype() { return m_connectiontype; }
 	void updateRdmRegisters(iTag *tag);
 	QModbusDevice::State status() { return m_status; }
 	bool isconnected() { return m_status == QModbusDevice::ConnectedState; }
 	void updatesystime(QDateTime time);
+
+protected:
+	bool MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSerialPort::Parity parity);
+	bool MB_initTCP(QString ipaddress,int port);
+
 
 private slots:
 		void onStateChanged(QModbusDevice::State state);
@@ -212,16 +216,16 @@ private slots:
 
 
 private:
-	iRDM * Rdm;
-	QModbusServer * modbusDevice;
-	ModbusConnection m_connectiontype;
-	int totaltagcnt;
+	iRDM*				RDM;
+	QModbusServer*		modbusDevice;
+	ModbusConnection	m_connectiontype;
 	QModbusDevice::State m_status;
 
-	QString m_com;
-	int m_slaveaddress;
-	RTU_BAUDRATE m_rtubaud;
-	QSerialPort::Parity	 m_rtuparity;
+	//modbus settings
+	QString				m_com;
+	int					m_slaveaddress;
+	RTU_BAUDRATE		m_rtubaud;
+	QSerialPort::Parity	m_rtuparity;
 	QMap<RTU_BAUDRATE,QSerialPort::BaudRate> baudratemap;
 	
 	

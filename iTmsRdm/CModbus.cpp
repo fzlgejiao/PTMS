@@ -13,17 +13,15 @@ CModbus::CModbus(QObject *parent)
 	//close the Modbus's warning message output
 	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=false"));
 
-	Rdm= (iRDM *)parent;
-	totaltagcnt = Rdm->Tag_count();
+	RDM= (iRDM *)parent;
 	
-	modbusDevice = NULL;	
-	m_connectiontype = NONE;
+	modbusDevice	= NULL;	
+	m_connectiontype= NONE;
 
-	m_com = "";
-	m_slaveaddress = 0;
-
-	m_rtubaud = RTU_BAUDRATE::BaudUnknow;
-	m_rtuparity = QSerialPort::UnknownParity;
+	m_com			= "";
+	m_slaveaddress	= 0;
+	m_rtubaud		= RTU_BAUDRATE::BaudUnknow;
+	m_rtuparity		= QSerialPort::UnknownParity;
 
 	baudratemap.clear();
 	baudratemap.insert(Baudrate1200, QSerialPort::Baud1200);
@@ -41,7 +39,14 @@ CModbus::~CModbus()
 		modbusDevice->disconnectDevice();
 	delete modbusDevice;
 }
-bool CModbus::initModbusRTUSlave(QString comname, quint8 slaveaddress, int baudrate, QSerialPort::Parity parity)
+bool CModbus::MB_init()
+{
+	if (RDM->modbustype == "RTU")
+		return MB_initRTU(RDM->rtuserial, RDM->rtuslaveaddress, RDM->rtubaudrate, (QSerialPort::Parity)RDM->rtuparity);
+	else// if (RDM->modbustype == "TCP")
+		return MB_initTCP(RDM->RDM_ip, RDM->TcpPort);
+}
+bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSerialPort::Parity parity)
 {
 	if (modbusDevice)
 	{
@@ -66,10 +71,10 @@ bool CModbus::initModbusRTUSlave(QString comname, quint8 slaveaddress, int baudr
 	modbusDevice->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, QSerialPort::Data8);
 	modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, QSerialPort::OneStop);
 
-	m_rtubaud = baud;
-	m_rtuparity = parity;
-	m_com = comname;
-	m_slaveaddress = slaveaddress;
+	m_rtubaud		= baud;
+	m_rtuparity		= parity;
+	m_com			= comname;
+	m_slaveaddress	= slaveaddress;
 
 	modbusDevice->setServerAddress(slaveaddress);
 	setModBusfilter();
@@ -82,7 +87,7 @@ bool CModbus::initModbusRTUSlave(QString comname, quint8 slaveaddress, int baudr
 
 	return modbusDevice->connectDevice();	
 }
-bool CModbus::initModbusTCP(QString ipaddress, int port)
+bool CModbus::MB_initTCP(QString ipaddress, int port)
 {
 	if (modbusDevice)
 	{
@@ -155,15 +160,15 @@ void CModbus::setupDeviceData()
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
 
 	//InputRegister datas,save tag count
-	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_TagCOUNT, totaltagcnt);
+	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_TagCOUNT, RDM->Tag_count());
 
 	int sid = 0;
-	for (int i = 0; i < totaltagcnt; i++)
+	for (int i = 0; i < RDM->Tag_count(); i++)
 	{
 		sid++;
 		/* save all tags upper limit*/
 		quint16 address = HoldingRegister_Tag1UPPERLIMIT;
-		iTag *tag = Rdm->Tag_getbysid(sid);
+		iTag *tag = RDM->Tag_getbysid(sid);
 		if (!tag) continue;
 
 		modbusDevice->setData(QModbusDataUnit::HoldingRegisters, address + i, tag->T_uplimit);
@@ -240,7 +245,7 @@ void CModbus::handler_coils(quint16 address,quint16 value)
 	
 	int sid = address - Coil_Tag1Enable + 1;
 
-	iTag *tag = Rdm->Tag_getbysid(sid);
+	iTag *tag = RDM->Tag_getbysid(sid);
 	if (tag)
 		tag->T_enable = bitvalue;	
 }
@@ -381,7 +386,7 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 	default:
 	{
 		int sid = address - HoldingRegister_Tag1UPPERLIMIT + 1;
-		iTag *tag = Rdm->Tag_getbysid(sid);
+		iTag *tag = RDM->Tag_getbysid(sid);
 		if (tag)
 			tag->T_uplimit = value;
 	}

@@ -11,20 +11,40 @@
 #include <QDesktopWidget> 
 
 iView::iView(iRDM* rdm,QWidget *parent)
-	: QWidget(parent), RDM(iRDM::Instance())
+	: QWidget(parent)
 {
 	ui.setupUi(this);
 
+	RDM = rdm;
+
+	setWindowTitle(qApp->applicationName());
+
+	VW_init();
+
+	connect(RDM->reader, &iReader::tagUpdated, this, &iView::OnTagUpdated);
+	connect(RDM, SIGNAL(cfgChanged()), this, SLOT(VW_init()));
+}
+
+iView::~iView()
+{
+}
+
+void iView::VW_init()
+{
+	QLayout *lay = this->layout();
+	if (lay)
+		delete lay;
+
 	QGridLayout *layout = new QGridLayout;
 	int cols = 3;
-	int rows = ceil(RDM.taglist.count() / (float)cols);
-	for (iTag *tag : RDM.taglist)
+	int rows = ceil(RDM->taglist.count() / (float)cols);
+	for (iTag *tag : RDM->taglist)
 	{
 		iTile *tile = new iTile(tag, this);
-		if(tile)
+		if (tile)
 			tilelist.insert(tag->T_sid, tile);
 	}
-	for (int i = RDM.taglist.count() + 1; i <= rows*cols; i++)
+	for (int i = RDM->taglist.count() + 1; i <= rows * cols; i++)
 	{
 		iTile *tile = new iTile(NULL, this);
 		if (tile)
@@ -36,19 +56,11 @@ iView::iView(iRDM* rdm,QWidget *parent)
 		for (int j = 0; j < cols; ++j) {
 			sid++;
 			iTile *tile = Tile(sid);
-			if(tile)
+			if (tile)
 				layout->addWidget(tile, i, j);
 		}
 	}
 	setLayout(layout);
-
-	setWindowTitle(qApp->applicationName());
-
-	connect(RDM.reader, &iReader::tagUpdated, this, &iView::OnTagUpdated);
-}
-
-iView::~iView()
-{
 }
 void iView::paintEvent(QPaintEvent *event)
 {
@@ -64,7 +76,7 @@ void iView::OnTagUpdated(iTag* tag)
 }
 void iView::OnTileDBClicked(iTile *)
 {
-	iCfgDlg dlg(this);
+	iCfgDlg dlg(RDM,this);
 	//Center Window on the Screen
 	dlg.setGeometry(
 		QStyle::alignedRect(

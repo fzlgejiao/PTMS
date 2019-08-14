@@ -1,18 +1,19 @@
 #include "icfgdlg.h"
 #include "irdm.h"
 
-iCfgDlg::iCfgDlg(QWidget *parent)
-	: QDialog(parent), RDM(iRDM::Instance())
+iCfgDlg::iCfgDlg(iRDM* rdm, QWidget *parent)
+	: QDialog(parent)
 {
 	ui.setupUi(this);
+	RDM = rdm;
 
 	QString style = "QListWidget::item { min-height: 40px; min-width: 60px; }";
 
 	ui.listWidget->setStyleSheet(style);
 
 	ui.listWidget->addItem("General");
-	for(int i = 1;i <= RDM.Tag_count();i++)
-		ui.listWidget->addItem(RDM.Tag_getbysid(i)->Title());
+	for(int i = 1;i <= RDM->Tag_count();i++)
+		ui.listWidget->addItem(RDM->Tag_getbysid(i)->Title());
 	connect(ui.listWidget,SIGNAL(currentRowChanged(int)),this, SLOT(changePage(int)));
 	connect(ui.btnClose, SIGNAL(clicked(bool)), this, SLOT(close()));
 
@@ -28,14 +29,14 @@ void iCfgDlg::changePage(int row)
 	{
 		ui.stackedWidget->setCurrentIndex(0);
 		ui.lbTitle->setText("General");
-		ui.leRdmName->setText(RDM.RDM_name);
+		ui.leRdmName->setText(RDM->RDM_name);
 		ui.leVersion->setText(qApp->applicationVersion());
 
 	}
 	else
 	{
 		ui.stackedWidget->setCurrentIndex(1);
-		iTag *tag = RDM.Tag_getbysid(row);
+		iTag *tag = RDM->Tag_getbysid(row);
 		if (tag)
 		{
 			ui.lbTitle->setText(tag->Title());

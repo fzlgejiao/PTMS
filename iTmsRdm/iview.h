@@ -20,11 +20,12 @@ protected:
 
 private:
 	Ui::iView ui;
-	iRDM	&RDM;
+	iRDM*	RDM;
 	QMap<int, iTile*> tilelist;																		//<tag_sid,iTile *>
 
 
 public slots:
+	void VW_init();
 	void OnTagUpdated(iTag*);
 	void OnTileDBClicked(iTile *);
 };

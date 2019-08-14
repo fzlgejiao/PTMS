@@ -31,16 +31,18 @@ iBC::iBC(QObject *parent)
 	recvBytes = 0;
 	totalBytes = 0;
 	savedFile = NULL;
+	tcpConnection = NULL;
 
 	connect(this, SIGNAL(fileDone(bool)), this, SLOT(OnFileDone(bool)));
 
-	connect(this, SIGNAL(reloadXml()), rdm, SLOT(OnReloadRdmXml()));
+	connect(this, SIGNAL(reloadXml()), rdm, SLOT(RDM_init()));
 	connect(this, SIGNAL(upgrade(QString )), this, SLOT(OnUpgradeRdm(QString)));	
 }
 
 iBC::~iBC()
 {
-	tcpConnection->close();
+	if(tcpConnection && tcpConnection->isOpen())
+		tcpConnection->close();
 	tcpServer->close();
 	OnFileDone(false);
 }
@@ -489,6 +491,9 @@ void iBC::UDP_cmd_file(const MSG_PKG& msg)
 			txMsg.rPort = msg.rPort;
 			UDP_send(txMsg);
 
+#ifdef WIN32
+			emit reloadXml();
+#endif
 			TCP_start();																			//start a new file
 		}
 	}

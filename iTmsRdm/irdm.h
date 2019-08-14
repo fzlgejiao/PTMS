@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QList>
 #include <QTimerEvent> 
-#include "CModbus.h"
+
 
 #define	RDM_TICKS	3		//max times for online check
 #define RDM_TIMER	5000
@@ -15,19 +15,13 @@ class iReader;
 class iDevice;
 class iTag;
 class iBC;
+class CModbus;
 class iRDM : public QObject
 {
 	Q_OBJECT
 
 public:
-	static iRDM &Instance(QObject *parent = NULL)													//for singleton of iStation object
-	{
-		if (0 == _RDM)
-		{
-			_RDM = new iRDM(parent);
-		}
-		return *_RDM;
-	}
+	iRDM(QObject *parent = NULL);																	
 	~iRDM();
 
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
@@ -49,18 +43,14 @@ protected:
 
 	virtual void timerEvent(QTimerEvent *event);
 
-public slots:
-	void OnReloadRdmXml();
-
 private:
 	friend class iDevice;
 	friend class iView;
 	friend class iCfgDlg;
 	friend class iBC;
 	friend class iReader;
+	friend class CModbus;
 
-	iRDM(QObject *parent = NULL);																	//protected from external access
-	static iRDM* _RDM;
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
 	CModbus *	modbus;
@@ -97,4 +87,10 @@ private:
 	QString		RDM_name;
 	QString		RDM_ip;
 	QString		RDM_note;
+
+public slots:
+	void RDM_init();
+
+signals:
+	void cfgChanged();
 };

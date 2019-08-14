@@ -83,7 +83,7 @@ void iDevice::OnStateChanged(QMqttClient::ClientState state)
 	if (status == QMqttClient::Connected)					//if first connected, publish my version
 	{
 		qDebug() << "RDM : connected" << endl;
-		RDM->RDM_available = true;
+		RDM->RDM_available = true;																	//device is connected
 
 		PUB_ota_data(OTA_Version);
 
