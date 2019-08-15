@@ -43,7 +43,8 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.tableTags->hideColumn(_Model::OCRSSI);
 	ui.tableTags->setColumnWidth(_Model::UID, 180);
 
-	ui.btnEditTag->setEnabled(false);
+	ui.btnEditTagLimit->setEnabled(false);
+	ui.btnEditTagNote->setEnabled(false);
 	ui.btnRemoveTag->setEnabled(false);
 
 	setCurrentIndex(0);
@@ -54,7 +55,8 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	connect(&netcmd, SIGNAL(IotParaReady(MSG_PKG&)), this, SLOT(OnIoTParameters(MSG_PKG&)));
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
-	connect(ui.btnEditTag, SIGNAL(clicked()), this, SLOT(OnEditTag()));
+	connect(ui.btnEditTagLimit, SIGNAL(clicked()), this, SLOT(OnEditTagLimit()));
+	connect(ui.btnEditTagNote, SIGNAL(clicked()), this, SLOT(OnEditTagNote()));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 
 }
@@ -95,25 +97,17 @@ void iCfgPanel::OnRemoveTag()
 			model->removeRows(row, 1, QModelIndex());
 	}
 }
-void iCfgPanel::OnEditTag()
+void iCfgPanel::OnEditTagLimit()
 {
-	//todo:test code
-	//Tags_Parameters tags;
-	//memset(&tags, 0, sizeof(tags));
-	//tags.Header.tagcount = 2;
-	//tags.Tags[0].uid = 12345;
-	//strcpy(tags.Tags[0].name, "ABCD");
-	//strcpy(tags.Tags[0].note, "Note1");
-	//tags.Tags[1].uid = 67890;
-	//strcpy(tags.Tags[1].name, "EFGH");
-	//strcpy(tags.Tags[1].note, "Note2");
-	//MSG_PKG msg;
-	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	//OnTagsParaReady(msg);
-
-
 	int row = ui.tableTags->currentIndex().row();
 	QModelIndex index = ui.tableTags->model()->index(row, _Model::UPLIMIT, QModelIndex());
+	ui.tableTags->edit(index);
+}
+void iCfgPanel::OnEditTagNote()
+{
+
+	int row = ui.tableTags->currentIndex().row();
+	QModelIndex index = ui.tableTags->model()->index(row, _Model::NOTE, QModelIndex());
 	ui.tableTags->edit(index);
 }
 void iCfgPanel::OnRdmSelected(iRdm *rdm)
@@ -172,12 +166,14 @@ void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
 {
 	if (index.isValid())
 	{
-		ui.btnEditTag->setEnabled(true);
+		ui.btnEditTagLimit->setEnabled(true);
+		ui.btnEditTagNote->setEnabled(true);
 		ui.btnRemoveTag->setEnabled(true);
 	}
 	else
 	{
-		ui.btnEditTag->setEnabled(false);
+		ui.btnEditTagLimit->setEnabled(false);
+		ui.btnEditTagNote->setEnabled(false);
 		ui.btnRemoveTag->setEnabled(false);
 	}
 }
