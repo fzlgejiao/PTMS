@@ -38,7 +38,8 @@ public slots:
 	void OnTagsParaReady(MSG_PKG&);
 	void OnTagEpc(MSG_PKG&);
 	void OnRemoveTag();
-	void OnEditTag();
+	void OnEditTagLimit();
+	void OnEditTagNote();
 	void OnRdmSelected(iRdm *);
 	void OnRdmSaved(iRdm *);
 	void OnRdmDownloaded(iRdm *);
