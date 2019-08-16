@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QHostAddress> 
+#include <QTcpSocket>
 
 #define UDP_IND		0xAA55
 
@@ -133,8 +134,15 @@ typedef struct {
 	char	epc[16];
 }Tag_epc;
 
+typedef enum {
+	Start=0,
+	Sending,
+	Finished,
+	TransferError,
+	StateNONE
+}FileTransferState;
+
 class QUdpSocket;
-class QTcpSocket;
 class QFile;
 class iRdm;
 class iTag;
@@ -161,6 +169,8 @@ public:
 	void UDP_set_tagepc(iRdm* rdm,iTag* tag);
 	void UDP_ipset(const QString& mac,const QString& ip);
 	void UDP_fileinfo(iRdm* rdm,QString filename, FileType type);
+
+	QString errorstring() { return tcpClient->errorString(); }
 
 protected:
 	bool UDP_send(const MSG_PKG& msg);
@@ -198,6 +208,8 @@ signals:
 	void TagsDataReady(MSG_PKG& msg);
 	void TagsParaReady(MSG_PKG& msg);
 	void TagEpcReady(MSG_PKG& msg);																	//write tag epc acked
+	void sendprogress(int value, int max);
+	void transferstate(FileTransferState state);
 
 private slots:	
 	void UDP_read();

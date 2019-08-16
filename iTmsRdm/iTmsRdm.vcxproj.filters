@@ -64,6 +64,9 @@
     <ClCompile Include="ibc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="iLed.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h">
@@ -94,6 +97,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="ibc.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="iLed.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

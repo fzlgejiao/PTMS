@@ -1,9 +1,9 @@
 #include "EthernetCmd.h"
 #include "irdm.h"
 #include <QUdpSocket>
-#include <QTcpSocket>
 #include <QFile>
 #include <QFileInfo> 
+#include <QTime> 
 
 EthernetCmd::EthernetCmd(QObject *parent)
 	: QObject(parent)	
@@ -20,7 +20,7 @@ EthernetCmd::EthernetCmd(QObject *parent)
 	
 	
 	filename	= "iTmsRdm.zip";
-	payload		= 64 * 1024;			//64K payload size
+	payload		= 4 * 1024;			//4K payload size
 	issendfile	= false;
 	filewritten = 0;	
 }
@@ -244,7 +244,8 @@ void EthernetCmd::UDP_fileinfo(iRdm* rdm,QString fullpathname, FileType type)
 }
 void EthernetCmd::TCP_Error(QAbstractSocket::SocketError error)
 {
-	qDebug() << tcpClient->errorString();
+	if(error!= QAbstractSocket::RemoteHostClosedError)
+		emit transferstate(TransferError);
 	tcpClient->close();
 }
 void EthernetCmd::TCP_SocketStateChanged(QAbstractSocket::SocketState socketState)
@@ -260,6 +261,7 @@ void EthernetCmd::TCP_SocketStateChanged(QAbstractSocket::SocketState socketStat
 }
 void EthernetCmd::startTransfer()
 {
+	emit transferstate(Start);
 	sendblock	= sendfile->read(payload);
 	leftwritten = filesize - (int)tcpClient->write(sendblock);
 	sendblock.resize(0);
@@ -271,15 +273,20 @@ void EthernetCmd::updateClientProgress(qint64 bytes)
 	filewritten += bytes;
 	int percent = ((float)filewritten / filesize) * 100;
 
-	qDebug() << QString("Send %1bytes, %2%").arg(filewritten).arg(percent);
+	emit sendprogress(filewritten, filesize);
+	QString tt=QString("%1:%2:%3").arg(QTime::currentTime().minute()).arg(QTime::currentTime().second()).arg(QTime::currentTime().msec());
+
+	qDebug() << tt <<	QString("Send %1bytes, %2%").arg(filewritten).arg(percent);
 	if (leftwritten > 0)
 	{
 		sendblock = sendfile->read(payload);
 		leftwritten -= (int)tcpClient->write(sendblock);
 		sendblock.resize(0);
+		emit transferstate(Sending);
 	}
 	else
 	{
 		sendfile->close();
+		emit transferstate(Finished);
 	}
 }

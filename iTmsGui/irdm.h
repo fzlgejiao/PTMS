@@ -12,6 +12,7 @@ public:
 	iTag(const iTag& tag);
 	~iTag();
 	quint64 uid() { return t_uid; }
+	QString epc() { return t_epc; }
 
 private:
 	friend class iRdm;

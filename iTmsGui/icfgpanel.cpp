@@ -7,6 +7,12 @@
 #include <QtXml>
 #include <iostream>
 
+
+bool TagAscendingbyEpc(iTag *tag1, iTag *tag2)
+{
+	return (tag1->epc() < tag2->epc());
+}
+
 iCfgPanel::iCfgPanel(QWidget *parent)
 	: QTabWidget(parent), netcmd(EthernetCmd::Instance())
 {
@@ -276,6 +282,8 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 	//******************Tags------start************/
 	xmlWriter.writeStartElement("tags");
 	int sid = 1;
+	//Fixed to sort by epc when save to xml
+	qSort(model->taglist().begin(), model->taglist().end(), TagAscendingbyEpc);
 	foreach(iTag *tag, model->taglist())
 	{
 		tag->t_sid = sid;

@@ -10,6 +10,9 @@ class iRdm;
 class iTag;
 class TagModel;
 class QSerialPort;
+
+bool TagAscendingbyEpc(iTag *tag1, iTag *tag2);
+
 class iCfgPanel : public QTabWidget
 {
 	Q_OBJECT

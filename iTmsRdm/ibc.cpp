@@ -19,11 +19,8 @@ iBC::iBC(QObject *parent)
 	//TCP Server
 	tcpServer = new QTcpServer(this);
 	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(TCP_connection()));
-#ifdef __linux__
-	if (!tcpServer->listen(QHostAddress(getIP()), TCP_PORT))	
-#else
-	if (!tcpServer->listen(QHostAddress::LocalHost, TCP_PORT))	
-#endif
+
+	if (!tcpServer->listen(QHostAddress(getIP()), TCP_PORT))
 	{
 		qDebug() << "Tcp Server Listening Error!";
 	}
@@ -491,9 +488,6 @@ void iBC::UDP_cmd_file(const MSG_PKG& msg)
 			txMsg.rPort = msg.rPort;
 			UDP_send(txMsg);
 
-#ifdef WIN32
-			emit reloadXml();
-#endif
 			TCP_start();																			//start a new file
 		}
 	}

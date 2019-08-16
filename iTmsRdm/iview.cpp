@@ -31,6 +31,12 @@ iView::~iView()
 
 void iView::VW_init()
 {
+	foreach(iTile *tile, tilelist)
+	{
+		if(tile)
+		delete tile;
+	}
+	tilelist.clear();
 	QLayout *lay = this->layout();
 	if (lay)
 		delete lay;
