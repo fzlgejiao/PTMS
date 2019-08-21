@@ -276,3 +276,9 @@ void iRdmView::onbtnUpgrade()
 
 	m_Enetcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
 }
+void iRdmView::OnRdmModified(bool bModified)
+{
+	iRdm* rdm = selectedRdm();
+	if (rdm)
+		rdm->setModified(bModified);
+}

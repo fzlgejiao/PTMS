@@ -143,7 +143,6 @@ TagModel::TagModel(QObject *parent)
 	: QAbstractTableModel(parent)
 {
 	editColumns = 0;
-	bModified = false;
 }
 
 int TagModel::rowCount(const QModelIndex &parent) const
@@ -272,7 +271,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 			tag->t_note = value.toString();
 
 		emit dataChanged(index, index);
-		setModified(true);																			//model is modified
+		emit RdmModified(true);
 		return true;	
 	}
 	return false;

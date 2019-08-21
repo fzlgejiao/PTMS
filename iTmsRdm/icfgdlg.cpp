@@ -1,5 +1,6 @@
 #include "icfgdlg.h"
 #include "irdm.h"
+#include "ibc.h"
 
 iCfgDlg::iCfgDlg(iRDM* rdm, QWidget *parent)
 	: QDialog(parent)
@@ -11,7 +12,16 @@ iCfgDlg::iCfgDlg(iRDM* rdm, QWidget *parent)
 
 	ui.listWidget->setStyleSheet(style);
 
-	ui.listWidget->addItem("General");
+	ui.leRdmName->setText(RDM->RDM_name);
+	ui.leVersion->setText(qApp->applicationVersion());
+	ui.leRdmIP->setText(RDM->bc->getIP());
+	ui.leRdmMac->setText(RDM->bc->getMAC());
+
+	//modbus
+	ui.rbtnRTU->setChecked(RDM->modbustype == "RTU" ? true : false);
+	ui.leModbusAddr->setText(QString::number(RDM->rtuslaveaddress));
+	ui.leModbusPort->setText(QString::number(RDM->TcpPort));
+
 	for(int i = 1;i <= RDM->Tag_count();i++)
 		ui.listWidget->addItem(RDM->Tag_getbysid(i)->Title());
 	connect(ui.listWidget,SIGNAL(currentRowChanged(int)),this, SLOT(changePage(int)));
@@ -25,27 +35,16 @@ iCfgDlg::~iCfgDlg()
 }
 void iCfgDlg::changePage(int row)
 {
-	if (row == 0)
-	{
-		ui.stackedWidget->setCurrentIndex(0);
-		ui.lbTitle->setText("General");
-		ui.leRdmName->setText(RDM->RDM_name);
-		ui.leVersion->setText(qApp->applicationVersion());
 
-	}
-	else
+	iTag *tag = RDM->Tag_getbysid(row+1);
+	if (tag)
 	{
-		ui.stackedWidget->setCurrentIndex(1);
-		iTag *tag = RDM->Tag_getbysid(row);
-		if (tag)
-		{
-			ui.lbTitle->setText(tag->Title());
-			ui.leTagDesc->setText(tag->T_epc);
-			ui.leTagTemp->setText(tag->Temp());
-			ui.lbTempUnit->setText(QString("%1C").arg(QChar(0x00B0)));
-			ui.leTagRSSI->setText(tag->RSSI());
-			ui.leTagNote->setText(tag->T_note);
-		}
+		ui.leTagDesc->setText(tag->T_epc);
+		ui.leTagTempLimit->setText(QString::number(tag->T_uplimit));
+		ui.leTagTemp->setText(tag->Temp());
+		ui.lbTempUnit->setText(QString("%1C").arg(QChar(0x00B0)));
+		ui.leTagRSSI->setText(tag->RSSI());
+		ui.leTagNote->setText(tag->T_note);
 	}
 
 }

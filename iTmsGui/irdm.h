@@ -39,6 +39,8 @@ class iRdm :public QObject
 public:
 	iRdm(const QString &name, const QString &ip, const QString& mac, const QString& version, const QString& note, QObject *parent = 0);
 	~iRdm();
+	bool isModified() { return m_bModified; }
+	void setModified(bool bModified) { m_bModified = bModified; }
 
 private:
 	friend class RdmModel;
@@ -53,5 +55,8 @@ private:
 	QString m_Version;
 	QString m_note;
 	QString m_comname;
+
+	bool	m_bModified;
+
 };
 

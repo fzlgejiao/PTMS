@@ -20,14 +20,15 @@ class iCfgPanel : public QTabWidget
 public:
 	iCfgPanel(QWidget *parent = Q_NULLPTR);
 	~iCfgPanel();
+	TagModel* Model() {	return model;}
 
 private:
 	Ui::iCfgPanel ui;
 
-	TagModel *model;
-	EthernetCmd &netcmd;
+	TagModel *		model;
+	EthernetCmd &	netcmd;
 	QMap<int, QSerialPort::Parity> paritymap;
-	QString filename;
+	QString			filename;
 
 protected:
 	bool saveRdmXml(iRdm *Rdm);

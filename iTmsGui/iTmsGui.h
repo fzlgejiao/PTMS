@@ -19,13 +19,17 @@ public:
 
 protected:
 	void createStatusBar();
+	virtual void closeEvent(QCloseEvent * event);
 
 private:
-	EthernetCmd & EnetCmd;
 	Ui::iTmsGuiClass ui;
-	QLabel*	sBarVersion;
-	QProgressBar*	m_progressbar;
-	QLabel*	m_status;
+	EthernetCmd &		EnetCmd;
+	QLabel*				sBarVersion;
+	QProgressBar*		m_progressbar;
+	QLabel*				m_status;
+	iRdmView *			rdmview;
+	iCfgPanel *			cfgpanel;
+	iTagView *			tagview;
 
 private slots:
 	void onupdateprogressbar(int value, int max);

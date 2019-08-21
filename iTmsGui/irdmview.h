@@ -16,10 +16,10 @@ class iRdmView : public QWidget
 public:
 	iRdmView(QWidget *parent = Q_NULLPTR);
 	~iRdmView();
+	iRdm* selectedRdm();
 
 protected:
 	virtual void timerEvent(QTimerEvent *event);
-	iRdm* selectedRdm();
 	iTag* selectedTag();
 
 
@@ -36,6 +36,7 @@ private slots:
 	void OnTagSelectChanged(const QModelIndex & index);
 	void OnTagDataChanged(const QModelIndex &);
 	void onbtnUpgrade();
+	void OnRdmModified(bool);
 	
 private:
 	Ui::iRdmView ui;

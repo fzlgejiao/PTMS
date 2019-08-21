@@ -145,10 +145,11 @@ class iBC : public QObject
 public:
 	iBC(QObject *parent);
 	~iBC();
-
-protected:
 	QString getIP();
 	QString getMAC();
+
+protected:
+
 	bool	UDP_send(const MSG_PKG& msg);
 	void	UDP_handle(const MSG_PKG& msg);
 	void	UDP_cmd_discover(const MSG_PKG& msg);

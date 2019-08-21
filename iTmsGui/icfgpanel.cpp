@@ -166,6 +166,7 @@ void iCfgPanel::OnRdmDownloaded(iRdm *Rdm)
 		return;
 	}
 	netcmd.UDP_fileinfo(Rdm, filename, XmlFile);
+	Rdm->setModified(false);
 }
 
 void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
@@ -206,7 +207,9 @@ void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
 		//todo: fill all parameters of tag
-		tag->t_note = tags->Tags[i].note;
+		tag->t_sid		= tags->Tags[i].sid;
+		tag->t_note		= tags->Tags[i].note;
+		tag->t_uplimit	= tags->Tags[i].upperlimit;
 		model->insertRow(0, tag);
 	}
 }

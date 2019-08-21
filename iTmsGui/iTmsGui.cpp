@@ -4,6 +4,7 @@
 #include "icfgpanel.h"
 #include "itagview.h"
 #include "irdm.h"
+#include "Model.h"
 
 iTmsGui::iTmsGui(QWidget *parent)
 	: QMainWindow(parent),EnetCmd(EthernetCmd::Instance())
@@ -12,9 +13,9 @@ iTmsGui::iTmsGui(QWidget *parent)
 
 	//setup views
 	QSplitter *splitter = new QSplitter;
-	iRdmView *rdmview = new iRdmView;
-	iCfgPanel *cfgpanel = new iCfgPanel;
-	iTagView *tagview = new iTagView;
+	rdmview		= new iRdmView;
+	cfgpanel	= new iCfgPanel;
+	tagview		= new iTagView;
 
 	QSplitter *splitterV = new QSplitter;
 	splitterV->setOrientation(Qt::Vertical);
@@ -36,6 +37,8 @@ iTmsGui::iTmsGui(QWidget *parent)
 	connect(rdmview, SIGNAL(tagAdded(iTag *)),		cfgpanel, SLOT(OnTagAdded(iTag *)));
 
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	tagview, SLOT(OnRdmSelected(iRdm *)));
+	connect(cfgpanel->Model(), SIGNAL(RdmModified(bool)), rdmview, SLOT(OnRdmModified(bool)));
+
 
 	connect(&EnetCmd, SIGNAL(sendprogress(int, int)), this, SLOT(onupdateprogressbar(int, int)));
 	connect(&EnetCmd, SIGNAL(transferstate(FileTransferState)), this, SLOT(onTransferStateChanged(FileTransferState)));
@@ -102,5 +105,30 @@ void iTmsGui::onTransferStateChanged(FileTransferState state)
 		m_status->setText("Ready");
 	break;
 	}
+
+}
+void iTmsGui::closeEvent(QCloseEvent * event)
+{
+	iRdm* rdm = rdmview->selectedRdm();
+	if (rdm && rdm->isModified())
+	{
+		int ret = QMessageBox::warning(this, QString::fromLocal8Bit("PTMS"),
+			QString::fromLocal8Bit("参数改变，需要下载参数到设备？"),
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (ret == QMessageBox::Yes)
+		{
+			event->ignore();
+			//todo: download parameters to rdm
+			cfgpanel->OnRdmDownloaded(rdm);
+			return;
+		}
+		else if (ret == QMessageBox::Cancel)
+		{
+			event->ignore();
+			return;
+		}
+
+	}
+	event->accept();
 
 }
