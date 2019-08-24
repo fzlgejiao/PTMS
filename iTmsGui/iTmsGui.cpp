@@ -49,7 +49,7 @@ void iTmsGui::createStatusBar()
 {
 	sBarVersion = new QLabel(this);
 	sBarVersion->setMinimumSize(120, 20);
-	sBarVersion->setAlignment(Qt::AlignHCenter);
+	sBarVersion->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	sBarVersion->setText(qApp->applicationVersion());
 	sBarVersion->setFrameShape(QFrame::Panel);
 	sBarVersion->setFrameShadow(QFrame::Sunken);
@@ -90,7 +90,8 @@ void iTmsGui::onTransferStateChanged(FileTransferState state)
 
 	case Finished:
 	{
-		m_status->setText(QString::fromLocal8Bit("下载成功"));
+		m_status->setText(QString::fromLocal8Bit("Ready"));
+		statusBar()->showMessage(QString::fromLocal8Bit("下载成功"),3000);
 		m_progressbar->setVisible(false);
 	}
 	break;

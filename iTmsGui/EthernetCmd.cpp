@@ -196,13 +196,21 @@ void EthernetCmd::UDP_set_tagepc(iRdm* rdm, iTag* tag)
 
 	UDP_send(txmsg);
 }
-void EthernetCmd::UDP_ipset(const QString& mac, const QString& ip)
+void EthernetCmd::UDP_ipset(iRdm *rdm)
 {
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;
 	txmsg.cmd_pkg.header.cmd = UDP_SETRDMIP;
 	//to do : set ip address to Rdm
-	txmsg.cmd_pkg.header.len = 0;
+
+	IpSetFormat ipset;
+	memset(&ipset, 0, sizeof(ipset));
+	strcpy(ipset.mac, rdm->m_MAC.toStdString().c_str());
+	strcpy(ipset.ip, rdm->m_ip.toStdString().c_str());
+	
+	txmsg.cmd_pkg.header.len = sizeof(ipset);
+
+	memcpy(txmsg.cmd_pkg.data, (char *)&ipset, sizeof(ipset));
 
 	txmsg.rPort = RemoteUdpPort;
 	txmsg.rIP	= QHostAddress::Broadcast;

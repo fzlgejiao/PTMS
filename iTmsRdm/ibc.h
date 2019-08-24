@@ -133,6 +133,11 @@ typedef struct {
 	char	epc[16];
 }Tag_epc;
 
+typedef struct {
+	char	mac[32];
+	char	ip[16];
+}IpSetFormat;
+
 class iRDM;
 class QUdpSocket;
 class QTcpServer;
@@ -191,10 +196,12 @@ public slots:
 	void TCP_SocketStateChanged(QAbstractSocket::SocketState state);
 	void OnFileDone(bool ok);
 	void OnUpgradeRdm(QString tarfilename);
+	void TcpStartListen();
 
 signals:
 	void fileDone(bool ok);
 	void reloadXml();
 	void upgrade(QString tarfilename);
+	void ipchanged(bool );
 
 };

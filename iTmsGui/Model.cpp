@@ -99,8 +99,10 @@ bool RdmModel::setData(const QModelIndex &index, const QVariant &value, int role
 	else if (role == Qt::EditRole)
 	{
 		if (index.column() == _Model::IP)
+		{
 			rdm->m_ip = value.toString();
-
+			emit IpChanged(rdm);
+		}
 		return true;
 	}
 	return false;

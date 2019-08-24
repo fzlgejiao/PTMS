@@ -37,6 +37,7 @@ private slots:
 	void OnTagDataChanged(const QModelIndex &);
 	void onbtnUpgrade();
 	void OnRdmModified(bool);
+	void onRdmIpChanged(iRdm *rdm);
 	
 private:
 	Ui::iRdmView ui;
