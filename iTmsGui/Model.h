@@ -52,6 +52,9 @@ public:
 
 private:	
 	QList<iRdm *>	listRdm;
+
+signals:
+	void IpChanged(iRdm *rdm);
 };
 
 class iTag;

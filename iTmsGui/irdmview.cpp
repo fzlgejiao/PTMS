@@ -14,7 +14,7 @@ iRdmView::iRdmView(QWidget *parent)
 
 	//table rdms
 	rdmmodel = new RdmModel(this);
-		
+
 	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
 
 	ui.tableRdms->setEditTriggers(QAbstractItemView::DoubleClicked);
@@ -26,11 +26,11 @@ iRdmView::iRdmView(QWidget *parent)
 	headerRdms->setVisible(true);
 	headerRdms->setStretchLastSection(true);
 	ui.tableRdms->setModel(rdmmodel);
-	
+
 	//table online tags
 	tagModel = new TagModel(this);
 	tagModel->setEditColumns(1 << _Model::EPC);
-	
+
 	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui.tableTags->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -74,6 +74,8 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
 	connect(&m_Enetcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
 
+	connect(rdmmodel, SIGNAL(IpChanged(iRdm *)), this, SLOT(onRdmIpChanged(iRdm *)));
+	
 	m_n2sTimerId = startTimer(2000);
 }
 
@@ -283,4 +285,8 @@ void iRdmView::OnRdmModified(bool bModified)
 	iRdm* rdm = selectedRdm();
 	if (rdm)
 		rdm->setModified(bModified);
+}
+void iRdmView::onRdmIpChanged(iRdm *rdm)
+{
+	m_Enetcmd.UDP_ipset(rdm);
 }

@@ -142,6 +142,11 @@ typedef enum {
 	StateNONE
 }FileTransferState;
 
+typedef struct {
+	char	mac[32];
+	char	ip[16];
+}IpSetFormat;
+
 class QUdpSocket;
 class QFile;
 class iRdm;
@@ -167,7 +172,7 @@ public:
 	void UDP_get_tagspara(iRdm* rdm);
 	void UDP_get_tagsdata(iRdm* rdm);
 	void UDP_set_tagepc(iRdm* rdm,iTag* tag);
-	void UDP_ipset(const QString& mac,const QString& ip);
+	void UDP_ipset(iRdm *rdm);
 	void UDP_fileinfo(iRdm* rdm,QString filename, FileType type);
 
 	QString errorstring() { return tcpClient->errorString(); }

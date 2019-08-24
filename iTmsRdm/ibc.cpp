@@ -20,10 +20,7 @@ iBC::iBC(QObject *parent)
 	tcpServer = new QTcpServer(this);
 	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(TCP_connection()));
 
-	if (!tcpServer->listen(QHostAddress(getIP()), TCP_PORT))
-	{
-		qDebug() << "Tcp Server Listening Error!";
-	}
+	TcpStartListen();
 
 	recvBytes = 0;
 	totalBytes = 0;
@@ -33,7 +30,9 @@ iBC::iBC(QObject *parent)
 	connect(this, SIGNAL(fileDone(bool)), this, SLOT(OnFileDone(bool)));
 
 	connect(this, SIGNAL(reloadXml()), rdm, SLOT(RDM_init()));
-	connect(this, SIGNAL(upgrade(QString )), this, SLOT(OnUpgradeRdm(QString)));	
+	connect(this, SIGNAL(upgrade(QString )), this, SLOT(OnUpgradeRdm(QString)));
+
+	connect(this, SIGNAL(ipchanged(bool)), this, SLOT(TcpStartListen()));
 }
 
 iBC::~iBC()
@@ -42,6 +41,18 @@ iBC::~iBC()
 		tcpConnection->close();
 	tcpServer->close();
 	OnFileDone(false);
+}
+
+void iBC::TcpStartListen()
+{
+	if (tcpServer->isListening())
+	{
+		tcpServer->close();
+	}
+	if (!tcpServer->listen(QHostAddress(getIP()), TCP_PORT))
+	{
+		qDebug() << "Tcp Server Listening Error!";
+	}
 }
 
 QString iBC::getIP()
@@ -143,6 +154,12 @@ void iBC::UDP_handle(const MSG_PKG& msg)
 		case UDP_FILEPARAMETER:
 		{
 			UDP_cmd_file(msg);
+		}
+		break;
+
+		case UDP_SETRDMIP:
+		{
+			UDP_cmd_rdm_ip(msg);
 		}
 		break;
 	}
@@ -465,7 +482,24 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 
 void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
 {
+	IpSetFormat *ipset = (IpSetFormat *)msg.cmd_pkg.data;
 
+	QString localmac = getMAC();
+	QString mac = ipset->mac;
+	QString ipadress = ipset->ip;
+
+	if(QString::compare(localmac,mac)==0)		//if my own mac
+	{
+#ifdef __linux__
+		QString setipcmd = QString("ifconfig eth0 %1").arg(ipadress);
+		QString setfilecmd = QString("sed -i '5s#.*#Address=%1/24#g' /etc/systemd/network/20-static-eth0.network").arg(ipadress);
+
+		system(setipcmd.toStdString().c_str());
+		system(setfilecmd.toStdString().c_str());
+		system("sync");
+#endif
+		emit ipchanged(true);
+	}
 }
 
 void iBC::UDP_cmd_file(const MSG_PKG& msg)

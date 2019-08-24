@@ -51,7 +51,7 @@ void iTmsGui::createStatusBar()
 {
 	sBarVersion = new QLabel(this);
 	sBarVersion->setMinimumSize(120, 20);
-	sBarVersion->setAlignment(Qt::AlignHCenter);
+	sBarVersion->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	sBarVersion->setText(qApp->applicationVersion());
 	sBarVersion->setFrameShape(QFrame::Panel);
 	sBarVersion->setFrameShadow(QFrame::Sunken);
