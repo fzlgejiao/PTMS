@@ -18,6 +18,8 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
+
 	paritymap.insert(0, QSerialPort::NoParity);
 	paritymap.insert(1, QSerialPort::EvenParity);
 	paritymap.insert(2, QSerialPort::OddParity);

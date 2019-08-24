@@ -4,7 +4,7 @@
         <com>tmr:///com3</com>
         <iot productkey="a1BthDpVl84" devicename="tag1_1" devicesecret="DUx4XVHmUUX2DYaG6sxJjnGOzcozuc2p" regionid="cn-shanghai">AliIoT</iot>
         <gui ip="192.168.0.2" port="2871" version="v0.0.1"/>
-        <modbus type="RTU" comname="com2" slaveaddress="1" baudrate="9600" parity="2" tcpport="2902"></modbus>
+        <modbus type="RTU" comname="/dev/ttySC1" slaveaddress="1" baudrate="9600" parity="2" tcpport="2902"></modbus>
     </cfg>
     <tags>
         <tag sid="1" uid="2305845019301804433" epc="tag1" max="70">tag_note_1</tag>

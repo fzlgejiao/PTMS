@@ -6,6 +6,8 @@
 #include "irdm.h"
 #include "Model.h"
 
+#define MSG_TIMEOUT	2000
+
 iTmsGui::iTmsGui(QWidget *parent)
 	: QMainWindow(parent),EnetCmd(EthernetCmd::Instance())
 {
@@ -55,15 +57,15 @@ void iTmsGui::createStatusBar()
 	sBarVersion->setFrameShadow(QFrame::Sunken);
 
 
-	m_status= new QLabel(this);
-	m_status->setAlignment(Qt::AlignVCenter);
-	m_status->setText("Ready");
+	//m_status= new QLabel(this);
+	//m_status->setAlignment(Qt::AlignVCenter);
+	//m_status->setText("Ready");
 
 	m_progressbar = new QProgressBar(this);
 	m_progressbar->setVisible(false);
 
-	statusBar()->insertWidget(0, m_status);
-	statusBar()->insertWidget(1, m_progressbar);
+	//statusBar()->insertWidget(0, m_status);
+	statusBar()->insertPermanentWidget(1, m_progressbar);
 
 	statusBar()->insertPermanentWidget(0, sBarVersion);
 }
@@ -80,29 +82,29 @@ void iTmsGui::onTransferStateChanged(FileTransferState state)
 	case Start:
 	{
 		m_progressbar->setVisible(true);
-		m_status->setText(QString::fromLocal8Bit("开始下载"));
+		statusBar()->showMessage(QString::fromLocal8Bit("开始下载"), MSG_TIMEOUT);
 	}
 		break;
 
 	case TransferError:
-		m_status->setText(EnetCmd.errorstring());
+		statusBar()->showMessage(EnetCmd.errorstring(), MSG_TIMEOUT);
 		break;
 
 	case Finished:
 	{
-		m_status->setText(QString::fromLocal8Bit("下载成功"));
+		statusBar()->showMessage(QString::fromLocal8Bit("下载成功"), MSG_TIMEOUT);
 		m_progressbar->setVisible(false);
 	}
 	break;
 
 	case Sending:
 	{
-		m_status->setText(QString::fromLocal8Bit("下载中..."));
+		statusBar()->showMessage(QString::fromLocal8Bit("下载中..."), MSG_TIMEOUT);
 	}
 	break;
 	
 	default:
-		m_status->setText("Ready");
+		statusBar()->showMessage("Ready", MSG_TIMEOUT);
 	break;
 	}
 

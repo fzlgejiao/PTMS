@@ -8,6 +8,13 @@
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
 {
+	modbustype = "RTU";
+	rtuserial = "tmr:///dev/ttyUSB0";
+	rtuslaveaddress = 1;
+	rtubaudrate = 9600;
+	rtuparity = 2;
+	TcpPort = 2902;
+
 	reader		= new iReader(this);
 	iotdevice	= new iDevice(this);
 	modbus		= new CModbus(this);

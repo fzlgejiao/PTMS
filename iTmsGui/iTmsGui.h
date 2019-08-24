@@ -26,7 +26,7 @@ private:
 	EthernetCmd &		EnetCmd;
 	QLabel*				sBarVersion;
 	QProgressBar*		m_progressbar;
-	QLabel*				m_status;
+	//QLabel*				m_status;
 	iRdmView *			rdmview;
 	iCfgPanel *			cfgpanel;
 	iTagView *			tagview;

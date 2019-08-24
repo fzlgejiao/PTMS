@@ -8,6 +8,8 @@ iTagView::iTagView(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
+
 	model = new TagModel(this);
 
 	this->setModel(model);

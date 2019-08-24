@@ -15,6 +15,8 @@ iRdmView::iRdmView(QWidget *parent)
 	//table rdms
 	rdmmodel = new RdmModel(this);
 		
+	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
+
 	ui.tableRdms->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableRdms->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui.tableRdms->setSelectionMode(QAbstractItemView::SingleSelection);
