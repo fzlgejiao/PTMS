@@ -33,6 +33,8 @@ private:
 protected:
 	bool saveRdmXml(iRdm *Rdm);
 
+signals:
+	void RdmModified();
 
 public slots:
 	void OnModbusParameters(MSG_PKG&);
@@ -47,5 +49,5 @@ public slots:
 	void OnTagAdded(iTag *);
 	void OnTagSelectChanged(const QModelIndex &index);
 	void OnIoTParameters(MSG_PKG& msg);
-
+	void OnRdmModified();
 };

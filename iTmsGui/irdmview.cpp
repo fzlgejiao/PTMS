@@ -107,6 +107,8 @@ void iRdmView::onbtnDownload()
 	iRdm* rdm = selectedRdm();
 	if (rdm)
 		emit RdmDownloaded(rdm);
+	ui.btnDownload->setEnabled(false);
+
 }
 void iRdmView::onbtnChangeIP()
 {
@@ -187,7 +189,7 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 	}
 	else
 	{
-		ui.btnDownload->setEnabled(true);
+		ui.btnDownload->setEnabled(false);
 		ui.btnUpgrade->setEnabled(true);
 		ui.btnChangeIP->setEnabled(true);
 		ui.btnFindTags->setEnabled(true);
@@ -280,11 +282,14 @@ void iRdmView::onbtnUpgrade()
 
 	m_Enetcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
 }
-void iRdmView::OnRdmModified(bool bModified)
+void iRdmView::OnRdmModified()
 {
 	iRdm* rdm = selectedRdm();
 	if (rdm)
-		rdm->setModified(bModified);
+	{
+		rdm->setModified(true);
+		ui.btnDownload->setEnabled(true);
+	}
 }
 void iRdmView::onRdmIpChanged(iRdm *rdm)
 {

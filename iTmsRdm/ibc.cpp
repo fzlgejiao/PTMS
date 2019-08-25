@@ -292,13 +292,14 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
 	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
 	strcpy(rdm_p.RdmNote, rdm->RDM_note.toLatin1());
-	strcpy(rdm_p.RdmComName, rdm->comName.toLatin1());
+	strcpy(rdm_p.RdmComName, rdm->RDM_comname.toLatin1());
 
 	//todo: send back local ip to remote
 	txMsg.cmd_pkg.header.len = sizeof(rdm_p);
 	memcpy(txMsg.cmd_pkg.data, &rdm_p, sizeof(rdm_p));
 
-	txMsg.rIP = msg.rIP;
+	//txMsg.rIP = msg.rIP;
+	txMsg.rIP = QHostAddress::Broadcast;													
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
 }
@@ -326,7 +327,7 @@ void iBC::UDP_cmd_modbus(const MSG_PKG& msg)
 	MODBUS_Paramters modbus;
 	memset(&modbus, 0, sizeof(modbus));
 	modbus.type			= rdm->modbustype == "RTU" ? 0 : 1;
-	strcpy(modbus.rtu_comname, rdm->rtuserial.toLatin1());
+	strcpy(modbus.rtu_comname, rdm->rtucomname.toLatin1());
 	modbus.rtu_baudrate	= rdm->rtubaudrate;
 	modbus.rtu_address	= rdm->rtuslaveaddress;
 	modbus.rtu_parity	= rdm->rtuparity;

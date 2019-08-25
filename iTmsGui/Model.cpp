@@ -182,7 +182,7 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 		case _Model::TEMP:
 			return tag->t_temperature;
 		case _Model::ALARM:
-			return tag->t_alarm;
+			return tag->t_alarm == 1? QString::fromLocal8Bit("ÊÇ") : QString::fromLocal8Bit("·ñ");
 		case _Model::UPLIMIT:
 			return tag->t_uplimit;
 		case _Model::RSSI:
@@ -273,7 +273,6 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 			tag->t_note = value.toString();
 
 		emit dataChanged(index, index);
-		emit RdmModified(true);
 		return true;	
 	}
 	return false;
@@ -309,11 +308,11 @@ Qt::ItemFlags TagModel::flags(const QModelIndex &index) const
 	else
 		return QAbstractTableModel::flags(index);
 }
-bool TagModel::hasTag(quint64 uid)
+bool TagModel::hasTag(quint64 uid, const QString& epc)
 { 
 	for (iTag *tag : listTags)
 	{
-		if (tag->t_uid == uid)
+		if (tag->t_uid == uid || tag->t_epc == epc)
 			return true;
 	}
 	return false;

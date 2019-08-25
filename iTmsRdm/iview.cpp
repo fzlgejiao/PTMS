@@ -43,7 +43,7 @@ void iView::VW_init()
 
 	QGridLayout *layout = new QGridLayout;
 	int cols = 3;
-	int rows = ceil(RDM->taglist.count() / (float)cols);
+	int rows = max(1,ceil(RDM->taglist.count() / (float)cols));
 	for (iTag *tag : RDM->taglist)
 	{
 		iTile *tile = new iTile(tag, this);

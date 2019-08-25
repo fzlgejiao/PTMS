@@ -62,7 +62,6 @@ private:
 	int         timer_datetime;
 	int			RDM_ticks;
 
-	QString		comName;
 
 	//iot info
 	QString		productkey;
@@ -72,7 +71,7 @@ private:
 
 	//modbus rtu parameters
 	QString		modbustype;
-	QString		rtuserial;
+	QString		rtucomname;
 	int			rtuslaveaddress;
 	int			rtubaudrate;
 	int			rtuparity;
@@ -87,6 +86,7 @@ private:
 	QString		RDM_name;
 	QString		RDM_ip;
 	QString		RDM_note;
+	QString		RDM_comname;
 
 public slots:
 	void RDM_init();

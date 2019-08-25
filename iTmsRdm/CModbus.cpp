@@ -42,7 +42,7 @@ CModbus::~CModbus()
 bool CModbus::MB_init()
 {
 	if (RDM->modbustype == "RTU")
-		return MB_initRTU(RDM->rtuserial, RDM->rtuslaveaddress, RDM->rtubaudrate, (QSerialPort::Parity)RDM->rtuparity);
+		return MB_initRTU(RDM->rtucomname, RDM->rtuslaveaddress, RDM->rtubaudrate, (QSerialPort::Parity)RDM->rtuparity);
 	else// if (RDM->modbustype == "TCP")
 		return MB_initTCP(RDM->RDM_ip, RDM->TcpPort);
 }

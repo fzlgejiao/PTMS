@@ -91,7 +91,7 @@ void EthernetCmd::CMD_handle(const MSG_PKG& msg)
 	}
 	break;
 
-	case UDP_SETTAGEPC:
+	case UDP_SETTAGEPC:																				//ack of write_epc
 	{
 		emit TagEpcReady(RxMsg);
 	}

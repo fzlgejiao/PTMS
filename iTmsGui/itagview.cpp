@@ -66,7 +66,7 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 	Tags_Data *tags = (Tags_Data *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-		if (model->hasTag(tags->Tags[i].uid))														//make sure no duplicated tags 
+		if (model->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
 			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
 
@@ -75,6 +75,8 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 		tag->t_note = tags->Tags[i].note;
 		tag->t_temperature = tags->Tags[i].temperature;
 		tag->t_alarm = tags->Tags[i].alarm;
+		tag->t_rssi = tags->Tags[i].rssi;
+		tag->t_oc_rssi = tags->Tags[i].oc_rssi;
 
 		model->insertRow(0, tag);
 	}

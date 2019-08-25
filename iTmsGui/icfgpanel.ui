@@ -94,6 +94,9 @@
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="leComPort">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -120,6 +123,9 @@
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="leIPAddress">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -213,6 +219,9 @@
          </item>
          <item row="1" column="1">
           <widget class="QLineEdit" name="leMbComPort">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -302,6 +311,9 @@
          </item>
          <item row="2" column="1">
           <widget class="QLineEdit" name="leMbTcpPort">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>

@@ -23,7 +23,7 @@ void iReader::checkerror()
 }
 bool iReader::RD_init()
 {	
-	m_uri = RDM->comName;
+	m_uri = RDM->RDM_comname;
 	if(tmrReader)
 		TMR_destroy(tmrReader);
 

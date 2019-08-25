@@ -39,7 +39,7 @@ iTmsGui::iTmsGui(QWidget *parent)
 	connect(rdmview, SIGNAL(tagAdded(iTag *)),		cfgpanel, SLOT(OnTagAdded(iTag *)));
 
 	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	tagview, SLOT(OnRdmSelected(iRdm *)));
-	connect(cfgpanel->Model(), SIGNAL(RdmModified(bool)), rdmview, SLOT(OnRdmModified(bool)));
+	connect(cfgpanel,SIGNAL(RdmModified()),			rdmview, SLOT(OnRdmModified()));
 
 
 	connect(&EnetCmd, SIGNAL(sendprogress(int, int)), this, SLOT(onupdateprogressbar(int, int)));

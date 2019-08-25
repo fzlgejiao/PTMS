@@ -9,7 +9,7 @@ iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
 {
 	modbustype = "RTU";
-	rtuserial = "tmr:///dev/ttyUSB0";
+	rtucomname = "/dev/ttyUSB1";
 	rtuslaveaddress = 1;
 	rtubaudrate = 9600;
 	rtuparity = 2;
@@ -33,9 +33,9 @@ iRDM::~iRDM()
 void iRDM::RDM_init()
 {
 #ifdef WIN32
-	comName = "tmr:///com3";
+	RDM_comname = "tmr:///com3";
 #else
-	comName = "tmr:///dev/ttyUSB0";
+	RDM_comname = "tmr:///dev/ttyUSB0";
 #endif
 	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
 	Cfg_load(xml);
@@ -154,7 +154,7 @@ void iRDM::Cfg_readcfg(QXmlStreamReader& xmlReader)
 
 		if (xmlReader.isStartElement()) {
 			if (xmlReader.name() == "com") {
-				comName = xmlReader.readElementText();											//read com port
+				RDM_comname = xmlReader.readElementText();											//read com port
 
 				if (xmlReader.isEndElement())
 					xmlReader.readNext();
@@ -172,7 +172,7 @@ void iRDM::Cfg_readcfg(QXmlStreamReader& xmlReader)
 			else if (xmlReader.name() == "modbus")
 			{
 				modbustype = xmlReader.attributes().value("type").toString();
-				rtuserial = xmlReader.attributes().value("comname").toString();
+				rtucomname = xmlReader.attributes().value("comname").toString();
 				rtuslaveaddress = xmlReader.attributes().value("slaveaddress").toInt();
 				rtubaudrate = xmlReader.attributes().value("baudrate").toInt();
 				rtuparity = xmlReader.attributes().value("parity").toInt();

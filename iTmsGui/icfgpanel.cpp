@@ -18,7 +18,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
+	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);} QLineEdit:hover{border: 2px solid blue; }");
 
 	paritymap.insert(0, QSerialPort::NoParity);
 	paritymap.insert(1, QSerialPort::EvenParity);
@@ -67,6 +67,19 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	connect(ui.btnEditTagNote, SIGNAL(clicked()), this, SLOT(OnEditTagNote()));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 
+	//UI change
+	connect(ui.leRdmName, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.leRdmNote, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.leMbRtuAddr, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.lePrdKey, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.leDeviceName, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.leDeviceSecret, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.leRegion, SIGNAL(textEdited(const QString &)), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+
+	connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmModified()));
 }
 
 iCfgPanel::~iCfgPanel()
@@ -74,6 +87,9 @@ iCfgPanel::~iCfgPanel()
 }
 void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
 {
+	disconnect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	disconnect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	disconnect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 	MODBUS_Paramters* modbus = (MODBUS_Paramters *)msg.cmd_pkg.data;
 	ui.cbxMbType->setCurrentIndex(modbus->type);
 	ui.leMbRtuAddr->setText(QString::number(modbus->rtu_address));
@@ -81,6 +97,9 @@ void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
 	ui.leMbTcpPort->setText(QString::number(modbus->tcp_port));
 	ui.leMbComPort->setText(modbus->rtu_comname);
 	ui.cbxMbParity->setCurrentIndex(paritymap.key((QSerialPort::Parity)modbus->rtu_parity));
+	connect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 }
 void iCfgPanel::OnIoTParameters(MSG_PKG& msg)
 {
@@ -101,8 +120,11 @@ void iCfgPanel::OnRemoveTag()
 	QModelIndexList indexes = selectionModel->selectedRows();
 	for(QModelIndex index : indexes) {
 		int row = index.row();
-		if(row != -1)
+		if (row != -1)
+		{
 			model->removeRows(row, 1, QModelIndex());
+			OnRdmModified();																		//rdm changed due to tag removed
+		}
 	}
 }
 void iCfgPanel::OnEditTagLimit()
@@ -170,7 +192,10 @@ void iCfgPanel::OnRdmDownloaded(iRdm *Rdm)
 	netcmd.UDP_fileinfo(Rdm, filename, XmlFile);
 	Rdm->setModified(false);
 }
-
+void iCfgPanel::OnRdmModified()
+{
+	emit RdmModified();
+}
 void iCfgPanel::OnTagSelectChanged(const QModelIndex &index)
 {
 	if (index.isValid())
@@ -190,7 +215,7 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 {
 	setCurrentIndex(1);																				//switch to tags tab
 	//todo: check if tag already exists
-	if (model->hasTag(tag->uid()))
+	if (model->hasTag(tag->uid(),tag->epc()))
 	{
 		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("标签已经存在."),QMessageBox::Ok);
 		mbx.setMinimumSize(600, 400);
@@ -199,13 +224,14 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 	}
 	iTag *newTag = new iTag(*tag);
 	model->insertRow(0, newTag);
+	OnRdmModified();																				//rdm changed due to new tag added
 }
 void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 {
 	Tags_Parameters *tags = (Tags_Parameters *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-		if (model->hasTag(tags->Tags[i].uid))														//make sure no duplicated tags 
+		if (model->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
 			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
 		//todo: fill all parameters of tag
@@ -243,11 +269,11 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 	xmlWriter.writeStartDocument();
 
 	xmlWriter.writeStartElement("rdm");
-	xmlWriter.writeAttribute("mac", Rdm->m_MAC);
-	xmlWriter.writeAttribute("name", Rdm->m_name);
+	xmlWriter.writeAttribute("name", ui.leRdmName->text().trimmed());
 	xmlWriter.writeAttribute("org", "herong");
-	xmlWriter.writeAttribute("note", Rdm->m_note);
+	xmlWriter.writeAttribute("note", ui.leRdmNote->text().trimmed());
 	xmlWriter.writeAttribute("ip", Rdm->m_ip);
+	xmlWriter.writeAttribute("mac", Rdm->m_MAC);
 	
 	//******************Configs------start************/
 	xmlWriter.writeStartElement("cfg");
