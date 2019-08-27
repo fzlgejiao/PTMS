@@ -28,6 +28,7 @@ iCfgDlg::iCfgDlg(iRDM* rdm, QWidget *parent)
 	connect(ui.btnClose, SIGNAL(clicked(bool)), this, SLOT(close()));
 
 	ui.listWidget->setCurrentRow(0);
+	ui.tabWidget->setCurrentIndex(0);
 }
 
 iCfgDlg::~iCfgDlg()

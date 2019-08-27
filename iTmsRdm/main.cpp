@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	//QTextCodec::setCodecForTr(tc);																//这个函数的作用是设置传给tr函数时的默认字串编码
 
 	QApplication a(argc, argv);
-	a.setApplicationVersion("V0.0.4");
+	a.setApplicationVersion("V0.0.5");
 	a.setApplicationName("RDM - PTMS");
 
 	iRDM oRDM;

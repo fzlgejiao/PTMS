@@ -35,6 +35,7 @@ private slots:
 	void OnRdmSelectChanged(const QModelIndex & index);
 	void OnTagSelectChanged(const QModelIndex & index);
 	void OnTagDataChanged(const QModelIndex &);
+	void OnTagDataFailed(const QModelIndex &);
 	void onbtnUpgrade();
 	void OnRdmModified();
 	void onRdmIpChanged(iRdm *rdm);

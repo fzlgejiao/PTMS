@@ -258,15 +258,26 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 		{
 			if (value.toString().count() > 10 || value.toString() == tag->t_epc)
 				return false;
+			QString epc;
 			if (value.toString().count() % 2 != 0)
-				tag->t_epc = value.toString() + QChar(' ');
+				epc = value.toString() + QChar(' ');
 			else
-				tag->t_epc = value.toString();
+				epc = value.toString();
+			if (hasTag(epc))
+			{
+				emit dataFailed(index);																//change epc failed
+				return false;
+			}
+			else
+				tag->t_epc = epc;
 		}
 		else if (index.column() == _Model::UPLIMIT)
 		{
 			if (value.toInt() < 0 || value.toInt() >= 100)											//data validation for uplimit
+			{
+				emit dataFailed(index);																//change uplimit failed
 				return false;
+			}
 			tag->t_uplimit = value.toInt();
 		}
 		else if (index.column() == _Model::NOTE)
@@ -307,6 +318,15 @@ Qt::ItemFlags TagModel::flags(const QModelIndex &index) const
 		return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 	else
 		return QAbstractTableModel::flags(index);
+}
+bool TagModel::hasTag(const QString& epc)
+{
+	for (iTag *tag : listTags)
+	{
+		if (tag->t_epc == epc)
+			return true;
+	}
+	return false;
 }
 bool TagModel::hasTag(quint64 uid, const QString& epc)
 { 
