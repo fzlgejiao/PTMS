@@ -53,6 +53,10 @@ void iBC::TcpStartListen()
 	{
 		qDebug() << "Tcp Server Listening Error!";
 	}
+	else
+	{
+		qDebug() << "Rdm:" << "Tcp listenning in " << getIP();
+	}
 }
 
 QString iBC::getIP()
@@ -288,10 +292,10 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	RDM_Paramters rdm_p;
 	memset(&rdm_p, 0, sizeof(rdm_p));
 	strcpy(rdm_p.RdmIp, getIP().toLatin1());
-	strcpy(rdm_p.RdmName, rdm->RDM_name.toLatin1());
+	strcpy(rdm_p.RdmName, rdm->RDM_name.toLocal8Bit());
 	strcpy(rdm_p.RdmMAC, getMAC().toLatin1());
 	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
-	strcpy(rdm_p.RdmNote, rdm->RDM_note.toLatin1());
+	strcpy(rdm_p.RdmNote, rdm->RDM_note.toLocal8Bit());
 	strcpy(rdm_p.RdmComName, rdm->RDM_comname.toLatin1());
 
 	//todo: send back local ip to remote
@@ -301,7 +305,7 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	//txMsg.rIP = msg.rIP;
 	txMsg.rIP = QHostAddress::Broadcast;													
 	txMsg.rPort = msg.rPort;
-	UDP_send(txMsg);
+	UDP_send(txMsg);	
 }
 
 void iBC::UDP_cmd_online(const MSG_PKG& msg)
@@ -379,7 +383,7 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 	while (i.hasNext()) {
 		i.next();
 		tagsdata->Tags[idx].uid = i.key();
-		strcpy(tagsdata->Tags[idx].name, i.value().toLatin1());
+		strcpy(tagsdata->Tags[idx].name, i.value().toLocal8Bit());
 		idx++;
 		qDebug() << i.key() << ": " << i.value() << endl;
 	}
@@ -406,8 +410,8 @@ void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
 		tagsdata->Tags[idx].uid = tag->T_uid;
 		tagsdata->Tags[idx].sid = tag->T_sid;
 		tagsdata->Tags[idx].upperlimit = tag->T_uplimit;
-		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
-		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLocal8Bit());
 		idx++;
 	}
 
@@ -435,8 +439,8 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 		tagsdata->Tags[idx].rssi = tag->T_rssi;
 		tagsdata->Tags[idx].oc_rssi = tag->T_OC_rssi;
 		tagsdata->Tags[idx].temperature = tag->T_temp;
-		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
-		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLocal8Bit());
 		idx++;
 	}
 
@@ -492,12 +496,13 @@ void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
 	if(QString::compare(localmac,mac)==0)		//if my own mac
 	{
 #ifdef __linux__
-		QString setipcmd = QString("ifconfig eth0 %1").arg(ipadress);
-		QString setfilecmd = QString("sed -i '5s#.*#Address=%1/24#g' /etc/systemd/network/20-static-eth0.network").arg(ipadress);
-
+		QString setipcmd = QString("ifconfig eth0 %1 netmask 255.255.255.0").arg(ipadress);
 		system(setipcmd.toStdString().c_str());
+
+		QString setfilecmd = QString("sed -i '7s#.*#IPv4 = %1/255.255.255.0#g' /var/lib/connman/wired.config").arg(ipadress);
 		system(setfilecmd.toStdString().c_str());
 		system("sync");
+
 #endif
 		emit ipchanged(true);
 	}

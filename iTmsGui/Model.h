@@ -2,6 +2,7 @@
 
 #include <QList>
 #include <QAbstractTableModel>
+#include <QStyledItemDelegate>
 
 namespace _Model {
 
@@ -88,5 +89,56 @@ private:
 	int				editColumns;
 
 };
+
+class QStyleOptionViewItem;
+class IpAddressDelegate : public QStyledItemDelegate
+{
+	Q_OBJECT
+public:
+	explicit IpAddressDelegate(QObject *parent = 0);
+
+	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const;
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;	
+};
+
+class LengthLimitDelegate : public QStyledItemDelegate
+{
+	Q_OBJECT
+
+public:
+	explicit LengthLimitDelegate(int length,bool supportchines,QObject *parent = 0);
+
+	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const;
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+private:
+	int m_limit;
+	bool m_chinese;
+
+private slots:
+	void ontextchanged(QString text);
+};
+
+class RangeLimitDelegate : public QStyledItemDelegate
+{
+	Q_OBJECT
+
+public:
+	explicit RangeLimitDelegate(int min,int max,QObject *parent = 0);
+
+	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const;
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+private:
+	int m_min;
+	int m_max;
+};
+
 
 

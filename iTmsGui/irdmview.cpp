@@ -27,6 +27,9 @@ iRdmView::iRdmView(QWidget *parent)
 	headerRdms->setStretchLastSection(true);
 	ui.tableRdms->setModel(rdmmodel);
 
+	ui.tableRdms->setItemDelegateForColumn(_Model::IP, new IpAddressDelegate(this));
+
+
 	//table online tags
 	tagModel = new TagModel(this);
 	tagModel->setEditColumns(1 << _Model::EPC);
@@ -56,6 +59,8 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnAddTag->setEnabled(false);
 	ui.btnChangeEpc->setEnabled(false);
 	ui.btnFindTags->setEnabled(false);
+
+	ui.tableTags->setItemDelegateForColumn(_Model::EPC, new LengthLimitDelegate(15,false,this));
 
 	//connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
 	connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
@@ -101,6 +106,8 @@ void iRdmView::onbtndiscover()
 	emit RdmSelected(NULL);
 
 	m_Enetcmd.UDP_discoverRdm();
+
+	ui.tableRdms->setFocus();
 }
 void iRdmView::onbtnDownload()
 {	
@@ -151,7 +158,7 @@ void iRdmView::onbtnAddToSys()
 void iRdmView::NewRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
-	iRdm *newrdm = new iRdm(rdm->RdmName, rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion,rdm->RdmNote,this);
+	iRdm *newrdm = new iRdm(QString::fromLocal8Bit(rdm->RdmName), rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion, QString::fromLocal8Bit(rdm->RdmNote),this);
 	newrdm->m_comname = rdm->RdmComName;
 	rdmmodel->insertmyrow(0, newrdm);	
 	//todo: select the first rdm

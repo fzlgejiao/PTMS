@@ -7,6 +7,7 @@
 #include <QtXml>
 #include <iostream>
 
+#define BytesLimit 15
 
 bool TagAscendingbyEpc(iTag *tag1, iTag *tag2)
 {
@@ -29,8 +30,21 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	setTabText(0,QString::fromLocal8Bit("Í¨ÓÃÉèÖÃ"));
 	setTabText(1, QString::fromLocal8Bit("´«¸ÐÆ÷ÉèÖÃ"));
 	setTabText(2, QString::fromLocal8Bit("IoTÉèÖÃ"));
+		
+	QRegExp regExp("^[^\u4e00-\u9fa5]{0,}$");	
+	
+	ui.lePrdKey->setValidator(new QRegExpValidator(regExp, parent));
+	ui.lePrdKey->setToolTip(QString::fromLocal8Bit("ÇëÊäÈë×ÖÄ¸,×Ö·ûºÍÊý×Ö"));
+	
+	ui.leDeviceName->setValidator(new QRegExpValidator(regExp, parent));
+	ui.leDeviceName->setToolTip(QString::fromLocal8Bit("ÇëÊäÈë×ÖÄ¸,×Ö·ûºÍÊý×Ö"));
 
+	ui.leDeviceSecret->setValidator(new QRegExpValidator(regExp, parent));
+	ui.leDeviceSecret->setToolTip(QString::fromLocal8Bit("ÇëÊäÈë×ÖÄ¸,×Ö·ûºÍÊý×Ö"));
 
+	ui.leRegion->setValidator(new QRegExpValidator(regExp, parent));
+	ui.leRegion->setToolTip(QString::fromLocal8Bit("ÇëÊäÈë×ÖÄ¸,×Ö·ûºÍÊý×Ö"));
+	
 	model = new TagModel(this);
 	model->setEditColumns((1 << _Model::UPLIMIT) | (1 << _Model::NOTE));
 
@@ -54,6 +68,9 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.btnEditTagLimit->setEnabled(false);
 	ui.btnEditTagNote->setEnabled(false);
 	ui.btnRemoveTag->setEnabled(false);
+
+	ui.tableTags->setItemDelegateForColumn(_Model::UPLIMIT, new RangeLimitDelegate(1, 120, this));
+	ui.tableTags->setItemDelegateForColumn(_Model::NOTE, new LengthLimitDelegate(15,true, this));
 
 	setCurrentIndex(0);
 
@@ -80,6 +97,9 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 
 	connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmModified()));
+
+	connect(ui.leRdmName, &QLineEdit::textChanged, this, &iCfgPanel::Ontextchanged);
+	connect(ui.leRdmNote, &QLineEdit::textChanged, this, &iCfgPanel::Ontextchanged);
 }
 
 iCfgPanel::~iCfgPanel()
@@ -233,10 +253,10 @@ void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 	{
 		if (model->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
 			continue;
-		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
+		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 		//todo: fill all parameters of tag
 		tag->t_sid		= tags->Tags[i].sid;
-		tag->t_note		= tags->Tags[i].note;
+		tag->t_note		= QString::fromLocal8Bit(tags->Tags[i].note);
 		tag->t_uplimit	= tags->Tags[i].upperlimit;
 		model->insertRow(0, tag);
 	}
@@ -245,7 +265,7 @@ void iCfgPanel::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, tagEpc->epc);
+	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));
 }
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {
@@ -336,4 +356,18 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 		return false;
 	}
 	return true;
+}
+
+void iCfgPanel::Ontextchanged(QString text)
+{
+	QLineEdit *edit = qobject_cast<QLineEdit*>(sender());
+
+	int bytes = text.toLocal8Bit().length();
+	if (bytes > BytesLimit)
+	{
+		while (text.toLocal8Bit().length() > BytesLimit)
+			text.chop(1);
+
+		edit->setText(text);
+	}
 }

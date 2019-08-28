@@ -41,6 +41,7 @@ void EthernetCmd::UDP_read()
 {
 	while (udpSocket->hasPendingDatagrams())
 	{
+		qDebug() << "RDM:" << "receive UDP";
 		udpSocket->readDatagram((char *)&RxMsg.cmd_pkg, sizeof(RxMsg.cmd_pkg), &RxMsg.rIP, &RxMsg.rPort);
 		CMD_handle(RxMsg);
 	}
@@ -190,7 +191,7 @@ void EthernetCmd::UDP_set_tagepc(iRdm* rdm, iTag* tag)
 
 	Tag_epc *tagEPC = (Tag_epc *)txmsg.cmd_pkg.data;
 	tagEPC->uid = tag->t_uid;
-	strcpy(tagEPC->epc , tag->t_epc.toLatin1());
+	strcpy(tagEPC->epc , tag->t_epc.toLocal8Bit());
 	txmsg.rPort = RemoteUdpPort;
 	txmsg.rIP = rdm->m_ip;
 

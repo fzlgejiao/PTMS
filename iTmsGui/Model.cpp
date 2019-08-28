@@ -1,5 +1,7 @@
 #include "Model.h"
 #include "irdm.h"
+#include <QLineEdit>
+#include <QIntValidator>
 
 
 //Rdm model
@@ -327,4 +329,117 @@ void TagModel::setTagEpc(quint64 uid, const QString& epc)
 			return;
 		}
 	}
+}
+//IP address edit delegate
+IpAddressDelegate::IpAddressDelegate(QObject *parent)
+	: QStyledItemDelegate(parent)
+{
+}
+QWidget *IpAddressDelegate::createEditor(QWidget *parent,const QStyleOptionViewItem & option,const QModelIndex & index) const
+{
+	QLineEdit *editor = new QLineEdit(parent);
+	QRegExp regExp("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-4]|[01]?\\d\\d?)");
+	editor->setValidator(new QRegExpValidator(regExp, parent));
+
+	return editor;
+}
+void IpAddressDelegate::setEditorData(QWidget *editor,const QModelIndex &index) const
+{
+	QString value = index.model()->data(index, Qt::EditRole).toString();
+
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+	lineedit->setText(value);
+}
+void IpAddressDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,const QModelIndex &index) const
+{
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+
+	QString  value = lineedit->text();
+
+	model->setData(index, value, Qt::EditRole);
+}
+void IpAddressDelegate::updateEditorGeometry(QWidget *editor,const QStyleOptionViewItem &option, const QModelIndex & index) const
+{
+	editor->setGeometry(option.rect);
+}
+
+//EPC edit delegate
+LengthLimitDelegate::LengthLimitDelegate(int length, bool supportchinese,QObject *parent)
+	: QStyledItemDelegate(parent)
+{
+	m_limit = length;
+	m_chinese = supportchinese;
+}
+void LengthLimitDelegate::ontextchanged(QString text)
+{
+	QLineEdit *edit = qobject_cast<QLineEdit*>(sender());
+
+	int bytes = text.toLocal8Bit().length();
+	if (bytes > m_limit)
+	{
+		while(text.toLocal8Bit().length()>m_limit)
+			text.chop(1);
+
+		edit->setText(text);
+	}
+}
+QWidget *LengthLimitDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+{
+	QLineEdit *editor = new QLineEdit(parent);
+	if (m_chinese)
+	{
+		connect(editor, &QLineEdit::textChanged, this, &LengthLimitDelegate::ontextchanged);
+	}
+	else
+	{
+		editor->setMaxLength(m_limit);
+		QRegExp regExp("^[^\u4e00-\u9fa5]{0,}$");		// do not input chinese
+		editor->setValidator(new QRegExpValidator(regExp, parent));
+	}
+	return editor;
+}
+void LengthLimitDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+	QString value = index.model()->data(index, Qt::EditRole).toString();
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+	lineedit->setText(value);
+}
+void LengthLimitDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+	QString  value = lineedit->text();
+	model->setData(index, value, Qt::EditRole);
+}
+void LengthLimitDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex & index) const
+{
+	editor->setGeometry(option.rect);
+}
+// RangeLimit for temperature limit input
+RangeLimitDelegate::RangeLimitDelegate(int min, int max,QObject *parent)
+	: QStyledItemDelegate(parent)
+{
+	m_min = min;
+	m_max = max;
+}
+QWidget *RangeLimitDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+{
+	QLineEdit *editor = new QLineEdit(parent);
+	editor->setValidator(new QIntValidator(m_min, m_max));
+	return editor;
+}
+void RangeLimitDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+	QString value = index.model()->data(index, Qt::EditRole).toString();
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+	lineedit->setText(value);
+}
+void RangeLimitDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+	QLineEdit *lineedit = static_cast<QLineEdit*>(editor);
+	QString  value = lineedit->text();
+	model->setData(index, value, Qt::EditRole);
+}
+void RangeLimitDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex & index) const
+{
+	editor->setGeometry(option.rect);
 }

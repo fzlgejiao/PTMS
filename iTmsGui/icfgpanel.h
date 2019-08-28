@@ -50,4 +50,5 @@ public slots:
 	void OnTagSelectChanged(const QModelIndex &index);
 	void OnIoTParameters(MSG_PKG& msg);
 	void OnRdmModified();
+	void Ontextchanged(QString text);
 };

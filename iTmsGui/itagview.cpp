@@ -68,11 +68,11 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 	{
 		if (model->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
 			continue;
-		iTag *tag = new iTag(tags->Tags[i].uid, tags->Tags[i].name);
+		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 
 		//todo: fill parameters of tag 
 		tag->t_sid = tags->Tags[i].sid;
-		tag->t_note = tags->Tags[i].note;
+		tag->t_note = QString::fromLocal8Bit(tags->Tags[i].note);
 		tag->t_temperature = tags->Tags[i].temperature;
 		tag->t_alarm = tags->Tags[i].alarm;
 		tag->t_rssi = tags->Tags[i].rssi;
@@ -85,5 +85,5 @@ void iTagView::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, tagEpc->epc);
+	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));
 }
