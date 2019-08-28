@@ -237,7 +237,7 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 	//todo: check if tag already exists
 	if (model->hasTag(tag->uid(),tag->epc()))
 	{
-		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("标签已经存在."),QMessageBox::Ok);
+		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("添加失败：相同识别号/名称的标签已经存在."),QMessageBox::Ok);
 		mbx.setMinimumSize(600, 400);
 		mbx.exec();
 		return;

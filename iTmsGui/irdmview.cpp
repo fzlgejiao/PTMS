@@ -5,6 +5,7 @@
 #include <QSortFilterProxyModel>
 #include <QFileDialog> 
 #include <QItemSelectionModel>
+#include <QMessageBox>
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
@@ -66,6 +67,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 	connect(tagModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataChanged(const QModelIndex &)));
+	connect(tagModel, SIGNAL(dataFailed(const QModelIndex &)), this, SLOT(OnTagDataFailed(const QModelIndex &)));
 
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
@@ -248,10 +250,22 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 		//todo: send cmd to rdm to write epc, and get online tags again when write epc cmd acked
 		if (index.column() == _Model::EPC)
 		{
-			m_Enetcmd.UDP_set_tagepc(selectedRdm(), tag);
-	}
+			iRdm *rdm = selectedRdm();
+			if(rdm)
+				m_Enetcmd.UDP_set_tagepc(rdm, tag);
+		}
 	}
 }
+void iRdmView::OnTagDataFailed(const QModelIndex &index)
+{
+	if (index.column() == _Model::EPC)
+	{
+		QMessageBox mbx(QMessageBox::Warning, "PTMS", QString::fromLocal8Bit("更改失败：相同名称的标签已经存在."), QMessageBox::Ok);
+		mbx.setMinimumSize(600, 400);
+		mbx.exec();
+	}
+}
+
 iRdm* iRdmView::selectedRdm()
 {
 	QModelIndex index = ui.tableRdms->currentIndex();

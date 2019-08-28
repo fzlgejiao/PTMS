@@ -59,7 +59,7 @@ void iTile::paintEvent(QPaintEvent *event)
 	QRect rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	QRect rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
 	painter.save();
-	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("ÃèÊö"));
+	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("Ãû³Æ"));
 	painter.drawText(rtValue, Qt::AlignLeft, QString("%1").arg(_tag->T_epc));
 	painter.restore();
 

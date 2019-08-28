@@ -77,6 +77,7 @@ public:
 	
 	bool insertRow(int row, iTag * tag);
 
+	bool hasTag(const QString& epc);
 	bool hasTag(quint64 uid,const QString& epc);
 	void setEditColumns(int columns) { editColumns |= columns; }
 	void setTagEpc(quint64 uid, const QString& epc);
@@ -87,6 +88,9 @@ public:
 private:
 	QList<iTag *>	listTags;
 	int				editColumns;
+
+signals:
+	void dataFailed(const QModelIndex &index);
 
 };
 
