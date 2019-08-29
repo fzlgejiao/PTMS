@@ -93,4 +93,5 @@ public slots:
 
 signals:
 	void cfgChanged();
+	void tagLost(iTag *);
 };

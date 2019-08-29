@@ -22,6 +22,7 @@ iView::iView(iRDM* rdm,QWidget *parent)
 	VW_init();
 
 	connect(RDM->reader, &iReader::tagUpdated, this, &iView::OnTagUpdated);
+	connect(RDM, SIGNAL(tagLost(iTag *)), this, SLOT(OnTagUpdated(iTag *)));
 	connect(RDM, SIGNAL(cfgChanged()), this, SLOT(VW_init()));
 }
 

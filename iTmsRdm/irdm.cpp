@@ -315,6 +315,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 						<< " Alarm : Offline" << endl;
 					tag->T_alarm_offline = true;													//offline
 
+					emit tagLost(tag);
 				}
 			}
 			if (tag->T_ticks == 0)
