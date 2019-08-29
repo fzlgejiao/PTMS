@@ -30,6 +30,7 @@ private:
 	QString t_note;
 	quint8	t_uplimit;
 	quint8	t_alarm;
+	quint8	t_online;
 };
 
 class iRdm :public QObject

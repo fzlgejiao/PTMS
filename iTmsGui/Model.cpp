@@ -182,7 +182,7 @@ QVariant TagModel::data(const QModelIndex &index, int role) const
 		case _Model::EPC:
 			return tag->t_epc;
 		case _Model::TEMP:
-			return tag->t_temperature;
+			return tag->t_online == 1? QString::number(tag->t_temperature,'f',1) : "--.-";
 		case _Model::ALARM:
 			return tag->t_alarm == 1? QString::fromLocal8Bit("是") : QString::fromLocal8Bit("否");
 		case _Model::UPLIMIT:
@@ -265,9 +265,14 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 				epc = value.toString() + QChar(' ');
 			else
 				epc = value.toString();
-			if (hasTag(epc))
+			if (epc.count() == 0 )
 			{
-				emit dataFailed(index);																//change epc failed
+				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称不能为空."));			//change epc failed
+				return false;
+			}
+			else if (hasTag(epc))
+			{
+				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称已经存在."));			//change epc failed
 				return false;
 			}
 			else
@@ -277,7 +282,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 		{
 			if (value.toInt() < 0 || value.toInt() >= 100)											//data validation for uplimit
 			{
-				emit dataFailed(index);																//change uplimit failed
+				emit dataFailed(index, QString::fromLocal8Bit("更改失败：温度界限设置错误."));			//change uplimit failed
 				return false;
 			}
 			tag->t_uplimit = value.toInt();

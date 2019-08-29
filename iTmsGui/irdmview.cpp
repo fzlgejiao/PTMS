@@ -67,7 +67,7 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));
 	connect(ui.tableTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagSelectChanged(const QModelIndex &)));
 	connect(tagModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataChanged(const QModelIndex &)));
-	connect(tagModel, SIGNAL(dataFailed(const QModelIndex &)), this, SLOT(OnTagDataFailed(const QModelIndex &)));
+	connect(tagModel, SIGNAL(dataFailed(const QModelIndex &, const QString&)), this, SLOT(OnTagDataFailed(const QModelIndex &, const QString&)));
 
 	connect(ui.btnDiscover, SIGNAL(clicked()), this, SLOT(onbtndiscover()));
 	connect(ui.btnDownload, SIGNAL(clicked()), this, SLOT(onbtnDownload()));
@@ -108,8 +108,6 @@ void iRdmView::onbtndiscover()
 	emit RdmSelected(NULL);
 
 	m_Enetcmd.UDP_discoverRdm();
-
-	ui.tableRdms->setFocus();
 }
 void iRdmView::onbtnDownload()
 {	
@@ -256,11 +254,11 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 		}
 	}
 }
-void iRdmView::OnTagDataFailed(const QModelIndex &index)
+void iRdmView::OnTagDataFailed(const QModelIndex &index, const QString& error)
 {
 	if (index.column() == _Model::EPC)
 	{
-		QMessageBox mbx(QMessageBox::Warning, "PTMS", QString::fromLocal8Bit("更改失败：相同名称的标签已经存在."), QMessageBox::Ok);
+		QMessageBox mbx(QMessageBox::Warning, "PTMS", error, QMessageBox::Ok);
 		mbx.setMinimumSize(600, 400);
 		mbx.exec();
 	}

@@ -90,7 +90,7 @@ private:
 	int				editColumns;
 
 signals:
-	void dataFailed(const QModelIndex &index);
+	void dataFailed(const QModelIndex &index,const QString& error);
 
 };
 

@@ -73,10 +73,11 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 		//todo: fill parameters of tag 
 		tag->t_sid = tags->Tags[i].sid;
 		tag->t_note = QString::fromLocal8Bit(tags->Tags[i].note);
-		tag->t_temperature = tags->Tags[i].temperature;
+		tag->t_temperature = (float)tags->Tags[i].temperature/10.;
 		tag->t_alarm = tags->Tags[i].alarm;
 		tag->t_rssi = tags->Tags[i].rssi;
 		tag->t_oc_rssi = tags->Tags[i].oc_rssi;
+		tag->t_online = tags->Tags[i].online;
 
 		model->insertRow(0, tag);
 	}
