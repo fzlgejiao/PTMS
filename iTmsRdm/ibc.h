@@ -110,7 +110,8 @@ typedef struct {
 		qint8	rssi;
 		quint8	oc_rssi;
 		quint16 temperature;		//temperature is a float ,so real temperature= temperature *0.1 ¡æ
-		quint16	reserved;
+		quint8	online;				//0: offline, 1: online
+		quint8	reserved;
 		char	name[16];
 		char	note[32];
 	}Tags[TAG_NUM];

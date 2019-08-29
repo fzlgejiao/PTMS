@@ -438,7 +438,8 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 		tagsdata->Tags[idx].alarm = tag->isAlarm() ? 1 : 0;
 		tagsdata->Tags[idx].rssi = tag->T_rssi;
 		tagsdata->Tags[idx].oc_rssi = tag->T_OC_rssi;
-		tagsdata->Tags[idx].temperature = tag->T_temp;
+		tagsdata->Tags[idx].temperature = tag->T_temp*10;
+		tagsdata->Tags[idx].online = tag->isonline()?1 : 0;
 		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
 		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLocal8Bit());
 		idx++;
