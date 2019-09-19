@@ -2,29 +2,35 @@
 
 #include <QObject>
 
+enum LED {
+	LED_STATUS = 0,
+	LED_ALARM,
+};
 
-#define AlarmLed		19			//red one
-#define StatusLed		26			//yellow one
+#define LED1			19			//green(HW_V2)
+#define LED2			26			//yellow(HW_V2),green(HW_V1)
 
-#define Input			0
-#define Output			1
+#define IO_IN			0
+#define IO_OUT			1
 
 class iLed : public QObject
 {
 	Q_OBJECT
 
 public:
-	iLed(QObject *parent);
+	iLed(int hwVer,QObject *parent);
 	~iLed();
 
 #ifdef __linux__
 	void setLed(int pin, bool on);
 #endif
-	void toggleled(int pin);
+	void toggleled(int led);
 
 private:
 	bool m_alarmledOn;
 	bool m_statusledOn;
+	int	 m_StatusLedPin;
+	int	 m_AlarmLedPin;
 
 #ifdef __linux__
 	void gpioExport(int pin);

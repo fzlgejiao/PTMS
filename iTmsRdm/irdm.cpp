@@ -2,6 +2,7 @@
 #include "ireader.h"
 #include "itag.h"
 #include "ibc.h"
+#include "iLed.h"
 #include "CModbus.h"
 #include <QDebug> 
 
@@ -19,6 +20,7 @@ iRDM::iRDM(QObject *parent)
 	iotdevice	= new iDevice(this);
 	modbus		= new CModbus(this);
 	bc			= new iBC(this);
+	led			= new iLed(HW_ver(),this);
 
 	RDM_init();
 
@@ -285,8 +287,9 @@ iTag* iRDM::Tag_getbysid(int sid)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
-	if (event->timerId() == timerId)
+	if (event->timerId() == tmrRDM)
 	{
+		qDebug() << "iRDM::timerEvent(5s)" << endl;
 		//read tags
 		reader->readtag();
 
@@ -330,10 +333,18 @@ void iRDM::timerEvent(QTimerEvent *event)
 			modbus->updateRdmRegisters(tag);
 		}
 	}
-	if (event->timerId() == timer_datetime)  //update modbus datetime registers
+	if (event->timerId() == tmrTime)  //update modbus datetime registers
 	{
+		qDebug() << "iRDM::timerEvent(1s)" << endl;
 		modbus->updatesystime(QDateTime::currentDateTime());
+
+		led->toggleled((int)LED_STATUS);
 	}
 }
+int	iRDM::HW_ver()
+{
+	//todo: check hw version
 
+	return HW_V1;
+}
 

@@ -5,10 +5,15 @@
 #include <QTimerEvent> 
 
 
-#define	RDM_TICKS	3		//max times for online check
-#define RDM_TIMER	5000
+#define	RDM_TICKS		3		//max times for online check
+#define RDM_TIMER		5000
 #define DATETIME_TIMER	1000
 
+enum HWVER {
+	HW_V1 = 0,
+	HW_V2,
+	HW_V3
+};
 
 
 class iReader;
@@ -16,6 +21,7 @@ class iDevice;
 class iTag;
 class iBC;
 class CModbus;
+class iLed;
 class iRDM : public QObject
 {
 	Q_OBJECT
@@ -28,8 +34,8 @@ public:
 	iTag*	Tag_getbysid(int sid);
 	int		Tag_count() { return taglist.count(); }
 
-	void    Tmr_stop() { this->killTimer(timerId);  this->killTimer(timer_datetime);}
-	void    Tmr_start() { timerId = this->startTimer(RDM_TIMER);timer_datetime= this->startTimer(DATETIME_TIMER);}
+	void    Tmr_stop() { this->killTimer(tmrRDM);  this->killTimer(tmrTime);}
+	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER);}
 
 protected:
 
@@ -40,6 +46,7 @@ protected:
 	void	Cfg_skipUnknownElement(QXmlStreamReader& xmlReader);
 
 	iTag*	Tag_add(int sid,quint64 uid,const QString& epc);
+	int		HW_ver();
 
 	virtual void timerEvent(QTimerEvent *event);
 
@@ -55,11 +62,12 @@ private:
 	iDevice*	iotdevice;																			//IOT device
 	CModbus *	modbus;
 	iBC*		bc;
+	iLed*		led;
 
 	QMap<quint64, iTag *> taglist;																	//<UID,tag>
 	QMap<quint64, QString> tagOnline;																//<UID,epc>
-	int			timerId;
-	int         timer_datetime;
+	int			tmrRDM;
+	int         tmrTime;
 	int			RDM_ticks;
 
 

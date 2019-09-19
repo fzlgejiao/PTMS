@@ -1,20 +1,36 @@
 #include "iLed.h"
-
-iLed::iLed(QObject *parent)
+#include "irdm.h"
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+iLed::iLed(int hwVer,QObject *parent)
 	: QObject(parent)
 {
 #ifdef __linux__
-	gpioExport(AlarmLed);
-	gpioExport(StatusLed);
+	gpioExport(LED1);
+	gpioExport(LED2);
 
-	gpioDirection(AlarmLed, Output);
-	gpioDirection(StatusLed, Output);
+	gpioDirection(LED1, IO_OUT);
+	gpioDirection(LED2, IO_OUT);
 
-	setLed(AlarmLed, false);
-	setLed(StatusLed, false);
+	setLed(LED1, false);
+	setLed(LED2, false);
 #endif
 	m_alarmledOn = false;
 	m_statusledOn = false;
+	if (hwVer == HW_V1)
+	{
+		m_StatusLedPin = LED2;
+		m_AlarmLedPin = 0;
+	}
+	else
+	{
+		m_StatusLedPin = LED1;
+		m_AlarmLedPin = LED2;
+	}
 }
 
 iLed::~iLed()
@@ -72,20 +88,20 @@ void iLed::setLed(int pin, bool on)
 }
 #endif
 
-void iLed::toggleled(int pin)
+void iLed::toggleled(int led)
 {	
-	if (pin == AlarmLed)
+	if (led == LED_ALARM)
 	{
 		m_alarmledOn = !m_alarmledOn;
 #ifdef __linux__	
-		setLed(pin, m_alarmledOn);
+		setLed(m_AlarmLedPin, m_alarmledOn);
 #endif
 	}
-	else if (pin == StatusLed)
+	else if (led == LED_STATUS)
 	{
 		m_statusledOn = !m_statusledOn;
 #ifdef __linux__	
-		setLed(pin, m_statusledOn);
+		setLed(m_StatusLedPin, m_statusledOn);
 #endif
 	}
 }
