@@ -44,7 +44,7 @@ bool CModbus::MB_init()
 	if (RDM->modbustype == "RTU")
 		return MB_initRTU(RDM->rtucomname, RDM->rtuslaveaddress, RDM->rtubaudrate, (QSerialPort::Parity)RDM->rtuparity);
 	else// if (RDM->modbustype == "TCP")
-		return MB_initTCP(RDM->RDM_ip, RDM->TcpPort);
+		return MB_initTCP(RDM->RDM_ip, RDM->TcpPort, RDM->rtuslaveaddress);
 }
 bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSerialPort::Parity parity)
 {
@@ -87,7 +87,7 @@ bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSe
 
 	return modbusDevice->connectDevice();	
 }
-bool CModbus::MB_initTCP(QString ipaddress, int port)
+bool CModbus::MB_initTCP(QString ipaddress, int port, quint8 slaveaddress)
 {
 	if (modbusDevice)
 	{
@@ -103,6 +103,7 @@ bool CModbus::MB_initTCP(QString ipaddress, int port)
 
 	modbusDevice->setConnectionParameter(QModbusDevice::NetworkAddressParameter, ipaddress);
 	modbusDevice->setConnectionParameter(QModbusDevice::NetworkPortParameter, port);
+	modbusDevice->setServerAddress(slaveaddress);
 
 	setupDeviceData();
 
