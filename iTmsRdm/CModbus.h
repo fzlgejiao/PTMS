@@ -22,16 +22,16 @@
 // Details in the protocol file 
 
 #define Start_HoldingRegister   0x0000
-#define Count_HoldingRegister   0x0033
+#define Count_HoldingRegister   0x0043
 
 #define Start_InputRegister		0x0000
-#define Count_InputRegister		0x0200
+#define Count_InputRegister		0x02E0
 
 #define Start_Coils				0x0000
-#define Count_Coils				0x0020
+#define Count_Coils				0x0030
 
 #define Start_DiscreteInputs	0x0000
-#define Count_DiscreteInputs	0x0040
+#define Count_DiscreteInputs	0x0060
 
 #ifndef		LOBYTE
 #define		LOBYTE(word)			((word)&0xFF)
@@ -64,98 +64,73 @@
 #define HoldingRegister_Tag9UPPERLIMIT	0x0018
 #define HoldingRegister_Tag10UPPERLIMIT	0x0019
 
-#define HoldingRegister_SYSYEARMONTH	0x0030
-#define HoldingRegister_SYSDAYHOUR		0x0031
-#define HoldingRegister_SYSMINSECOND	0x0032
+#define HoldingRegister_SYSYEARMONTH	0x0040
+#define HoldingRegister_SYSDAYHOUR		0x0041
+#define HoldingRegister_SYSMINSECOND	0x0042
 
 
 
 //InputRegisters:			Read Only
-#define InputRegister_TagCOUNT			0x01FF
+#define InputRegister_TagCOUNT			0x000F
 
-#define InputRegister_SYSYEARMONTH		0x01E0
-#define InputRegister_SYSDAYHOUR		0x01E1
-#define InputRegister_SYSMINSECOND		0x01E2
+#define InputRegister_SYSYEARMONTH		0x0000
+#define InputRegister_SYSDAYHOUR		0x0001
+#define InputRegister_SYSMINSECOND		0x0002
 
-#define InputRegister_Tag1Temp			0x0000
-#define InputRegister_Tag2Temp			0x0001
-#define InputRegister_Tag3Temp			0x0002
-#define InputRegister_Tag4Temp			0x0003
-#define InputRegister_Tag5Temp			0x0004
-#define InputRegister_Tag6Temp			0x0005
-#define InputRegister_Tag7Temp			0x0006
-#define InputRegister_Tag8Temp			0x0007
-#define InputRegister_Tag9Temp			0x0008
-#define InputRegister_Tag10Temp			0x0009
+#define InputRegister_Tag1Temp			0x0010
+#define InputRegister_Tag2Temp			0x0011
+#define InputRegister_Tag3Temp			0x0012
+#define InputRegister_Tag4Temp			0x0013
+#define InputRegister_Tag5Temp			0x0014
+#define InputRegister_Tag6Temp			0x0015
+#define InputRegister_Tag7Temp			0x0016
+#define InputRegister_Tag8Temp			0x0017
+#define InputRegister_Tag9Temp			0x0018
+#define InputRegister_Tag10Temp			0x0019
 
-#define InputRegister_Tag1RSSI			0x0020
-#define InputRegister_Tag2RSSI			0x0021
-#define InputRegister_Tag3RSSI			0x0022
-#define InputRegister_Tag4RSSI			0x0023
-#define InputRegister_Tag5RSSI			0x0024
-#define InputRegister_Tag6RSSI			0x0025
-#define InputRegister_Tag7RSSI			0x0026
-#define InputRegister_Tag8RSSI			0x0027
-#define InputRegister_Tag9RSSI			0x0028
-#define InputRegister_Tag10RSSI			0x0029
+#define InputRegister_Tag1RSSI			0x0040
+#define InputRegister_Tag2RSSI			0x0041
+#define InputRegister_Tag3RSSI			0x0042
+#define InputRegister_Tag4RSSI			0x0043
+#define InputRegister_Tag5RSSI			0x0044
+#define InputRegister_Tag6RSSI			0x0045
+#define InputRegister_Tag7RSSI			0x0046
+#define InputRegister_Tag8RSSI			0x0047
+#define InputRegister_Tag9RSSI			0x0048
+#define InputRegister_Tag10RSSI			0x0049
 
-#define InputRegister_Tag1OCRSSI		0x0040
-#define InputRegister_Tag2OCRSSI		0x0041
-#define InputRegister_Tag3OCRSSI		0x0042
-#define InputRegister_Tag4OCRSSI		0x0043
-#define InputRegister_Tag5OCRSSI		0x0044
-#define InputRegister_Tag6OCRSSI		0x0045
-#define InputRegister_Tag7OCRSSI		0x0046
-#define InputRegister_Tag8OCRSSI		0x0047
-#define InputRegister_Tag9OCRSSI		0x0048
-#define InputRegister_Tag10OCRSSI		0x0049
+#define InputRegister_Tag1OCRSSI		0x0070
+#define InputRegister_Tag2OCRSSI		0x0071
+#define InputRegister_Tag3OCRSSI		0x0072
+#define InputRegister_Tag4OCRSSI		0x0073
+#define InputRegister_Tag5OCRSSI		0x0074
+#define InputRegister_Tag6OCRSSI		0x0075
+#define InputRegister_Tag7OCRSSI		0x0076
+#define InputRegister_Tag8OCRSSI		0x0077
+#define InputRegister_Tag9OCRSSI		0x0078
+#define InputRegister_Tag10OCRSSI		0x0079
 
-#define InputRegister_Tag1UID			0x0060
-#define InputRegister_Tag2UID			0x0064
-#define InputRegister_Tag3UID			0x0068
-#define InputRegister_Tag4UID			0x006C
-#define InputRegister_Tag5UID			0x0070
-#define InputRegister_Tag6UID			0x0074
-#define InputRegister_Tag7UID			0x0078
-#define InputRegister_Tag8UID			0x007C
-#define InputRegister_Tag9UID			0x0080
-#define InputRegister_Tag10UID			0x0084
-#define InputRegister_Tag11UID			0x0088
-#define InputRegister_Tag12UID			0x008C
-#define InputRegister_Tag13UID			0x0090
-#define InputRegister_Tag14UID			0x0094
-#define InputRegister_Tag15UID			0x0098
-#define InputRegister_Tag16UID			0x009C
-#define InputRegister_Tag17UID			0x00A0
-#define InputRegister_Tag18UID			0x00A4
-#define InputRegister_Tag19UID			0x00A8
-#define InputRegister_Tag20UID			0x00AC
-#define InputRegister_Tag21UID			0x00B0
-#define InputRegister_Tag22UID			0x00B4
-#define InputRegister_Tag23UID			0x00B8
-#define InputRegister_Tag24UID			0x00BC
-#define InputRegister_Tag25UID			0x00C0
-#define InputRegister_Tag26UID			0x00C4
-#define InputRegister_Tag27UID			0x00C8
-#define InputRegister_Tag28UID			0x00CC
-#define InputRegister_Tag29UID			0x00D0
-#define InputRegister_Tag30UID			0x00D4
-#define InputRegister_Tag31UID			0x00D8
-#define InputRegister_Tag32UID			0x00DC
+#define InputRegister_Tag1UID			0x00A0
+#define InputRegister_Tag2UID			0x00A4
+#define InputRegister_Tag3UID			0x00A8
+#define InputRegister_Tag4UID			0x00AC
+#define InputRegister_Tag5UID			0x00B0
+#define InputRegister_Tag6UID			0x00B4
+#define InputRegister_Tag7UID			0x00B8
+#define InputRegister_Tag8UID			0x00BC
+#define InputRegister_Tag9UID			0x00C0
+#define InputRegister_Tag10UID			0x00C4
 
-
-#define InputRegister_Tag1EPC			0x00E0
-#define InputRegister_Tag2EPC			0x00E8
-#define InputRegister_Tag3EPC			0x00F0
-#define InputRegister_Tag4EPC			0x00F8
-#define InputRegister_Tag5EPC			0x0100
-#define InputRegister_Tag6EPC			0x0108
-#define InputRegister_Tag7EPC			0x0110
-#define InputRegister_Tag8EPC			0x0118
-#define InputRegister_Tag9EPC			0x0120
-#define InputRegister_Tag10EPC			0x0128
-
-#define InputRegister_Tag32EPC			0x01D8
+#define InputRegister_Tag1EPC			0x0160
+#define InputRegister_Tag2EPC			0x0168
+#define InputRegister_Tag3EPC			0x0170
+#define InputRegister_Tag4EPC			0x0178
+#define InputRegister_Tag5EPC			0x0180
+#define InputRegister_Tag6EPC			0x0188
+#define InputRegister_Tag7EPC			0x0190
+#define InputRegister_Tag8EPC			0x0198
+#define InputRegister_Tag9EPC			0x01A0
+#define InputRegister_Tag10EPC			0x01A8
 
 //Coils:			Read/Write
 #define Coil_Tag1Enable					0x0000
@@ -181,16 +156,16 @@
 #define DiscreteInput_Tag9Online		0x0008
 #define DiscreteInput_Tag10Online		0x0009
 
-#define DiscreteInput_Tag1TempAlarm		0x0020
-#define DiscreteInput_Tag2TempAlarm		0x0021
-#define DiscreteInput_Tag3TempAlarm		0x0022
-#define DiscreteInput_Tag4TempAlarm		0x0023
-#define DiscreteInput_Tag5TempAlarm		0x0024
-#define DiscreteInput_Tag6TempAlarm		0x0025
-#define DiscreteInput_Tag7TempAlarm		0x0026
-#define DiscreteInput_Tag8TempAlarm		0x0027
-#define DiscreteInput_Tag9TempAlarm		0x0028
-#define DiscreteInput_Tag10TempAlarm	0x0029
+#define DiscreteInput_Tag1TempAlarm		0x0030
+#define DiscreteInput_Tag2TempAlarm		0x0031
+#define DiscreteInput_Tag3TempAlarm		0x0032
+#define DiscreteInput_Tag4TempAlarm		0x0033
+#define DiscreteInput_Tag5TempAlarm		0x0034
+#define DiscreteInput_Tag6TempAlarm		0x0035
+#define DiscreteInput_Tag7TempAlarm		0x0036
+#define DiscreteInput_Tag8TempAlarm		0x0037
+#define DiscreteInput_Tag9TempAlarm		0x0038
+#define DiscreteInput_Tag10TempAlarm	0x0039
 
 
 typedef enum  {
