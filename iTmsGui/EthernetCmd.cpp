@@ -238,7 +238,7 @@ void EthernetCmd::UDP_fileinfo(iRdm* rdm,QString fullpathname, FileType type)
 	if(type== XmlFile)
 		strcpy(f_para.filename, "iTmsRdm.xml");
 	else
-		strcpy(f_para.filename, filename.toStdString().c_str());
+		strncpy(f_para.filename, filename.toStdString().c_str(),15);
 
 	MSG_PKG txmsg;
 	txmsg.cmd_pkg.header.ind = UDP_IND;

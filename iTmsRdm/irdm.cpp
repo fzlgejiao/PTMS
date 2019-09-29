@@ -44,7 +44,7 @@ void iRDM::RDM_init()
 
 	iotdevice->IOT_init();
 	if(modbus->MB_init() == false)
-		qDebug() << "modbus init : FAILED - " << endl;
+		qDebug() << "modbus init : FAILED - ";
 	if (reader->RD_init() == false)
 		reader->checkerror();
 
@@ -200,7 +200,7 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 	qDeleteAll(taglist);
 	taglist.clear();
 
-	qDebug() << "Cfg_readtags:" << endl;
+	qDebug() << "Cfg_readtags:";
 
 	xmlReader.readNext();
 	while (!xmlReader.atEnd()) {
@@ -234,7 +234,7 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				qDebug() << "tag : sid = " << sid 
 						<< " uid = " << uid 
 					    << " epc = " << epc
-						<< " note = " << note << endl;
+						<< " note = " << note;
 
 
 				if (xmlReader.isEndElement())
@@ -287,9 +287,8 @@ iTag* iRDM::Tag_getbysid(int sid)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
-	if (event->timerId() == tmrRDM)
+	if (event->timerId() == tmrRDM)		//5s
 	{
-		qDebug() << "iRDM::timerEvent(5s)" << endl;
 		//read tags
 		reader->readtag();
 
@@ -315,7 +314,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 				{
 					qDebug() << "tag : sid = " << tag->T_sid 
 						<< " uid = " << tag->T_uid 
-						<< " Alarm : Offline" << endl;
+						<< " Alarm : Offline";
 					tag->T_alarm_offline = true;													//offline
 
 					emit tagLost(tag);
@@ -325,7 +324,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 			{
 				qDebug() << "tag : sid = " << tag->T_sid
 					<< " uid = " << tag->T_uid
-					<< " Offline" << endl;
+					<< " Offline";
 			}
 
 			iotdevice->PUB_tag_data(tag);
@@ -335,7 +334,6 @@ void iRDM::timerEvent(QTimerEvent *event)
 	}
 	if (event->timerId() == tmrTime)  //update modbus datetime registers
 	{
-		qDebug() << "iRDM::timerEvent(1s)" << endl;
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);

@@ -66,8 +66,8 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 	Tags_Data *tags = (Tags_Data *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-		if (model->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
-			continue;
+//		if (model->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
+//			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 
 		//todo: fill parameters of tag 
@@ -86,5 +86,5 @@ void iTagView::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));
+	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
 }

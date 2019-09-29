@@ -19,7 +19,7 @@ public:
 	~iReader();
 
 	bool RD_init();
-	bool wirteEpc(const QString& epc_old, const QString& epc_new);
+	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
 	void readtag();
 	void checkerror();
 
@@ -43,16 +43,19 @@ private:
 	QString		software;
 	QString		modleversion;
 		
-	TMR_ReadPlan subplan[SubPlanCnt];
-	TMR_ReadPlan* subplanPtrs[SubPlanCnt];
-	TMR_ReadPlan multiplan;
+	TMR_ReadPlan	subplan[SubPlanCnt];
+	TMR_ReadPlan*	subplanPtrs[SubPlanCnt];
+	TMR_ReadPlan	multiplan;
+
 	//On-chip RSSI read plan
-	TMR_TagFilter OC_rssi_select;
-	TMR_TagOp OC_rssi_read;
-	quint8 OC_rssi_mask;
+	TMR_TagFilter	OC_rssi_select;
+	TMR_TagOp		OC_rssi_read;
+	quint8			OC_rssi_mask;
+
 	//read temperature plan
-	TMR_TagFilter tempselect;
-	TMR_TagOp	tempread;
+	TMR_TagFilter	tempselect;
+	TMR_TagOp		tempread;
+
 	//Async read
 	TMR_ReadListenerBlock rlb;
 	TMR_ReadExceptionListenerBlock reb;

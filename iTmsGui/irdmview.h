@@ -39,6 +39,7 @@ private slots:
 	void onbtnUpgrade();
 	void OnRdmModified();
 	void onRdmIpChanged(iRdm *rdm);
+	void OnTagEpc(MSG_PKG&);
 	
 private:
 	Ui::iRdmView ui;

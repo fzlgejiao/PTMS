@@ -4,11 +4,11 @@
 #include <QtNetwork/QUdpSocket>
 
 #define UDP_IND		0xAA55
-
+#define UDP_DATA	1200
 #define UDP_PORT	2900
 #define TCP_PORT	2901
 
-#define	TAG_NUM		12
+#define	TAG_NUM		16
 
 typedef enum {
 	XmlFile = 0,
@@ -29,7 +29,7 @@ typedef struct {
 	struct
 	{
 		CMD_HEADER		header;
-		uchar			data[256];
+		uchar			data[UDP_DATA];
 	}cmd_pkg;
 }MSG_PKG;
 

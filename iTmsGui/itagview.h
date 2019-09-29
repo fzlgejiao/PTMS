@@ -18,8 +18,8 @@ public:
 
 private:
 	Ui::iTagView ui;
-	TagModel *model;
-	EthernetCmd &netcmd;
+	TagModel *		model;
+	EthernetCmd &	netcmd;
 
 public slots:
 	void OnRdmSelected(iRdm *);

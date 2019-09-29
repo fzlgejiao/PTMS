@@ -18,7 +18,7 @@ void iReader::checkerror()
 	//if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "reader init : FAILED - " << errormessage << endl;
+		qDebug() << "reader init : FAILED - " << errormessage;
 	}
 }
 bool iReader::RD_init()
@@ -159,29 +159,36 @@ bool iReader::RD_init()
 	//if (ret != TMR_SUCCESS) goto Failed;
 	return true;
 }
-bool iReader::wirteEpc(const QString& epc_old, const QString& epc_new)
+bool iReader::wirteEpc(const QByteArray& epc_old, const QString& epc_new)
 {
-	TMR_TagData		epc;
+	TMR_TagData		oldepc;
 	TMR_TagData		newepc;
 	TMR_TagOp		tagop;
 	TMR_TagFilter	filter;
 	TMR_Status		ret;
 
-	epc.epcByteCount = epc_old.length();
-	memcpy(epc.epc, epc_old.toStdString().c_str(), epc.epcByteCount);
+	oldepc.epcByteCount = epc_old.count();
+	memcpy(oldepc.epc, epc_old.data(), epc_old.count());
 
-	newepc.epcByteCount = epc_new.length();
-	memcpy(newepc.epc, epc_new.toStdString().c_str(), newepc.epcByteCount);
+	newepc.epcByteCount = epc_new.count();
+	memcpy(newepc.epc, epc_new.toStdString().c_str(), epc_new.count());
 
 	ret = TMR_TagOp_init_GEN2_WriteTag(&tagop, &newepc);
-	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_TF_init_tag(&filter, &epc);
-	if (ret != TMR_SUCCESS) return false;
+	if (ret != TMR_SUCCESS) 
+		return false;
+	ret = TMR_TF_init_tag(&filter, &oldepc);
+	if (ret != TMR_SUCCESS) 
+		return false;
+
 	/* Execute the tag operation Gen2 writeTag with select filter applied*/
 	ret = TMR_executeTagOp(tmrReader, &tagop, &filter, NULL);
-
-	if (ret == TMR_SUCCESS) return true;
-	else return false;
+	if (ret == TMR_SUCCESS) 
+		return true;
+	else
+	{
+		qDebug() << "reader wirteEpc : FAILED - " << QString(TMR_strerr(tmrReader, ret));
+		return false;
+	}
 }
 
 quint64 iReader::readtagTid(TMR_TagFilter *filter)
@@ -245,10 +252,10 @@ void iReader::readtag()
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "read tag : FAILED - " << errormessage << endl;
+		qDebug() << "read tag : FAILED - " << errormessage;
 		return;
 	}
-	qDebug() << "read tag : SUCCESS" << endl;
+	qDebug() << "read tag : SUCCESS";
 
 	while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 	{
@@ -263,29 +270,32 @@ void iReader::readtag()
 		trd.data.len = 0;
 
 		ret = TMR_getNextTag(tmrReader, &trd);
-		if (ret != TMR_SUCCESS) continue;
-		//read tag ok!
-		//get Tid ,epc		
-		QString epc = QString(QByteArray((char *)trd.tag.epc, trd.tag.epcByteCount));
-		TMR_TagFilter epcfilter;
+		if (ret != TMR_SUCCESS) 
+			continue;
 
+		//read tag ok!
+		TMR_TagFilter epcfilter;
 		ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
-		if (ret != TMR_SUCCESS) continue;
+		if (ret != TMR_SUCCESS)
+			continue;
 			
 		if (trd.data.len > 0)
 		{
+			//get Tid ,epc		
 			quint64 tid = readtagTid(&epcfilter);
-			if (tid == 0) continue;
+			if (tid == 0) 
+				continue;
+			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
 			
 			//add tag into online list
-			RDM->tagOnline.insert(tid, epc);
+			RDM->tagOnline.insert(tid, tEPC);
 
 			iTag * tag = RDM->Tag_get(tid);
 			if (tag )
 			{
 				tag->T_ticks = TAG_TICKS;
 				tag->T_alarm_offline = false;
-				tag->T_epc = epc;
+				tag->T_epc = tEPC;
 				tag->T_rssi = trd.rssi;
 				tag->T_data_flag |= Tag_Online; 
 				if (tag->T_caldata.all == 0)
@@ -309,7 +319,7 @@ void iReader::readtag()
 								<< " epc = " << tag->T_epc
 								<< " rssi = " << tag->T_rssi
 								<< " temperature = " << tag->T_temp
-								<< " temp_alarmed = " << tag->T_alarm_temperature << endl;
+								<< " temp_alarmed = " << tag->T_alarm_temperature;
 						}
 					}
 				}
@@ -322,13 +332,13 @@ void iReader::readtag()
 						<< " epc = " << tag->T_epc
 						<< " rssi = " << tag->T_rssi
 						<< " Oc-rssi = " << tag->T_OC_rssi
-						<< "frequency =" << trd.frequency << endl;
+						<< "frequency =" << trd.frequency;
 				}
 				emit tagUpdated(tag);
 			}
 			else
 			{
-				qDebug() << "unknown tag : uid = " << tid << endl;
+				qDebug() << "unknown tag : uid = " << tid << "epc = " << tEPC;
 			}
 
 		}

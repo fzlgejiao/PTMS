@@ -80,6 +80,7 @@ iRdmView::iRdmView(QWidget *parent)
 
 	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
 	connect(&m_Enetcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
+	connect(&m_Enetcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
 
 	connect(rdmmodel, SIGNAL(IpChanged(iRdm *)), this, SLOT(onRdmIpChanged(iRdm *)));
 	
@@ -313,4 +314,10 @@ void iRdmView::OnRdmModified()
 void iRdmView::onRdmIpChanged(iRdm *rdm)
 {
 	m_Enetcmd.UDP_ipset(rdm);
+}
+void iRdmView::OnTagEpc(MSG_PKG& msg)
+{
+	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
+
+	tagModel->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));							//acked for epc change
 }

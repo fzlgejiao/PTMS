@@ -4,8 +4,8 @@
 #include <QHostAddress> 
 #include <QTcpSocket>
 
-#define UDP_IND		0xAA55
-
+#define UDP_IND			0xAA55
+#define UDP_DATA		1200
 #define RemoteUdpPort	2900
 #define RemoteTcpPort	2901
 
@@ -30,7 +30,7 @@ typedef struct {
 	struct
 	{
 		CMD_HEADER		header;
-		uchar			data[1200];
+		uchar			data[UDP_DATA];
 	}cmd_pkg;
 }MSG_PKG;
 

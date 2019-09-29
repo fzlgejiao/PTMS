@@ -82,7 +82,7 @@ void iDevice::OnStateChanged(QMqttClient::ClientState state)
 	QMqttClient::ClientState status = client->state();
 	if (status == QMqttClient::Connected)					//if first connected, publish my version
 	{
-		qDebug() << "RDM : connected" << endl;
+		qDebug() << "RDM : connected";
 		RDM->RDM_available = true;																	//device is connected
 
 		PUB_ota_data(OTA_Version);
@@ -93,12 +93,12 @@ void iDevice::OnStateChanged(QMqttClient::ClientState state)
 	}
 	else if (status == QMqttClient::Disconnected)
 	{
-		qDebug() << "RDM : disconnected" << endl;
+		qDebug() << "RDM : disconnected";
 		RDM->RDM_available = false;
 	}
 	else if (status == QMqttClient::Connecting)
 	{
-		qDebug() << "RDM : connecting" << endl;
+		qDebug() << "RDM : connecting";
 		RDM->RDM_available = false;
 	}
 }
@@ -281,7 +281,7 @@ void iDevice::PUB_ota_data(ushort flag)
 	if (flag & OTA_Version)
 	{
 		QString version = QCoreApplication::applicationVersion();
-		qDebug() << "RDM : " << version << endl;
+		qDebug() << "RDM : " << version;
 		QString MESSAGE_FORMAT = QString("{\"id\":3,\"params\":{\"version\":\"%1\"}}").arg(version);
 		client->publish(PubOTAVersionTopic, MESSAGE_FORMAT.toUtf8());
 	}
@@ -292,6 +292,6 @@ void iDevice::PUB_ota_progress(int step, QString & desc)
 	if (status != QMqttClient::Connected) return;
 
 	QString MESSAGE_FORMAT = QString("{\"id\":1,\"params\":{\"step\":\"%1\",\"desc\":\"%2\"}}").arg(step).arg(desc);
-	qDebug() << "Pub ota progress " << step << "%" << endl;
+	qDebug() << "Pub ota progress " << step << "%";
 	client->publish(PubOTAProgressTopic, MESSAGE_FORMAT.toUtf8());
 }

@@ -235,9 +235,9 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 {
 	setCurrentIndex(1);																				//switch to tags tab
 	//todo: check if tag already exists
-	if (model->hasTag(tag->uid(),tag->epc()))
+	if (model->rowCount() >= TAG_NUM || model->hasTag(tag->uid(),tag->epc()))
 	{
-		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("添加失败：相同识别号/名称的标签已经存在."),QMessageBox::Ok);
+		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("添加失败：相同识别号/名称的标签已经存在，或者标签数量已达上限."),QMessageBox::Ok);
 		mbx.setMinimumSize(600, 400);
 		mbx.exec();
 		return;
@@ -248,11 +248,14 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 }
 void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 {
+	if (model->rowCount() > 0)
+		model->removeRows(0, model->rowCount());
+
 	Tags_Parameters *tags = (Tags_Parameters *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-		if (model->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
-			continue;
+//		if (model->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
+//			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 		//todo: fill all parameters of tag
 		tag->t_sid		= tags->Tags[i].sid;
@@ -265,7 +268,7 @@ void iCfgPanel::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));
+	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
 }
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {

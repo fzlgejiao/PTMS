@@ -256,9 +256,9 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	}
 	else if (role == Qt::EditRole)
 	{
-		if (index.column() == _Model::EPC)
+		if (index.column() == _Model::EPC)															//change epc
 		{
-			if (value.toString().count() > 10 || value.toString() == tag->t_epc)
+			if (value.toString().count() >= EPC_SIZE-2 || value.toString() == tag->t_epc)
 				return false;
 			QString epc;
 			if (value.toString().count() % 2 != 0)

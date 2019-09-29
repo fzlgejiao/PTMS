@@ -19,8 +19,8 @@ OTA::OTA(QString &urlstr, QString & version, int size, QObject *parent)
 
 	directory = QCoreApplication::applicationDirPath()+"/";
 
-	//qDebug() << qnam.supportedSchemes()<<endl;
-	//qDebug() << QSslSocket::supportsSsl()<<endl;
+	//qDebug() << qnam.supportedSchemes();
+	//qDebug() << QSslSocket::supportsSsl();
 	
 	url = QUrl(ota_url);
 	request.setUrl(url);
@@ -85,7 +85,7 @@ void OTA::networkReplyProgress(qint64 bytesReceived, qint64 bytesTotal)
 	//publish step and commment 
 	if ((percent >= OTA_PROGRESS::IOT_OTAP_FETCH_PERCENTAGE_MIN) && (percent <= OTA_PROGRESS::IOT_OTAP_FETCH_PERCENTAGE_MAX))
 	{
-		qDebug() << "Received " << percent << "%" << endl;
+		qDebug() << "Received " << percent << "%";
 		iot->PUB_ota_progress(percent, message);
 	}
 }
@@ -103,7 +103,7 @@ void OTA::httpFinished()
 	if (reply->error()) {
 		QString message = QString("Error:%1").arg(reply->errorString());
 		//publish error 
-		qDebug() << "Reply Error: " << message << endl;
+		qDebug() << "Reply Error: " << message;
 		int step = OTA_PROGRESS::IOT_FETCH_FAILED;
 		iot->PUB_ota_progress(step, message);
 		rdm->Tmr_start();
@@ -114,7 +114,7 @@ void OTA::httpFinished()
 	reply->deleteLater();
 	reply = NULL;
 
-	qDebug() << "Downloaded " << fi.size() << "bytes in file " << fi.fileName() << endl;
+	qDebug() << "Downloaded " << fi.size() << "bytes in file " << fi.fileName();
 	if (fi.size() == ota_size)
 	{			
 #ifdef __linux__
@@ -134,7 +134,7 @@ void OTA::httpFinished()
 		delayms(500);
 		system("sync");
 
-		qDebug() << "Restart the rdm service" << endl;
+		qDebug() << "Restart the rdm service";
 		system("systemctl restart rdm");
 		//execl(directory+"/iTmsRdm", "iTmsRdm", NULL);
 #endif

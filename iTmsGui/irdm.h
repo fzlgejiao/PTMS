@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QMap>
 
+#define		EPC_SIZE	16
+
 class iTag :public QObject
 {
 	Q_OBJECT

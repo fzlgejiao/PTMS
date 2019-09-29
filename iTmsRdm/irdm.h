@@ -65,7 +65,7 @@ private:
 	iLed*		led;
 
 	QMap<quint64, iTag *> taglist;																	//<UID,tag>
-	QMap<quint64, QString> tagOnline;																//<UID,epc>
+	QMap<quint64, QByteArray> tagOnline;															//<UID,epc>
 	int			tmrRDM;
 	int         tmrTime;
 	int			RDM_ticks;
