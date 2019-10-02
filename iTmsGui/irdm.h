@@ -3,7 +3,9 @@
 #include <QObject>
 #include <QMap>
 
-#define		EPC_SIZE	16
+#define		RDM_NAME_NOTE	15
+#define		TAG_EPC_SIZE	14																		//epc size should be even, and limited below 16
+#define		TAG_NOTE_SIZE	15
 
 class iTag :public QObject
 {

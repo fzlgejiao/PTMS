@@ -61,7 +61,7 @@ iRdmView::iRdmView(QWidget *parent)
 	ui.btnChangeEpc->setEnabled(false);
 	ui.btnFindTags->setEnabled(false);
 
-	ui.tableTags->setItemDelegateForColumn(_Model::EPC, new LengthLimitDelegate(15,false,this));
+	ui.tableTags->setItemDelegateForColumn(_Model::EPC, new LengthLimitDelegate(TAG_EPC_SIZE,false,this));
 
 	//connect(ui.tableRdms, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));//for test
 	connect(ui.tableRdms->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmSelectChanged(const QModelIndex &)));

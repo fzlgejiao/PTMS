@@ -7,8 +7,6 @@
 #include <QtXml>
 #include <iostream>
 
-#define BytesLimit 15
-
 bool TagAscendingbyEpc(iTag *tag1, iTag *tag2)
 {
 	return (tag1->epc() < tag2->epc());
@@ -70,7 +68,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.btnRemoveTag->setEnabled(false);
 
 	ui.tableTags->setItemDelegateForColumn(_Model::UPLIMIT, new RangeLimitDelegate(1, 120, this));
-	ui.tableTags->setItemDelegateForColumn(_Model::NOTE, new LengthLimitDelegate(15,true, this));
+	ui.tableTags->setItemDelegateForColumn(_Model::NOTE, new LengthLimitDelegate(TAG_NOTE_SIZE,true, this));
 
 	setCurrentIndex(0);
 
@@ -242,8 +240,7 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 		mbx.exec();
 		return;
 	}
-	iTag *newTag = new iTag(*tag);
-	model->insertRow(0, newTag);
+	model->insertRow(0, new iTag(*tag));															//create a new tag in config panel tag list
 	OnRdmModified();																				//rdm changed due to new tag added
 }
 void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
@@ -361,14 +358,14 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 	return true;
 }
 
-void iCfgPanel::Ontextchanged(QString text)
+void iCfgPanel::Ontextchanged(QString text)															//for rdm name and note
 {
 	QLineEdit *edit = qobject_cast<QLineEdit*>(sender());
 
 	int bytes = text.toLocal8Bit().length();
-	if (bytes > BytesLimit)
+	if (bytes > RDM_NAME_NOTE)
 	{
-		while (text.toLocal8Bit().length() > BytesLimit)
+		while (text.toLocal8Bit().length() > RDM_NAME_NOTE)
 			text.chop(1);
 
 		edit->setText(text);

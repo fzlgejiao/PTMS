@@ -283,7 +283,7 @@ void iBC::OnFileDone(bool ok)
 }
 
 void iBC::UDP_cmd_discover(const MSG_PKG& msg)
-{
+{//cmd=0x01, ack discover for rdms
 	//Test datas
 	RDM_Paramters rdm_p;
 	memset(&rdm_p, 0, sizeof(rdm_p));
@@ -302,13 +302,14 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	txMsg.cmd_pkg.header.len = sizeof(rdm_p);
 	memcpy(txMsg.cmd_pkg.data, &rdm_p, sizeof(rdm_p));
 
-	txMsg.rIP = msg.rIP;
+	//txMsg.rIP = msg.rIP;
+	txMsg.rIP = QHostAddress::Broadcast;
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);	
 }
 
 void iBC::UDP_cmd_online(const MSG_PKG& msg)
-{
+{//cmd=0x02, ack online check
 	MSG_PKG txMsg;
 	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
 	txMsg.cmd_pkg.header.ind = UDP_IND;
@@ -323,7 +324,7 @@ void iBC::UDP_cmd_online(const MSG_PKG& msg)
 }
 
 void iBC::UDP_cmd_modbus(const MSG_PKG& msg)
-{
+{//cmd=0x03, ack modbus settings
 	MSG_PKG txMsg;
 	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
 	txMsg.cmd_pkg.header.ind = UDP_IND;
@@ -347,7 +348,7 @@ void iBC::UDP_cmd_modbus(const MSG_PKG& msg)
 }
 
 void iBC::UDP_cmd_iot(const MSG_PKG& msg)
-{
+{//cmd=0x04,ack IOT settings
 	MSG_PKG txMsg;
 	txMsg.cmd_pkg.header.ind = UDP_IND;
 	txMsg.cmd_pkg.header.cmd = UDP_READIOTSETTING;
@@ -367,35 +368,8 @@ void iBC::UDP_cmd_iot(const MSG_PKG& msg)
 	UDP_send(txMsg);
 
 }
-
-void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
-{
-	MSG_PKG txMsg;
-	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
-	txMsg.cmd_pkg.header.ind = UDP_IND;
-	txMsg.cmd_pkg.header.cmd = UDP_READTAGSONLINE;
-	txMsg.cmd_pkg.header.len = sizeof(Tags_Online);
-
-	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
-
-	qDebug() << "online tags :";
-	int idx = 0;
-	QMapIterator<quint64, QByteArray> i(rdm->tagOnline);
-	while (i.hasNext()) {
-		i.next();
-		tagsdata->Tags[idx].uid = i.key();
-		memcpy(tagsdata->Tags[idx].name, i.value().data(),i.value().count());
-		idx++;
-		qDebug() << i.key() << ": " << i.value();
-	}
-	tagsdata->Header.tagcount = idx;																//online tags count
-
-	txMsg.rIP = msg.rIP;
-	txMsg.rPort = msg.rPort;
-	UDP_send(txMsg);
-}
 void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
-{
+{//cmd=0x05,ack tags settings
 	MSG_PKG txMsg;
 	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
 	txMsg.cmd_pkg.header.ind = UDP_IND;
@@ -420,8 +394,35 @@ void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
 }
+void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
+{//cmd=0x06,ack tags online
+	MSG_PKG txMsg;
+	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
+	txMsg.cmd_pkg.header.ind = UDP_IND;
+	txMsg.cmd_pkg.header.cmd = UDP_READTAGSONLINE;
+	txMsg.cmd_pkg.header.len = sizeof(Tags_Online);
+
+	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
+
+	qDebug() << "online tags :";
+	int idx = 0;
+	QMapIterator<quint64, QByteArray> i(rdm->tagOnline);
+	while (i.hasNext()) {
+		i.next();
+		tagsdata->Tags[idx].uid = i.key();
+		memcpy(tagsdata->Tags[idx].name, i.value().data(),i.value().count());
+		idx++;
+		qDebug() << i.key() << ": " << i.value();
+	}
+	tagsdata->Header.tagcount = idx;																//online tags count
+
+	txMsg.rIP = msg.rIP;
+	txMsg.rPort = msg.rPort;
+	UDP_send(txMsg);
+}
+
 void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
-{
+{//cmd=0x07,ack tags data
 	MSG_PKG txMsg;
 	memset(&txMsg.cmd_pkg, 0, sizeof(txMsg.cmd_pkg));
 	txMsg.cmd_pkg.header.ind = UDP_IND;
@@ -452,7 +453,7 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 }
 
 void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
-{
+{//cmd=0x08,ack write tag epc
 	//write tag epc
 	Tag_epc *rtagepc = (Tag_epc *)msg.cmd_pkg.data;
 
@@ -489,7 +490,7 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 }
 
 void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
-{
+{//cmd=0x09,ack set rdm ip
 	IpSetFormat *ipset = (IpSetFormat *)msg.cmd_pkg.data;
 
 	QString localmac = getMAC();
@@ -512,7 +513,7 @@ void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)
 }
 
 void iBC::UDP_cmd_file(const MSG_PKG& msg)
-{
+{//cmd=0x10,ack download file info
 	if (msg.cmd_pkg.header.len == sizeof(File_Paramters))
 	{
 		File_Paramters *file_para = (File_Paramters *)msg.cmd_pkg.data;

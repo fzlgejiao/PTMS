@@ -258,7 +258,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 	{
 		if (index.column() == _Model::EPC)															//change epc
 		{
-			if (value.toString().count() >= EPC_SIZE-2 || value.toString() == tag->t_epc)
+			if (value.toString().count() > TAG_EPC_SIZE || value.toString() == tag->t_epc)
 				return false;
 			QString epc;
 			if (value.toString().count() % 2 != 0)

@@ -248,6 +248,17 @@ void iReader::readtag()
 	//clear old online tags before read again
 	RDM->tagOnline.clear();
 
+	//--------------------------test code---------------------
+	//quint64 tid1 = 1;
+	//QByteArray epc1;
+	//for (uchar i = 0; i < 12; i++)
+	//{
+	//	tid1 = i;
+	//	epc1.append(i);
+	//	RDM->tagOnline.insert(tid1, epc1);
+	//}
+	//--------------------------test code---------------------
+
 	ret = TMR_read(tmrReader, 75, NULL);
 	if (ret != TMR_SUCCESS)
 	{

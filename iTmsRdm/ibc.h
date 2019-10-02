@@ -43,7 +43,7 @@ typedef enum {
 	UDP_READTAGSDATA		= 7,
 	UDP_SETTAGEPC			= 8,
 	UDP_SETRDMIP			= 9,
-	UDP_FILEPARAMETER = 0x10
+	UDP_FILEPARAMETER		= 0x10
 }UDP_CMD;
 
 
@@ -72,6 +72,7 @@ typedef struct {
 	quint32	rtu_baudrate;
 	quint8	rtu_address;
 	quint8	rtu_parity;
+	quint16 reserved1;
 }MODBUS_Paramters;
 
 typedef struct {
@@ -93,7 +94,7 @@ typedef struct {
 		quint8	upperlimit;
 		quint16 reserved;
 		char	name[16];
-		char	note[32];
+		char	note[16];
 	}Tags[TAG_NUM];
 }Tags_Parameters;
 
@@ -113,7 +114,7 @@ typedef struct {
 		quint8	online;				//0: offline, 1: online
 		quint8	reserved;
 		char	name[16];
-		char	note[32];
+		char	note[16];
 	}Tags[TAG_NUM];
 }Tags_Data;
 

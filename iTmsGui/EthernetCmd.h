@@ -9,7 +9,7 @@
 #define RemoteUdpPort	2900
 #define RemoteTcpPort	2901
 
-#define	TAG_NUM		12
+#define	TAG_NUM			16
 
 typedef enum {
 	XmlFile = 0,
@@ -73,6 +73,7 @@ typedef struct {
 	quint32	rtu_baudrate;
 	quint8	rtu_address;
 	quint8	rtu_parity;
+	quint16 reserved1;
 }MODBUS_Paramters;
 
 typedef struct {
@@ -94,7 +95,7 @@ typedef struct {
 		quint8	upperlimit;
 		quint16 reserved;
 		char	name[16];
-		char	note[32];
+		char	note[16];
 	}Tags[TAG_NUM];
 }Tags_Parameters;
 
@@ -114,7 +115,7 @@ typedef struct {
 		quint8	online;				//0: offline, 1: online
 		quint8	reserved;
 		char	name[16];
-		char	note[32];
+		char	note[16];
 	}Tags[TAG_NUM];
 }Tags_Data;
 
