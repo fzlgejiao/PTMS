@@ -75,10 +75,10 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 
 	setCurrentIndex(0);
 
-	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnModbusParameters(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagsParaReady(MSG_PKG&)), this, SLOT(OnTagsParaReady(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(IotParaReady(MSG_PKG&)), this, SLOT(OnIoTParameters(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(ModbusParamReady(MSG_PKG&)), this, SLOT(OnMsgModbusParameters(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsParaReady(MSG_PKG&)), this, SLOT(OnMsgTagsParaReady(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnMsgTagEpc(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(IotParaReady(MSG_PKG&)), this, SLOT(OnMsgIoTParameters(MSG_PKG&)));
 
 	connect(ui.btnRemoveTag, SIGNAL(clicked()), this, SLOT(OnRemoveTag()));
 	connect(ui.btnEditTagLimit, SIGNAL(clicked()), this, SLOT(OnEditTagLimit()));
@@ -106,7 +106,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 iCfgPanel::~iCfgPanel()
 {
 }
-void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
+void iCfgPanel::OnMsgModbusParameters(MSG_PKG& msg)
 {
 	disconnect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 	disconnect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
@@ -122,7 +122,7 @@ void iCfgPanel::OnModbusParameters(MSG_PKG& msg)
 	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 }
-void iCfgPanel::OnIoTParameters(MSG_PKG& msg)
+void iCfgPanel::OnMsgIoTParameters(MSG_PKG& msg)
 {
 	IOT_Paramters* iot = (IOT_Paramters *)msg.cmd_pkg.data;
 
@@ -246,7 +246,7 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 	tagModel->insertRow(0, new iTag(*tag));															//create a new tag in config panel tag list
 	OnRdmModified();																				//rdm changed due to new tag added
 }
-void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
+void iCfgPanel::OnMsgTagsParaReady(MSG_PKG& msg)
 {
 	if (tagModel->rowCount() > 0)
 		tagModel->removeRows(0, tagModel->rowCount());
@@ -264,7 +264,7 @@ void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 		tagModel->insertRow(0, tag);
 	}
 }
-void iCfgPanel::OnTagEpc(MSG_PKG& msg)
+void iCfgPanel::OnMsgTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 

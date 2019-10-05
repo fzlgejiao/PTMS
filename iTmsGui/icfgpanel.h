@@ -37,18 +37,21 @@ signals:
 	void RdmModified();
 
 public slots:
-	void OnModbusParameters(MSG_PKG&);
-	void OnTagsParaReady(MSG_PKG&);
-	void OnTagEpc(MSG_PKG&);
 	void OnRemoveTag();
 	void OnEditTagLimit();
 	void OnEditTagNote();
+
 	void OnRdmSelected(iRdm *);
 	void OnRdmSaved(iRdm *);
 	void OnRdmDownloaded(iRdm *);
 	void OnTagAdded(iTag *);
 	void OnTagSelectChanged(const QModelIndex &index);
-	void OnIoTParameters(MSG_PKG& msg);
 	void OnRdmModified();
 	void Ontextchanged(QString text);
+
+	void OnMsgModbusParameters(MSG_PKG&);
+	void OnMsgTagsParaReady(MSG_PKG&);
+	void OnMsgTagEpc(MSG_PKG&);
+	void OnMsgIoTParameters(MSG_PKG& msg);
+
 };

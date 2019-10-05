@@ -82,11 +82,11 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnChangeEpc, SIGNAL(clicked()), this, SLOT(onbtnChangeEpc()));
 	connect(ui.btnAddTag, SIGNAL(clicked()), this, SLOT(onbtnAddToSys()));
 
-	connect(&netcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(OnMsgRdmfound(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnMsgOnlineTagsFound(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnMsgTagEpc(MSG_PKG&)));
 
-	connect(rdmModel, SIGNAL(IpChanged(iRdm *)), this, SLOT(onRdmIpChanged(iRdm *)));
+	connect(rdmModel, SIGNAL(IpChanged(iRdm *)), this, SLOT(OnRdmIpChanged(iRdm *)));
 	
 	m_n2sTimerId = startTimer(2000);
 }
@@ -146,7 +146,7 @@ void iRdmView::OnbtnFindTags()
 	//strcpy(tags.Tags[1].name, "EFGH");
 	//MSG_PKG msg;
 	//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	//OnlineTagsFound(msg);
+	//OnMsgOnlineTagsFound(msg);
 }
 void iRdmView::onbtnChangeEpc()
 {
@@ -160,7 +160,19 @@ void iRdmView::onbtnAddToSys()
 	if (tag)
 		emit tagAdded(tag);
 }
-void iRdmView::NewRdmfound(MSG_PKG & msg)
+void iRdmView::onbtnUpgrade()
+{
+	iRdm* rdm = selectedRdm();
+	if (!rdm) return;
+
+	QString tarfilename = QFileDialog::getOpenFileName(this, tr("Choose Upgrade file"), ".", tr("Gzip File (*.gz)"));
+	if (tarfilename.isEmpty()) return;
+
+	netcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
+}
+
+
+void iRdmView::OnMsgRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
 	iRdm *newrdm = new iRdm(QString::fromLocal8Bit(rdm->RdmName), rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion, QString::fromLocal8Bit(rdm->RdmNote),this);
@@ -175,7 +187,7 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 		ui.tableRdms->setCurrentIndex(index);
 	}
 }
-void iRdmView::OnlineTagsFound(MSG_PKG & msg)
+void iRdmView::OnMsgOnlineTagsFound(MSG_PKG & msg)
 {
 	Tags_Online *tags = (Tags_Online *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
@@ -221,7 +233,7 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		//strcpy(tags.Tags[1].name, "EFGH");
 		//MSG_PKG msg;
 		//memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-		//OnlineTagsFound(msg);
+		//OnMsgOnlineTagsFound(msg);
 	}
 		
 	emit RdmSelected(rdm);
@@ -296,16 +308,7 @@ void iRdmView::timerEvent(QTimerEvent *event)
 		QObject::timerEvent(event);
 	}
 }
-void iRdmView::onbtnUpgrade()
-{
-	iRdm* rdm = selectedRdm();
-	if (!rdm) return;
 
-	QString tarfilename = QFileDialog::getOpenFileName(this, tr("Choose Upgrade file"), ".", tr("Gzip File (*.gz)"));
-	if (tarfilename.isEmpty()) return;
-
-	netcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
-}
 void iRdmView::OnRdmModified()
 {
 	iRdm* rdm = selectedRdm();
@@ -315,11 +318,11 @@ void iRdmView::OnRdmModified()
 		ui.btnDownload->setEnabled(true);
 	}
 }
-void iRdmView::onRdmIpChanged(iRdm *rdm)
+void iRdmView::OnRdmIpChanged(iRdm *rdm)
 {
 	netcmd.UDP_ipset(rdm);
 }
-void iRdmView::OnTagEpc(MSG_PKG& msg)
+void iRdmView::OnMsgTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 

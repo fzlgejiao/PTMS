@@ -31,16 +31,18 @@ private slots:
 	void OnbtnFindTags();
 	void onbtnChangeEpc();
 	void onbtnAddToSys();
-	void NewRdmfound(MSG_PKG &msg);
-	void OnlineTagsFound(MSG_PKG &msg);
+	void onbtnUpgrade();
+
 	void OnRdmSelectChanged(const QModelIndex & index);
 	void OnTagSelectChanged(const QModelIndex & index);
 	void OnTagDataChanged(const QModelIndex &);
 	void OnTagDataFailed(const QModelIndex &index, const QString& error);
-	void onbtnUpgrade();
 	void OnRdmModified();
-	void onRdmIpChanged(iRdm *rdm);
-	void OnTagEpc(MSG_PKG&);
+	void OnRdmIpChanged(iRdm *rdm);
+
+	void OnMsgRdmfound(MSG_PKG &msg);
+	void OnMsgOnlineTagsFound(MSG_PKG &msg);
+	void OnMsgTagEpc(MSG_PKG&);
 	
 private:
 	Ui::iRdmView ui;

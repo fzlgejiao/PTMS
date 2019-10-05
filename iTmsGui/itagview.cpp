@@ -28,8 +28,8 @@ iTagView::iTagView(QWidget *parent)
 	this->setColumnWidth(_Model::SID, 70);
 	this->setColumnWidth(_Model::UID, 180);
 
-	connect(&netcmd, SIGNAL(TagsDataReady(MSG_PKG&)), this, SLOT(OnDataTagsReady(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsDataReady(MSG_PKG&)), this, SLOT(OnMsgTagsDataReady(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnMsgTagEpc(MSG_PKG&)));
 }
 
 iTagView::~iTagView()
@@ -57,10 +57,10 @@ void iTagView::OnRdmSelected(iRdm *rdm)
 	//	strcpy(tags.Tags[1].note, "Note2");
 	//	MSG_PKG msg;
 	//	memcpy(msg.cmd_pkg.data, &tags, sizeof(tags));
-	//	OnDataTagsReady(msg);
+	//	OnMsgTagsDataReady(msg);
 	//}
 }
-void iTagView::OnDataTagsReady(MSG_PKG& msg)
+void iTagView::OnMsgTagsDataReady(MSG_PKG& msg)
 {
 	//clear tags when new tags data cmd acked
 	if (tagModel->rowCount() > 0)
@@ -85,7 +85,7 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 		tagModel->insertRow(0, tag);
 	}
 }
-void iTagView::OnTagEpc(MSG_PKG& msg)
+void iTagView::OnMsgTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
