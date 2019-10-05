@@ -9,6 +9,7 @@ class iRdm;
 class iTag;
 class RdmModel;
 class TagModel;
+class iSys;
 class iRdmView : public QWidget
 {
 	Q_OBJECT
@@ -43,8 +44,9 @@ private slots:
 	
 private:
 	Ui::iRdmView ui;
-	EthernetCmd &m_Enetcmd;
-	RdmModel*	rdmmodel;
+	iSys&		oSys;
+	EthernetCmd &netcmd;
+	RdmModel*	rdmModel;
 	TagModel*	tagModel;
 
 

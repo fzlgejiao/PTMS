@@ -13,7 +13,9 @@ bool TagAscendingbyEpc(iTag *tag1, iTag *tag2)
 }
 
 iCfgPanel::iCfgPanel(QWidget *parent)
-	: QTabWidget(parent), netcmd(EthernetCmd::Instance())
+	: QTabWidget(parent)
+	, oSys(iSys::Instance())
+	, netcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
 
@@ -43,8 +45,9 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	ui.leRegion->setValidator(new QRegExpValidator(regExp, parent));
 	ui.leRegion->setToolTip(QString::fromLocal8Bit("请输入字母,字符和数字"));
 	
-	model = new TagModel(this);
-	model->setEditColumns((1 << _Model::UPLIMIT) | (1 << _Model::NOTE));
+	tagModel = new TagModel(this);
+	tagModel->setEditColumns((1 << _Model::UPLIMIT) | (1 << _Model::NOTE));
+	oSys.tagModelPara = tagModel;
 
 	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -55,7 +58,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	headerView->setVisible(true);
 	headerView->setStretchLastSection(true);
 
-	ui.tableTags->setModel(model);
+	ui.tableTags->setModel(tagModel);
 	ui.tableTags->hideColumn(_Model::SID);
 	ui.tableTags->hideColumn(_Model::TEMP);
 	ui.tableTags->hideColumn(_Model::ALARM);
@@ -94,7 +97,7 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
 
-	connect(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmModified()));
+	connect(tagModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnRdmModified()));
 
 	connect(ui.leRdmName, &QLineEdit::textChanged, this, &iCfgPanel::Ontextchanged);
 	connect(ui.leRdmNote, &QLineEdit::textChanged, this, &iCfgPanel::Ontextchanged);
@@ -132,7 +135,7 @@ void iCfgPanel::OnRemoveTag()
 {
 	//int row = ui.tableTags->currentIndex().row();
 	//if(row != -1)
-	//	model->removeRows(row, 1);
+	//	tagModel->removeRows(row, 1);
 
 	QItemSelectionModel *selectionModel = ui.tableTags->selectionModel();
 	QModelIndexList indexes = selectionModel->selectedRows();
@@ -140,7 +143,7 @@ void iCfgPanel::OnRemoveTag()
 		int row = index.row();
 		if (row != -1)
 		{
-			model->removeRows(row, 1, QModelIndex());
+			tagModel->removeRows(row, 1, QModelIndex());
 			OnRdmModified();																		//rdm changed due to tag removed
 		}
 	}
@@ -161,8 +164,8 @@ void iCfgPanel::OnEditTagNote()
 void iCfgPanel::OnRdmSelected(iRdm *rdm)
 {
 	//clear editing tags when rdm change selected
-	if (model->rowCount() > 0)
-		model->removeRows(0, model->rowCount());	
+	if (tagModel->rowCount() > 0)
+		tagModel->removeRows(0, tagModel->rowCount());	
 	
 	if (rdm)
 	{
@@ -233,39 +236,39 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 {
 	setCurrentIndex(1);																				//switch to tags tab
 	//todo: check if tag already exists
-	if (model->rowCount() >= TAG_NUM || model->hasTag(tag->uid(),tag->epc()))
+	if (tagModel->rowCount() >= TAG_NUM || tagModel->hasTag(tag->uid()) || tagModel->hasTag(tag->epc()) )
 	{
 		QMessageBox mbx(QMessageBox::Warning,"PTMS", QString::fromLocal8Bit("添加失败：相同识别号/名称的标签已经存在，或者标签数量已达上限."),QMessageBox::Ok);
 		mbx.setMinimumSize(600, 400);
 		mbx.exec();
 		return;
 	}
-	model->insertRow(0, new iTag(*tag));															//create a new tag in config panel tag list
+	tagModel->insertRow(0, new iTag(*tag));															//create a new tag in config panel tag list
 	OnRdmModified();																				//rdm changed due to new tag added
 }
 void iCfgPanel::OnTagsParaReady(MSG_PKG& msg)
 {
-	if (model->rowCount() > 0)
-		model->removeRows(0, model->rowCount());
+	if (tagModel->rowCount() > 0)
+		tagModel->removeRows(0, tagModel->rowCount());
 
 	Tags_Parameters *tags = (Tags_Parameters *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-//		if (model->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
-//			continue;
+		if (tagModel->hasTag(tags->Tags[i].uid, tags->Tags[i].name))									//make sure no duplicated tags 
+			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 		//todo: fill all parameters of tag
 		tag->t_sid		= tags->Tags[i].sid;
 		tag->t_note		= QString::fromLocal8Bit(tags->Tags[i].note);
 		tag->t_uplimit	= tags->Tags[i].upperlimit;
-		model->insertRow(0, tag);
+		tagModel->insertRow(0, tag);
 	}
 }
 void iCfgPanel::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
+	tagModel->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
 }
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {
@@ -330,8 +333,8 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 	xmlWriter.writeStartElement("tags");
 	int sid = 1;
 	//Fixed to sort by epc when save to xml
-	qSort(model->taglist().begin(), model->taglist().end(), TagAscendingbyEpc);
-	foreach(iTag *tag, model->taglist())
+	qSort(tagModel->taglist().begin(), tagModel->taglist().end(), TagAscendingbyEpc);
+	foreach(iTag *tag, tagModel->taglist())
 	{
 		tag->t_sid = sid;
 		xmlWriter.writeStartElement("tag");

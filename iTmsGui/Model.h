@@ -77,6 +77,7 @@ public:
 	
 	bool insertRow(int row, iTag * tag);
 
+	bool hasTag(quint64 uid);
 	bool hasTag(const QString& epc);
 	bool hasTag(quint64 uid,const QString& epc);
 	void setEditColumns(int columns) { editColumns |= columns; }

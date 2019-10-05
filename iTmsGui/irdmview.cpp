@@ -6,15 +6,18 @@
 #include <QFileDialog> 
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QInputDialog> 
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
-	, m_Enetcmd(EthernetCmd::Instance())
+	, oSys(iSys::Instance())
+	, netcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
 
 	//table rdms
-	rdmmodel = new RdmModel(this);
+	rdmModel = new RdmModel(this);
+	oSys.rdmModel = rdmModel;
 
 	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
 
@@ -26,7 +29,7 @@ iRdmView::iRdmView(QWidget *parent)
 	QHeaderView *headerRdms = ui.tableRdms->horizontalHeader();
 	headerRdms->setVisible(true);
 	headerRdms->setStretchLastSection(true);
-	ui.tableRdms->setModel(rdmmodel);
+	ui.tableRdms->setModel(rdmModel);
 
 	ui.tableRdms->setItemDelegateForColumn(_Model::IP, new IpAddressDelegate(this));
 
@@ -34,6 +37,7 @@ iRdmView::iRdmView(QWidget *parent)
 	//table online tags
 	tagModel = new TagModel(this);
 	tagModel->setEditColumns(1 << _Model::EPC);
+	oSys.tagModelOnline = tagModel;
 
 	ui.tableTags->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui.tableTags->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -78,11 +82,11 @@ iRdmView::iRdmView(QWidget *parent)
 	connect(ui.btnChangeEpc, SIGNAL(clicked()), this, SLOT(onbtnChangeEpc()));
 	connect(ui.btnAddTag, SIGNAL(clicked()), this, SLOT(onbtnAddToSys()));
 
-	connect(&m_Enetcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
-	connect(&m_Enetcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
-	connect(&m_Enetcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(newRdmReady(MSG_PKG&)), this, SLOT(NewRdmfound(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagsOnlineReady(MSG_PKG&)), this, SLOT(OnlineTagsFound(MSG_PKG&)));
+	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnTagEpc(MSG_PKG&)));
 
-	connect(rdmmodel, SIGNAL(IpChanged(iRdm *)), this, SLOT(onRdmIpChanged(iRdm *)));
+	connect(rdmModel, SIGNAL(IpChanged(iRdm *)), this, SLOT(onRdmIpChanged(iRdm *)));
 	
 	m_n2sTimerId = startTimer(2000);
 }
@@ -93,8 +97,8 @@ iRdmView::~iRdmView()
 void iRdmView::onbtndiscover()
 {
 	//clear rdms when discover rdms again
-	if (rdmmodel->rowCount() > 0)
-		rdmmodel->removeRows(0, rdmmodel->rowCount());
+	if (rdmModel->rowCount() > 0)
+		rdmModel->removeRows(0, rdmModel->rowCount());
 
 	//clear online tags when discover rdms again
 	if (tagModel->rowCount() > 0)
@@ -108,7 +112,7 @@ void iRdmView::onbtndiscover()
 	//to notify other views to update when rdm cleared before discover
 	emit RdmSelected(NULL);
 
-	m_Enetcmd.UDP_discoverRdm();
+	netcmd.UDP_discoverRdm();
 }
 void iRdmView::onbtnDownload()
 {	
@@ -131,7 +135,7 @@ void iRdmView::OnbtnFindTags()
 
 	iRdm *rdm = selectedRdm();
 	if(rdm)
-		m_Enetcmd.UDP_get_tagsonline(rdm);														//get online tags
+		netcmd.UDP_get_tagsonline(rdm);																//get online tags
 
 	////test code
 	//Tags_Online tags;
@@ -161,9 +165,9 @@ void iRdmView::NewRdmfound(MSG_PKG & msg)
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
 	iRdm *newrdm = new iRdm(QString::fromLocal8Bit(rdm->RdmName), rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion, QString::fromLocal8Bit(rdm->RdmNote),this);
 	newrdm->m_comname = rdm->RdmComName;
-	rdmmodel->insertmyrow(0, newrdm);	
+	rdmModel->insertmyrow(0, newrdm);	
 	//todo: select the first rdm
-	if (rdmmodel->rowCount() == 1)
+	if (rdmModel->rowCount() == 1)
 	{
 		//QItemSelectionModel *selectionModel = ui.tableRdms->selectionModel();
 		QModelIndex index = ui.tableRdms->model()->index(0, 0, QModelIndex());
@@ -202,11 +206,11 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		ui.btnChangeIP->setEnabled(true);
 		ui.btnFindTags->setEnabled(true);
 
-		m_Enetcmd.UDP_get_iotparameters(rdm);													//get iot parameters
-		m_Enetcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
-		m_Enetcmd.UDP_get_tagsonline(rdm);															//get online tags
-		m_Enetcmd.UDP_get_tagspara(rdm);															//get managed tags para
-		m_Enetcmd.UDP_get_tagsdata(rdm);															//get managed tags data
+		netcmd.UDP_get_iotparameters(rdm);														//get iot parameters
+		netcmd.UDP_get_modbusparameters(rdm);													//get modbus parameters
+		netcmd.UDP_get_tagsonline(rdm);															//get online tags
+		netcmd.UDP_get_tagspara(rdm);															//get managed tags para
+		netcmd.UDP_get_tagsdata(rdm);															//get managed tags data
 
 		////test code
 		//Tags_Online tags;
@@ -251,7 +255,7 @@ void iRdmView::OnTagDataChanged(const QModelIndex &index)
 		{
 			iRdm *rdm = selectedRdm();
 			if(rdm)
-				m_Enetcmd.UDP_set_tagepc(rdm, tag);
+				netcmd.UDP_set_tagepc(rdm, tag);
 		}
 	}
 }
@@ -270,7 +274,7 @@ iRdm* iRdmView::selectedRdm()
 	QModelIndex index = ui.tableRdms->currentIndex();
 	if (index.isValid() == false)
 		return NULL;
-	return (iRdm *)rdmmodel->data(index, Qt::UserRole).toUInt();
+	return (iRdm *)rdmModel->data(index, Qt::UserRole).toUInt();
 }
 iTag* iRdmView::selectedTag()
 {
@@ -285,7 +289,7 @@ void iRdmView::timerEvent(QTimerEvent *event)
 	{
 		iRdm *rdm = selectedRdm();
 		if (rdm)
-			m_Enetcmd.UDP_get_tagsdata(rdm);														//get managed tags data
+			netcmd.UDP_get_tagsdata(rdm);															//get managed tags data
 	}
 	else
 	{
@@ -300,7 +304,7 @@ void iRdmView::onbtnUpgrade()
 	QString tarfilename = QFileDialog::getOpenFileName(this, tr("Choose Upgrade file"), ".", tr("Gzip File (*.gz)"));
 	if (tarfilename.isEmpty()) return;
 
-	m_Enetcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
+	netcmd.UDP_fileinfo(rdm, tarfilename, TarFile);
 }
 void iRdmView::OnRdmModified()
 {
@@ -313,7 +317,7 @@ void iRdmView::OnRdmModified()
 }
 void iRdmView::onRdmIpChanged(iRdm *rdm)
 {
-	m_Enetcmd.UDP_ipset(rdm);
+	netcmd.UDP_ipset(rdm);
 }
 void iRdmView::OnTagEpc(MSG_PKG& msg)
 {

@@ -10,7 +10,7 @@ class iRdm;
 class iTag;
 class TagModel;
 class QSerialPort;
-
+class iSys;
 bool TagAscendingbyEpc(iTag *tag1, iTag *tag2);
 
 class iCfgPanel : public QTabWidget
@@ -20,12 +20,12 @@ class iCfgPanel : public QTabWidget
 public:
 	iCfgPanel(QWidget *parent = Q_NULLPTR);
 	~iCfgPanel();
-	TagModel* Model() {	return model;}
+	TagModel* Model() {	return tagModel;}
 
 private:
 	Ui::iCfgPanel ui;
-
-	TagModel *		model;
+	iSys&			oSys;
+	TagModel *		tagModel;
 	EthernetCmd &	netcmd;
 	QMap<int, QSerialPort::Parity> paritymap;
 	QString			filename;

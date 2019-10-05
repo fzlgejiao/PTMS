@@ -8,6 +8,7 @@ class QAbstractItemModel;
 class iRdm;
 class TagModel;
 class iTag;
+class iSys;
 class iTagView : public QTableView
 {
 	Q_OBJECT
@@ -18,7 +19,8 @@ public:
 
 private:
 	Ui::iTagView ui;
-	TagModel *		model;
+	iSys&			oSys;
+	TagModel *		tagModel;
 	EthernetCmd &	netcmd;
 
 public slots:

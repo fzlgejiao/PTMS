@@ -4,15 +4,18 @@
 #include <QtGui>
 
 iTagView::iTagView(QWidget *parent)
-	: QTableView(parent), netcmd(EthernetCmd::Instance())
+	: QTableView(parent)
+	, oSys(iSys::Instance())
+	, netcmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
 
 	setStyleSheet("QTableView::item{selection-color: white; selection-background-color: rgb(20, 20, 125);}");
 
-	model = new TagModel(this);
+	tagModel = new TagModel(this);
+	oSys.tagModelData = tagModel;
 
-	this->setModel(model);
+	this->setModel(tagModel);
 	this->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	this->setSelectionBehavior(QAbstractItemView::SelectRows);
 	this->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -35,8 +38,8 @@ iTagView::~iTagView()
 void iTagView::OnRdmSelected(iRdm *rdm)
 {
 	//clear tags when rdm change selected
-	if (model->rowCount() > 0)
-		model->removeRows(0, model->rowCount());
+	if (tagModel->rowCount() > 0)
+		tagModel->removeRows(0, tagModel->rowCount());
 
 	//if (rdm)
 	//{
@@ -60,14 +63,14 @@ void iTagView::OnRdmSelected(iRdm *rdm)
 void iTagView::OnDataTagsReady(MSG_PKG& msg)
 {
 	//clear tags when new tags data cmd acked
-	if (model->rowCount() > 0)
-		model->removeRows(0, model->rowCount());
+	if (tagModel->rowCount() > 0)
+		tagModel->removeRows(0, tagModel->rowCount());
 
 	Tags_Data *tags = (Tags_Data *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{
-//		if (model->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
-//			continue;
+		if (tagModel->hasTag(tags->Tags[i].uid,tags->Tags[i].name))									//make sure no duplicated tags 
+			continue;
 		iTag *tag = new iTag(tags->Tags[i].uid, QString::fromLocal8Bit(tags->Tags[i].name));
 
 		//todo: fill parameters of tag 
@@ -79,12 +82,12 @@ void iTagView::OnDataTagsReady(MSG_PKG& msg)
 		tag->t_oc_rssi = tags->Tags[i].oc_rssi;
 		tag->t_online = tags->Tags[i].online;
 
-		model->insertRow(0, tag);
+		tagModel->insertRow(0, tag);
 	}
 }
 void iTagView::OnTagEpc(MSG_PKG& msg)
 {
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
-	model->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
+	tagModel->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
 }

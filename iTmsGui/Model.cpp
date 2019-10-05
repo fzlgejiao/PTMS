@@ -252,10 +252,12 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 
 	if (role == Qt::DisplayRole)
 	{
-
+		tag->t_epc = value.toString();
+		return true;
 	}
 	else if (role == Qt::EditRole)
 	{
+		iSys& oSys = iSys::Instance();
 		if (index.column() == _Model::EPC)															//change epc
 		{
 			if (value.toString().count() > TAG_EPC_SIZE || value.toString() == tag->t_epc)
@@ -270,7 +272,7 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称不能为空."));			//change epc failed
 				return false;
 			}
-			else if (hasTag(epc))
+			else if (oSys.tagModelOnline->hasTag(epc) || oSys.tagModelPara->hasTag(epc) || oSys.tagModelData->hasTag(epc))
 			{
 				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称已经存在."));			//change epc failed
 				return false;
@@ -326,6 +328,15 @@ Qt::ItemFlags TagModel::flags(const QModelIndex &index) const
 	else
 		return QAbstractTableModel::flags(index);
 }
+bool TagModel::hasTag(quint64 uid)
+{
+	for (iTag *tag : listTags)
+	{
+		if (tag->t_uid == uid)
+			return true;
+	}
+	return false;
+}
 bool TagModel::hasTag(const QString& epc)
 {
 	for (iTag *tag : listTags)
@@ -339,7 +350,7 @@ bool TagModel::hasTag(quint64 uid, const QString& epc)
 { 
 	for (iTag *tag : listTags)
 	{
-		if (tag->t_uid == uid || tag->t_epc == epc)
+		if (tag->t_uid == uid && tag->t_epc == epc)
 			return true;
 	}
 	return false;
@@ -350,7 +361,7 @@ void TagModel::setTagEpc(quint64 uid, const QString& epc)
 	{
 		if (listTags[i]->t_uid == uid)
 		{
-			setData(index(i, _Model::EPC), epc,Qt::EditRole);
+			setData(index(i, _Model::EPC), epc,Qt::DisplayRole);									//temp solution: to avoid re-calling dataChanged 
 			return;
 		}
 	}

@@ -62,6 +62,34 @@ private:
 	QString m_comname;
 
 	bool	m_bModified;
-
 };
 
+class RdmModel;
+class TagModel;
+class iSys :public QObject
+{
+	Q_OBJECT
+
+public:
+	static iSys & Instance()
+	{
+		static iSys _iSys;
+		return _iSys;
+	}
+	~iSys() {}
+
+	RdmModel	*rdmModel;
+	TagModel	*tagModelOnline;
+	TagModel	*tagModelPara;
+	TagModel	*tagModelData;
+private:
+	iSys(QObject *parent=0)
+		: QObject(parent)
+	{
+		rdmModel = NULL;
+		tagModelOnline = NULL;
+		tagModelPara = NULL;
+		tagModelData = NULL;
+
+	}
+};
