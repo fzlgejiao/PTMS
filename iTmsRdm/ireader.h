@@ -5,7 +5,8 @@
 #include "tm_reader.h"
 
 
-#define SubPlanCnt 2
+#define PLAN_CNT		2
+#define RD_TIMEOUT		500
 
 
 class iRDM;
@@ -43,8 +44,8 @@ private:
 	QString		software;
 	QString		modleversion;
 		
-	TMR_ReadPlan	subplan[SubPlanCnt];
-	TMR_ReadPlan*	subplanPtrs[SubPlanCnt];
+	TMR_ReadPlan	subplan[PLAN_CNT];
+	TMR_ReadPlan*	subplanPtrs[PLAN_CNT];
 	TMR_ReadPlan	multiplan;
 
 	//On-chip RSSI read plan

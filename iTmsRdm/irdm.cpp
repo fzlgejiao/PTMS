@@ -320,12 +320,6 @@ void iRDM::timerEvent(QTimerEvent *event)
 					emit tagLost(tag);
 				}
 			}
-			if (tag->T_ticks == 0)
-			{
-				qDebug() << "tag : sid = " << tag->T_sid
-					<< " uid = " << tag->T_uid
-					<< " Offline";
-			}
 
 			iotdevice->PUB_tag_data(tag);
 			iotdevice->PUB_tag_event(tag);

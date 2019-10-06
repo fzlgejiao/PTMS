@@ -404,7 +404,7 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 
 	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
 
-	qDebug() << "online tags :";
+	qDebug() << "Message online tags :";
 	int idx = 0;
 	QMapIterator<quint64, QByteArray> i(rdm->tagOnline);
 	while (i.hasNext()) {
@@ -412,7 +412,7 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 		tagsdata->Tags[idx].uid = i.key();
 		memcpy(tagsdata->Tags[idx].name, i.value().data(),i.value().count());
 		idx++;
-		qDebug() << i.key() << ": " << i.value();
+		qDebug() << "uid = " << i.key() << " epc = " << i.value();
 	}
 	tagsdata->Header.tagcount = idx;																//online tags count
 

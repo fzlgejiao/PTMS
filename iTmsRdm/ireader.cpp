@@ -18,7 +18,7 @@ void iReader::checkerror()
 	//if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "reader init : FAILED - " << errormessage;
+		qDebug() << "Error reader-init : FAILED - " << errormessage;
 	}
 }
 bool iReader::RD_init()
@@ -29,12 +29,11 @@ bool iReader::RD_init()
 
 	tmrReader = new TMR_Reader();
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
-
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_connect(tmrReader);
 	if (ret != TMR_SUCCESS) return false;
 
-	//Get reader's  hardware ,software, modle type
+	//Get reader's  hardware ,software, model type
 	TMR_String str;
 	char string[50];
 	str.value = string;
@@ -43,27 +42,25 @@ bool iReader::RD_init()
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_PRODUCT_GROUP, &str);
 	if (ret != TMR_SUCCESS) return false;
 	group = QString(str.value);
-	str.value = string;
+
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_HARDWARE, &str);
 	if (ret != TMR_SUCCESS) return false;
 	hardware = QString(str.value);
-	str.value = string;
+
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_SOFTWARE, &str);
 	if (ret != TMR_SUCCESS) return false;
 	software = QString(str.value);
-	str.value = string;
+
 	ret = TMR_paramGet(tmrReader, TMR_PARAM_VERSION_MODEL, &str);
 	if (ret != TMR_SUCCESS) return false;
 	modleversion = QString(str.value);
-	str.value = string;
 
+	//set parameters to reader
 	TMR_Region region = TMR_REGION_PH;
 	int power = 3000;
 	//int t4 = 3000;
 	bool uniquebydata = true;
 	bool checkport = true;
-
-
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_READPOWER, &power);
@@ -75,11 +72,12 @@ bool iReader::RD_init()
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_ANTENNA_CHECKPORT, &checkport);
 	if (ret != TMR_SUCCESS) return false;
 		
+	//Auto check connected antennas
 	quint8 antennaCount = 2;		//M6E micro support 2 antenna
 	antennaList[0] = 1;
 	antennaList[1] = 2;
-	//Auto check connected antennas
 	quint8 antennalist[2];
+/*
 	TMR_uint8List connectedantennalist;
 	connectedantennalist.list = antennalist;
 	connectedantennalist.max = sizeof(antennalist);
@@ -90,15 +88,15 @@ bool iReader::RD_init()
 
 	//update antennas
 	if (connectedantennalist.len == 0) return false;
-
 	antennaCount = connectedantennalist.len;
 	memcpy(antennaList, connectedantennalist.list, antennaCount);
+*/
 	//set OP antenna,use the first one
+	antennaCount = 1;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGOP_ANTENNA, &antennaList[0]);
 	if (ret != TMR_SUCCESS) return false;
 
-
-	for (int i = 0; i<SubPlanCnt; i++)
+	for (int i = 0; i<PLAN_CNT; i++)
 	{
 		ret = TMR_RP_init_simple(&subplan[i], antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 0);
 		if (ret != TMR_SUCCESS) return false;
@@ -107,7 +105,7 @@ bool iReader::RD_init()
 
 	int subplanindex = 0;
 
-	//Read On-chip RSSI
+	//plan to Read On-chip RSSI
 	OC_rssi_mask = 0x1F;
 	ret = TMR_TF_init_gen2_select(&OC_rssi_select, false, TMR_GEN2_BANK_USER, 0xD0, 8, &OC_rssi_mask);
 	if (ret != TMR_SUCCESS) return false;
@@ -117,12 +115,12 @@ bool iReader::RD_init()
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_tagop(&subplan[subplanindex], &OC_rssi_read);
 	if (ret != TMR_SUCCESS) return false;
-
 	subplanindex++;
-	//Read tag temperature	
+
+	//plan to Read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0xE, 1);
+	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0x0E, 1);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_filter(&subplan[subplanindex], &tempselect);
 	if (ret != TMR_SUCCESS) return false;
@@ -130,9 +128,8 @@ bool iReader::RD_init()
 	if (ret != TMR_SUCCESS) return false;
 	subplanindex++;
 
-	ret = TMR_RP_init_multi(&multiplan, subplanPtrs, SubPlanCnt, 0);
+	ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
 	if (ret != TMR_SUCCESS) return false;
-
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &multiplan);
 	if (ret != TMR_SUCCESS) return false;
 
@@ -186,7 +183,7 @@ bool iReader::wirteEpc(const QByteArray& epc_old, const QString& epc_new)
 		return true;
 	else
 	{
-		qDebug() << "reader wirteEpc : FAILED - " << QString(TMR_strerr(tmrReader, ret));
+		qDebug() << "Error reader-wirteEpc : FAILED - " << QString(TMR_strerr(tmrReader, ret));
 		return false;
 	}
 }
@@ -250,23 +247,23 @@ void iReader::readtag()
 
 	//--------------------------test code---------------------
 	//quint64 tid1 = 1;
-	//QByteArray epc1;
-	//for (uchar i = 0; i < 12; i++)
+	//for (uchar i = 0; i < 16; i++)
 	//{
 	//	tid1 = i;
-	//	epc1.append(i);
+	//	QByteArray epc1;
+	//	epc1.append('1'+i);
 	//	RDM->tagOnline.insert(tid1, epc1);
 	//}
 	//--------------------------test code---------------------
 
-	ret = TMR_read(tmrReader, 75, NULL);
+	ret = TMR_read(tmrReader, RD_TIMEOUT, NULL);
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "read tag : FAILED - " << errormessage;
+		qDebug() << "Error reader-readtag : FAILED - " << errormessage;
 		return;
 	}
-	qDebug() << "read tag : SUCCESS";
+	qDebug() << "Info reader-readtag : SUCCESS";
 
 	while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 	{
@@ -319,18 +316,18 @@ void iReader::readtag()
 					if (temperaturecode > 0)
 					{
 						float Temp = tag->parseTCode(temperaturecode);
-						if (tag->T_temp == 0.0															//init temperature
-							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))							//reasonable temperature
+						if (tag->T_temp == 0.0														//init temperature
+							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
 						{
 							tag->T_temp = Temp;
-							if (tag->T_temp > tag->T_uplimit)											//bigger than up limit
+							if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
 								tag->T_alarm_temperature = true;
-							qDebug() << "tag : sid = " << tag->T_sid
-								<< " uid = " << tag->T_uid
-								<< " epc = " << tag->T_epc
-								<< " rssi = " << tag->T_rssi
-								<< " temperature = " << tag->T_temp
-								<< " temp_alarmed = " << tag->T_alarm_temperature;
+							qDebug()<< "managed tag : sid = " << tag->T_sid
+									<< " uid = " << tag->T_uid
+									<< " epc = " << tag->T_epc
+									<< " rssi = " << tag->T_rssi
+									<< " temperature = " << tag->T_temp
+									<< " temp_alarmed = " << tag->T_alarm_temperature;
 						}
 					}
 				}
@@ -338,12 +335,12 @@ void iReader::readtag()
 				{
 					tag->T_OC_rssi = trd.data.list[1];
 
-					qDebug() << "tag : sid = " << tag->T_sid
-						<< " uid = " << tag->T_uid
-						<< " epc = " << tag->T_epc
-						<< " rssi = " << tag->T_rssi
-						<< " Oc-rssi = " << tag->T_OC_rssi
-						<< "frequency =" << trd.frequency;
+					qDebug()<< "managed tag : sid = " << tag->T_sid
+							<< " uid = " << tag->T_uid
+							<< " epc = " << tag->T_epc
+							<< " rssi = " << tag->T_rssi
+							<< " Oc-rssi = " << tag->T_OC_rssi
+							<< "frequency =" << trd.frequency;
 				}
 				emit tagUpdated(tag);
 			}
@@ -354,6 +351,8 @@ void iReader::readtag()
 
 		}
 	}
+	qDebug() << "Online tags count: " << RDM->tagOnline.count();
+
 }
 void iReader::readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie)
 {
@@ -371,8 +370,6 @@ void iReader::readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *c
 
 	//emit currenttemp(tt);
 }
-
-
 void iReader::exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie)
 {
 	QString errormessage = QString(TMR_strerr(reader, error));
