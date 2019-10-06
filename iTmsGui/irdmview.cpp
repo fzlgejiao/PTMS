@@ -130,9 +130,6 @@ void iRdmView::onbtnChangeIP()
 }
 void iRdmView::OnbtnFindTags()
 {
-	if (tagModel->rowCount() > 0)
-		tagModel->removeRows(0, tagModel->rowCount());
-
 	iRdm *rdm = selectedRdm();
 	if(rdm)
 		netcmd.UDP_get_tagsonline(rdm);																//get online tags
@@ -189,6 +186,11 @@ void iRdmView::OnMsgRdmfound(MSG_PKG & msg)
 }
 void iRdmView::OnMsgOnlineTagsFound(MSG_PKG & msg)
 {
+	//clear tags list before updating tag list
+	if (tagModel->rowCount() > 0)
+		tagModel->removeRows(0, tagModel->rowCount());
+
+	//update tag list
 	Tags_Online *tags = (Tags_Online *)msg.cmd_pkg.data;
 	for (int i = 0; i < tags->Header.tagcount; i++)
 	{

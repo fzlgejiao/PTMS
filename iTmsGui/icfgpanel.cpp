@@ -106,31 +106,6 @@ iCfgPanel::iCfgPanel(QWidget *parent)
 iCfgPanel::~iCfgPanel()
 {
 }
-void iCfgPanel::OnMsgModbusParameters(MSG_PKG& msg)
-{
-	disconnect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-	disconnect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-	disconnect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-	MODBUS_Paramters* modbus = (MODBUS_Paramters *)msg.cmd_pkg.data;
-	ui.cbxMbType->setCurrentIndex(modbus->type);
-	ui.leMbRtuAddr->setText(QString::number(modbus->rtu_address));
-	ui.cbxMbBaurate->setCurrentIndex(ui.cbxMbBaurate->findText(QString::number(modbus->rtu_baudrate)));
-	ui.leMbTcpPort->setText(QString::number(modbus->tcp_port));
-	ui.leMbComPort->setText(modbus->rtu_comname);
-	ui.cbxMbParity->setCurrentIndex(paritymap.key((QSerialPort::Parity)modbus->rtu_parity));
-	connect(ui.cbxMbType, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int )), this, SLOT(OnRdmModified()));
-}
-void iCfgPanel::OnMsgIoTParameters(MSG_PKG& msg)
-{
-	IOT_Paramters* iot = (IOT_Paramters *)msg.cmd_pkg.data;
-
-	ui.lePrdKey->setText(iot->productkey);
-	ui.leDeviceName->setText(iot->devicename);
-	ui.leDeviceSecret->setText(iot->devicesecret);
-	ui.leRegion->setText(iot->regionid);
-}
 void iCfgPanel::OnRemoveTag()
 {
 	//int row = ui.tableTags->currentIndex().row();
@@ -245,6 +220,31 @@ void iCfgPanel::OnTagAdded(iTag *tag)
 	}
 	tagModel->insertRow(0, new iTag(*tag));															//create a new tag in config panel tag list
 	OnRdmModified();																				//rdm changed due to new tag added
+}
+void iCfgPanel::OnMsgModbusParameters(MSG_PKG& msg)
+{
+	disconnect(ui.cbxMbType, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+	disconnect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+	disconnect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+	MODBUS_Paramters* modbus = (MODBUS_Paramters *)msg.cmd_pkg.data;
+	ui.cbxMbType->setCurrentIndex(modbus->type);
+	ui.leMbRtuAddr->setText(QString::number(modbus->rtu_address));
+	ui.cbxMbBaurate->setCurrentIndex(ui.cbxMbBaurate->findText(QString::number(modbus->rtu_baudrate)));
+	ui.leMbTcpPort->setText(QString::number(modbus->tcp_port));
+	ui.leMbComPort->setText(modbus->rtu_comname);
+	ui.cbxMbParity->setCurrentIndex(paritymap.key((QSerialPort::Parity)modbus->rtu_parity));
+	connect(ui.cbxMbType, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbBaurate, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+	connect(ui.cbxMbParity, SIGNAL(currentIndexChanged(int)), this, SLOT(OnRdmModified()));
+}
+void iCfgPanel::OnMsgIoTParameters(MSG_PKG& msg)
+{
+	IOT_Paramters* iot = (IOT_Paramters *)msg.cmd_pkg.data;
+
+	ui.lePrdKey->setText(iot->productkey);
+	ui.leDeviceName->setText(iot->devicename);
+	ui.leDeviceSecret->setText(iot->devicesecret);
+	ui.leRegion->setText(iot->regionid);
 }
 void iCfgPanel::OnMsgTagsParaReady(MSG_PKG& msg)
 {
