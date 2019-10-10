@@ -140,6 +140,15 @@ Qt::ItemFlags RdmModel::flags(const QModelIndex &index) const
 	else
 		return QAbstractTableModel::flags(index);
 }
+bool RdmModel::hasRdm(const QString& mac)
+{
+	for (iRdm *rdm : listRdm)
+	{
+		if (rdm->m_MAC == mac)
+			return true;
+	}
+	return false;
+}
 //--------------------------------------------------------------------------------------------------
 //Tag Model 
 //--------------------------------------------------------------------------------------------------

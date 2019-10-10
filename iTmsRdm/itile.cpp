@@ -65,7 +65,7 @@ void iTile::paintEvent(QPaintEvent *event)
 
 	//draw temperature
 	painter.save();
-	y += 35;
+	y += 30;
 	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
 	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("ÎÂ¶È"));
@@ -78,7 +78,7 @@ void iTile::paintEvent(QPaintEvent *event)
 
 	//draw RSSI
 	painter.save();
-	y += 35;
+	y += 30;
 	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	rtValue = QRect(QPoint(x + w_t, y), QSize(w_v, h_t));
 	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("ÐÅºÅ"));
@@ -89,8 +89,9 @@ void iTile::paintEvent(QPaintEvent *event)
 	painter.drawText(rtValue, Qt::AlignLeft, QString("%1 dBm").arg(_tag->RSSI(),-6));
 	painter.restore();
 
+	//draw alarm
 	painter.save();
-	y += 35;
+	y += 30;
 	rtTitle = QRect(QPoint(x, y), QSize(w_t, h_t));
 	painter.drawText(rtTitle, Qt::AlignLeft, QString::fromLocal8Bit("¸æ¾¯"));
 	if (_tag->isAlarm() == false)

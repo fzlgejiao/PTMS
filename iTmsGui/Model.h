@@ -50,6 +50,8 @@ public:
 	Qt::ItemFlags flags(const QModelIndex &index) const;
 	
 	inline void clear() { listRdm.clear(); }
+	bool hasRdm(const QString& mac);
+
 
 private:	
 	QList<iRdm *>	listRdm;

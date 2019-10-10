@@ -6,7 +6,7 @@
 
 
 #define PLAN_CNT		2
-#define RD_TIMEOUT		500
+#define RD_TIMEOUT		250
 
 
 class iRDM;

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	//QTextCodec::setCodecForTr(tc);																//这个函数的作用是设置传给tr函数时的默认字串编码
 
 	QApplication a(argc, argv);
-	a.setApplicationVersion(QObject::tr("v0.0.2"));
+	a.setApplicationVersion(QObject::tr("v0.0.3"));
 
 	iSys &oSys = iSys::Instance();
 

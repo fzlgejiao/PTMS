@@ -172,6 +172,9 @@ void iRdmView::onbtnUpgrade()
 void iRdmView::OnMsgRdmfound(MSG_PKG & msg)
 {
 	RDM_Paramters *rdm = (RDM_Paramters *)msg.cmd_pkg.data;
+	//to check if the ram is existing or not
+	if (rdmModel->hasRdm(rdm->RdmMAC))
+		return;
 	iRdm *newrdm = new iRdm(QString::fromLocal8Bit(rdm->RdmName), rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion, QString::fromLocal8Bit(rdm->RdmNote),this);
 	newrdm->m_comname = rdm->RdmComName;
 	rdmModel->insertmyrow(0, newrdm);	
