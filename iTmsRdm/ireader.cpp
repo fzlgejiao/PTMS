@@ -423,6 +423,7 @@ bool iReader::switchplans()
 	{
 		cur_plan = 0;
 	}
+	if (!tmrReader->connected) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &subplan[cur_plan]);
 	if (ret == TMR_SUCCESS)
 	{
