@@ -36,9 +36,9 @@ HEADERS += idevice.h irdm.h ireader.h itag.h OTA.h iview.h itile.h CModbus.h icf
 SOURCES += idevice.cpp irdm.cpp ireader.cpp itag.cpp OTA.cpp iview.cpp itile.cpp CModbus.cpp icfgdlg.cpp main.cpp ibc.cpp iLed.cpp
 FORMS	+= itile.ui iview.ui icfgdlg.ui
 
-unix:!macx: LIBS += -L/home/fan/work/libs/ -lmercuryapi
+unix:!macx: LIBS += -L/home/fan/work/libs-api-1.31.3.36/ -lmercuryapi
 
-INCLUDEPATH += /home/fan/work/libs/include
-DEPENDPATH += /home/fan/work/libs/include
+INCLUDEPATH += /home/fan/work/libs-api-1.31.3.36/include
+DEPENDPATH += /home/fan/work/libs-api-1.31.3.36/include
 
-unix:!macx: PRE_TARGETDEPS += /home/fan/work/libs/libmercuryapi.a
+unix:!macx: PRE_TARGETDEPS += /home/fan/work/libs-api-1.31.3.36/libmercuryapi.a

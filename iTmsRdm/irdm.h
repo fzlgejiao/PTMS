@@ -6,7 +6,8 @@
 
 
 #define	RDM_TICKS		3		//max times for online check
-#define RDM_TIMER		5000
+#define IOT_TIMER		5000
+#define RDM_TIMER		2000
 #define DATETIME_TIMER	1000
 
 enum HWVER {
@@ -34,8 +35,9 @@ public:
 	iTag*	Tag_getbysid(int sid);
 	int		Tag_count() { return taglist.count(); }
 
-	void    Tmr_stop() { this->killTimer(tmrRDM);  this->killTimer(tmrTime);}
-	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER);}
+	void    Tmr_stop() { this->killTimer(tmrRDM);  this->killTimer(tmrTime); this->killTimer(tmrIOT);}
+	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER); tmrIOT = this->startTimer(IOT_TIMER);
+	}
 
 protected:
 
@@ -68,6 +70,7 @@ private:
 	QMap<quint64, QByteArray> tagOnline;															//<UID,epc>
 	int			tmrRDM;
 	int         tmrTime;
+	int         tmrIOT;
 	int			RDM_ticks;
 
 

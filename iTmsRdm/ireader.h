@@ -6,7 +6,7 @@
 
 
 #define PLAN_CNT		2
-#define RD_TIMEOUT		250
+#define RD_TIMEOUT		100
 
 
 class iRDM;
@@ -30,6 +30,8 @@ protected:
 	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);
 	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
 	quint64 bytes2longlong(QByteArray& bytes);
+	bool switchplans();
+
 
 private:
 	iRDM*		RDM;
@@ -56,6 +58,8 @@ private:
 	//read temperature plan
 	TMR_TagFilter	tempselect;
 	TMR_TagOp		tempread;
+
+	int  cur_plan;
 
 	//Async read
 	TMR_ReadListenerBlock rlb;

@@ -10,7 +10,7 @@ iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
 {
 	modbustype = "RTU";
-	rtucomname = "/dev/ttyUSB1";
+	rtucomname = "/dev/ttySC1";
 	rtuslaveaddress = 1;
 	rtubaudrate = 9600;
 	rtuparity = 2;
@@ -37,7 +37,7 @@ void iRDM::RDM_init()
 #ifdef WIN32
 	RDM_comname = "tmr:///com3";
 #else
-	RDM_comname = "tmr:///dev/ttyUSB0";
+	RDM_comname = "tmr:///dev/ttySC0";
 #endif
 	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
 	Cfg_load(xml);
@@ -287,15 +287,11 @@ iTag* iRDM::Tag_getbysid(int sid)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
-	if (event->timerId() == tmrRDM)		//5s
+	if (event->timerId() == tmrRDM)		//2s
 	{
 		//read tags
 		reader->readtag();
-
-		//upload rdm data
-		iotdevice->IOT_tick();
-		iotdevice->PUB_rdm_event();
-
+		
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
@@ -306,7 +302,6 @@ void iRDM::timerEvent(QTimerEvent *event)
 			if (tag->isonline())
 				tag->T_data_flag |= Tag_Temperature|Tag_Rssi|Tag_Alarm;
 			
-
 			if (tag->T_ticks)
 			{
 				tag->T_ticks--;
@@ -320,9 +315,6 @@ void iRDM::timerEvent(QTimerEvent *event)
 					emit tagLost(tag);
 				}
 			}
-
-			iotdevice->PUB_tag_data(tag);
-			iotdevice->PUB_tag_event(tag);
 			modbus->updateRdmRegisters(tag);
 		}
 	}
@@ -331,6 +323,19 @@ void iRDM::timerEvent(QTimerEvent *event)
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);
+	}
+	if (event->timerId() == tmrIOT)  //update tag data to IOT ,5s
+	{
+		iotdevice->IOT_tick();
+		iotdevice->PUB_rdm_event();
+		for (iTag* tag : taglist)
+		{
+			if (tag->T_enable == false)
+				continue;
+
+			iotdevice->PUB_tag_data(tag);
+			iotdevice->PUB_tag_event(tag);
+		}
 	}
 }
 int	iRDM::HW_ver()

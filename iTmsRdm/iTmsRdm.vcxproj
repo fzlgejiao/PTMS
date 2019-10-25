@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug-API-1.31.3.36-2|Win32">
+      <Configuration>Debug-API-1.31.3.36-2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -13,10 +17,14 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B12702AD-ABFB-343A-A199-8E24837244A3}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-API-1.31.3.36-2|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
@@ -31,6 +39,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-API-1.31.3.36-2|Win32'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
@@ -43,6 +54,9 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-API-1.31.3.36-2|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -70,6 +84,35 @@
     <QtMoc>
       <IncludePath>.;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;.\..\libs\pthread\include;.\..\libs\MercuryAPI\include;.\..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets</IncludePath>
       <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE</Define>
+      <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+    </QtMoc>
+    <QtUic>
+      <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
+      <OutputFile>.\GeneratedFiles\ui_%(Filename).h</OutputFile>
+    </QtUic>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-API-1.31.3.36-2|Win32'">
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;..\libs-API-1.31.3.36-2\MercuryAPI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>qtmaind.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5Mqttd.lib;Qt5Cored.lib;Qt5Networkd.lib;MercuryAPI.lib;Ws2_32.lib;Qt5SerialBusd.lib;Qt5SerialPortd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <QtMoc>
+      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;.\..\libs-API-1.31.3.36-2\pthread\include;.\..\libs-API-1.31.3.36-2\MercuryAPI\include;.\..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets</IncludePath>
+      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC</Define>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -152,12 +195,7 @@
     <QtMoc Include="icfgdlg.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="ibc.h">
-      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;.\..\libs\pthread\include;.\..\libs\MercuryAPI\include;.\..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets</IncludePath>
-      <Define Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</Define>
-      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets</IncludePath>
-      <Define Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_NETWORK_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;%(PreprocessorDefinitions)</Define>
-    </QtMoc>
+    <QtMoc Include="ibc.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iLed.h" />

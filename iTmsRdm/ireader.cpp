@@ -7,6 +7,7 @@ iReader::iReader(QObject *parent)
 {
 	RDM = (iRDM *)parent;
 	tmrReader = NULL;
+	cur_plan = 0;
 }
 
 iReader::~iReader()
@@ -58,19 +59,35 @@ bool iReader::RD_init()
 	//set parameters to reader
 	TMR_Region region = TMR_REGION_PH;
 	int power = 3000;
-	//int t4 = 3000;
-	bool uniquebydata = true;
+	bool is_send_sl = true;
+	int t4 = 3000;
+	//bool uniquebydata = true;									//if one simple plan ,not necessary publish by data
 	bool checkport = true;
+	TMR_GEN2_Session session = TMR_GEN2_SESSION_S0;
+	TMR_GEN2_Tari tari = TMR_GEN2_TARI_25US;
+	TMR_GEN2_TagEncoding tagcoding = TMR_GEN2_MILLER_M_4;
+
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_READPOWER, &power);
 	if (ret != TMR_SUCCESS) return false;
-	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
-	//if (ret != TMR_SUCCESS) return false;
-	ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGREADDATA_UNIQUEBYDATA, &uniquebydata);
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_RADIO_WRITEPOWER, &power);
 	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_SEND_SELECT, &is_send_sl);
+	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
+	if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGREADDATA_UNIQUEBYDATA, &uniquebydata);
+	//if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_ANTENNA_CHECKPORT, &checkport);
 	if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_SESSION, &session);
+	if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_TARI, &tari);
+	//if (ret != TMR_SUCCESS) return false;		
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_TAGENCODING, &tagcoding);
+	//if (ret != TMR_SUCCESS) return false;	
+
 		
 	//Auto check connected antennas
 	quint8 antennaCount = 2;		//M6E micro support 2 antenna
@@ -109,6 +126,9 @@ bool iReader::RD_init()
 	OC_rssi_mask = 0x1F;
 	ret = TMR_TF_init_gen2_select(&OC_rssi_select, false, TMR_GEN2_BANK_USER, 0xD0, 8, &OC_rssi_mask);
 	if (ret != TMR_SUCCESS) return false;
+	OC_rssi_select.u.gen2Select.target = SELECT;
+	OC_rssi_select.u.gen2Select.action = ON_N_OFF;
+
 	ret = TMR_TagOp_init_GEN2_ReadData(&OC_rssi_read, TMR_GEN2_BANK_RESERVED, 0xD, 1);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_filter(&subplan[subplanindex], &OC_rssi_select);
@@ -128,10 +148,10 @@ bool iReader::RD_init()
 	if (ret != TMR_SUCCESS) return false;
 	subplanindex++;
 
-	ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
-	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &multiplan);
-	if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
+	//if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &multiplan);
+	//if (ret != TMR_SUCCESS) return false;
 
 
 	//set async read mode	
@@ -244,6 +264,8 @@ void iReader::readtag()
 	
 	//clear old online tags before read again
 	RDM->tagOnline.clear();
+	if (!switchplans()) return;
+
 
 	//--------------------------test code---------------------
 	//quint64 tid1 = 1;
@@ -255,15 +277,15 @@ void iReader::readtag()
 	//	RDM->tagOnline.insert(tid1, epc1);
 	//}
 	//--------------------------test code---------------------
-
-	ret = TMR_read(tmrReader, RD_TIMEOUT, NULL);
+	int readCount = 0;
+	ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
 		qDebug() << "Error reader-readtag : FAILED - " << errormessage;
 		return;
 	}
-	qDebug() << "Info reader-readtag : SUCCESS";
+	qDebug() << "Info reader-readtag : SUCCESS	ReadCounts=" << readCount;
 
 	while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 	{
@@ -310,7 +332,7 @@ void iReader::readtag()
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 
 				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
-				if (data0!= 0) 
+				if (data0 != 0)
 				{
 					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
 					if (temperaturecode > 0)
@@ -331,7 +353,7 @@ void iReader::readtag()
 						}
 					}
 				}
-				else
+				else 
 				{
 					tag->T_OC_rssi = trd.data.list[1];
 
@@ -394,4 +416,19 @@ quint64 iReader::bytes2longlong(QByteArray& bytes)
 	d5 <<= 16;
 	d6 <<= 8;
 	return (d0 | d1 | d2 | d3 | d4 | d5 | d6 | d7);
+}
+bool iReader::switchplans()
+{
+	if (cur_plan == PLAN_CNT)
+	{
+		cur_plan = 0;
+	}
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &subplan[cur_plan]);
+	if (ret == TMR_SUCCESS)
+	{
+		cur_plan++;
+		return true;
+	}
+	else
+		return false;
 }
