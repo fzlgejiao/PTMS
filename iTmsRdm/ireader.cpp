@@ -6,7 +6,8 @@ iReader::iReader(QObject *parent)
 	: QObject(parent)
 {
 	RDM = (iRDM *)parent;
-	tmrReader = NULL;
+	tmrReader = new TMR_Reader();
+	bCreated = false;
 	cur_plan = 0;
 }
 
@@ -24,13 +25,20 @@ void iReader::checkerror()
 }
 bool iReader::RD_init()
 {	
-	m_uri = RDM->RDM_comname;
-	if(tmrReader)
+	//check if need to create reader
+	if (bCreated)
+	{
+		if (m_uri == RDM->RDM_comname)
+			return true;
 		TMR_destroy(tmrReader);
+	}
 
-	tmrReader = new TMR_Reader();
+	m_uri = RDM->RDM_comname;
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
-	if (ret != TMR_SUCCESS) return false;
+	if (ret != TMR_SUCCESS)
+		return false;
+	else
+		bCreated = true;
 	ret = TMR_connect(tmrReader);
 	if (ret != TMR_SUCCESS) return false;
 

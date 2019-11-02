@@ -8,7 +8,7 @@ enum LED {
 };
 
 #define LED1			19			//green(HW_V2)
-#define LED2			26			//yellow(HW_V2),green(HW_V1)
+#define LED2			26			//yellow(HW_V2)
 
 #define IO_IN			0
 #define IO_OUT			1
@@ -18,7 +18,7 @@ class iLed : public QObject
 	Q_OBJECT
 
 public:
-	iLed(int hwVer,QObject *parent);
+	iLed(QObject *parent);
 	~iLed();
 
 #ifdef __linux__

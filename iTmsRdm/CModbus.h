@@ -222,12 +222,12 @@ private:
 	QModbusDevice::State m_status;
 
 	//modbus settings
-	QString				m_com;
-	int					m_slaveaddress;
-	RTU_BAUDRATE		m_rtubaud;
+	QString				m_rtucomname;
+	int					m_rtuslaveaddress;
+	RTU_BAUDRATE		m_rtubaudrate;
 	QSerialPort::Parity	m_rtuparity;
 	QMap<RTU_BAUDRATE,QSerialPort::BaudRate> baudratemap;
-	
+	QString				m_ipaddress;
 	
 	void setupDeviceData();
 	void setModBusfilter();

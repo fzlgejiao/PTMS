@@ -31,6 +31,8 @@ public:
 	iRDM(QObject *parent = NULL);																	
 	~iRDM();
 
+	static  void ERR_msg(const QString& module,const QString& error);
+
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
 	iTag*	Tag_getbysid(int sid);
 	int		Tag_count() { return taglist.count(); }

@@ -62,7 +62,7 @@ void iBC::TcpStartListen()
 QString iBC::getIP()
 {
 	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
-	foreach(QHostAddress address, addresses)
+	for(QHostAddress address: addresses)
 	{
 		if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress::LocalHost)
 			return address.toString();
@@ -74,7 +74,7 @@ QString iBC::getMAC()
 {
 
 	QList<QNetworkInterface> nets = QNetworkInterface::allInterfaces();
-	foreach(QNetworkInterface net, nets)
+	for(QNetworkInterface net: nets)
 	{
 		if (net.flags().testFlag(QNetworkInterface::IsUp)
 			&& net.flags().testFlag(QNetworkInterface::IsRunning)

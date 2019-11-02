@@ -20,7 +20,7 @@ iRDM::iRDM(QObject *parent)
 	iotdevice	= new iDevice(this);
 	modbus		= new CModbus(this);
 	bc			= new iBC(this);
-	led			= new iLed(HW_ver(),this);
+	led			= new iLed(this);
 
 	RDM_init();
 
@@ -31,7 +31,10 @@ iRDM::iRDM(QObject *parent)
 iRDM::~iRDM()
 {
 }
-
+void iRDM::ERR_msg(const QString& module, const QString& error)
+{
+	qDebug() << module + " : " + error;
+}
 void iRDM::RDM_init()
 {
 #ifdef WIN32
@@ -40,16 +43,22 @@ void iRDM::RDM_init()
 	RDM_comname = "tmr:///dev/ttySC0";
 #endif
 	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
-	Cfg_load(xml);
-
+	if (Cfg_load(xml) == false)
+	{
+		iRDM::ERR_msg("RDM", "Load xml config file failed.");
+		return;
+	}
+#if __linux__
+	RDM_comname = "tmr:///dev/ttySC0";
+#endif
 	iotdevice->IOT_init();
 	if(modbus->MB_init() == false)
-		qDebug() << "modbus init : FAILED - ";
+		iRDM::ERR_msg("MODBUS", "Module init failed.");
 	if (reader->RD_init() == false)
 		reader->checkerror();
 
 	RDM_available = false;
-	RDM_ticks = RDM_TICKS;
+	RDM_ticks = RDM_TICKS;																			//for IOT online check
 
 	//set tag flags for send the tag info to system
 	for (iTag *tag : taglist)
@@ -342,6 +351,6 @@ int	iRDM::HW_ver()
 {
 	//todo: check hw version
 
-	return HW_V1;
+	return HW_V2;
 }
 

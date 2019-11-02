@@ -115,6 +115,9 @@
            <height>30</height>
           </size>
          </property>
+         <property name="text">
+          <string>tmr:///dev/ttySC0</string>
+         </property>
          <property name="readOnly">
           <bool>true</bool>
          </property>
@@ -143,6 +146,9 @@
            <width>0</width>
            <height>30</height>
           </size>
+         </property>
+         <property name="text">
+          <string>192.168.9.15</string>
          </property>
          <property name="readOnly">
           <bool>true</bool>
@@ -214,6 +220,9 @@
              <height>30</height>
             </size>
            </property>
+           <property name="text">
+            <string>1</string>
+           </property>
           </widget>
          </item>
          <item row="1" column="0">
@@ -240,6 +249,9 @@
              <height>30</height>
             </size>
            </property>
+           <property name="text">
+            <string>/dev/ttySC1</string>
+           </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -265,6 +277,9 @@
              <width>0</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="currentIndex">
+            <number>3</number>
            </property>
            <item>
             <property name="text">
@@ -332,6 +347,9 @@
              <height>30</height>
             </size>
            </property>
+           <property name="text">
+            <string>2902</string>
+           </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -357,6 +375,9 @@
              <width>0</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="currentIndex">
+            <number>1</number>
            </property>
            <item>
             <property name="text">

@@ -39,6 +39,7 @@ private:
 	QString		m_uri;
 	quint8		antennaList[2];
 	TMR_Status  ret;
+	bool		bCreated;
 
 	//reader parameters
 	QString		group;

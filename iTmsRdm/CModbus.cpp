@@ -18,9 +18,9 @@ CModbus::CModbus(QObject *parent)
 	modbusDevice	= NULL;	
 	m_connectiontype= NONE;
 
-	m_com			= "";
-	m_slaveaddress	= 0;
-	m_rtubaud		= RTU_BAUDRATE::BaudUnknow;
+	m_rtucomname	= "";
+	m_rtuslaveaddress	= 0;
+	m_rtubaudrate	= RTU_BAUDRATE::BaudUnknow;
 	m_rtuparity		= QSerialPort::UnknownParity;
 
 	baudratemap.clear();
@@ -50,6 +50,12 @@ bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSe
 {
 	if (modbusDevice)
 	{
+		//if same device, no need to create again
+		if (comname == m_rtucomname
+			&& slaveaddress == m_rtuslaveaddress
+			&& baudrate == m_rtubaudrate
+			&& parity == m_rtuparity)
+			return true;
 		modbusDevice->disconnectDevice();
 		delete modbusDevice;
 		modbusDevice = NULL;
@@ -71,10 +77,10 @@ bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSe
 	modbusDevice->setConnectionParameter(QModbusDevice::SerialDataBitsParameter, QSerialPort::Data8);
 	modbusDevice->setConnectionParameter(QModbusDevice::SerialStopBitsParameter, QSerialPort::OneStop);
 
-	m_rtubaud		= baud;
+	m_rtubaudrate	= baud;
 	m_rtuparity		= parity;
-	m_com			= comname;
-	m_slaveaddress	= slaveaddress;
+	m_rtucomname	= comname;
+	m_rtuslaveaddress = slaveaddress;
 
 	modbusDevice->setServerAddress(slaveaddress);
 	setModBusfilter();
@@ -91,12 +97,19 @@ bool CModbus::MB_initTCP(QString ipaddress, int port, quint8 slaveaddress)
 {
 	if (modbusDevice)
 	{
+		//if same device, no need to create again
+		if (ipaddress == m_ipaddress
+			&& slaveaddress == m_rtuslaveaddress)
+			return true;
+
 		modbusDevice->disconnectDevice();
 		delete modbusDevice;
 		modbusDevice = NULL;
 	}
 
 	m_connectiontype = TCP;
+	m_rtuslaveaddress = slaveaddress;
+	m_ipaddress = ipaddress;
 
 	modbusDevice = new QModbusTcpServer(this);						//use modbus tcp mode
 	setModBusfilter();
@@ -157,7 +170,7 @@ void CModbus::onReceivedWritten(QModbusDataUnit::RegisterType table, int address
 void CModbus::setupDeviceData()
 {
 	//HoldingRegisters datas
-	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaud, m_rtuparity));
+	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaudrate, m_rtuparity));
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
 
 	//InputRegister datas,save tag count
@@ -267,7 +280,7 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 			error = true;
 		else if (changeRTUserial((RTU_BAUDRATE)newbaudrate, (QSerialPort::Parity)newparity))
 		{
-			m_rtubaud = (RTU_BAUDRATE)newbaudrate;
+			m_rtubaudrate = (RTU_BAUDRATE)newbaudrate;
 			m_rtuparity = (QSerialPort::Parity)newparity;
 		}
 		else
@@ -276,7 +289,7 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 		}
 		//when data is not valid or error, roll back the raw data
 		if(error)
-			modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaud, m_rtuparity));
+			modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaudrate, m_rtuparity));
 	}
 	break;
 

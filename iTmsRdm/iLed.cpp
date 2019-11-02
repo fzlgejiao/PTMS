@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
-iLed::iLed(int hwVer,QObject *parent)
+iLed::iLed(QObject *parent)
 	: QObject(parent)
 {
 #ifdef __linux__
@@ -21,16 +21,10 @@ iLed::iLed(int hwVer,QObject *parent)
 #endif
 	m_alarmledOn = false;
 	m_statusledOn = false;
-	if (hwVer == HW_V1)
-	{
-		m_StatusLedPin = LED2;
-		m_AlarmLedPin = 0;
-	}
-	else
-	{
-		m_StatusLedPin = LED1;
-		m_AlarmLedPin = LED2;
-	}
+
+	m_StatusLedPin = LED1;
+	m_AlarmLedPin  = LED2;
+
 }
 
 iLed::~iLed()
