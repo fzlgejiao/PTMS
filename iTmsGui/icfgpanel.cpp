@@ -154,14 +154,14 @@ void iCfgPanel::OnRdmSelected(iRdm *rdm)
 		ui.leRdmName->setText("");
 		ui.leIPAddress->setText("");
 		ui.leRdmNote->setText("");
-		ui.leComPort->setText("");
+		//ui.leComPort->setText("");
 
-		ui.cbxMbType->setCurrentIndex(0);
-		ui.leMbRtuAddr->setText("");
-		ui.leMbComPort->setText("");
-		ui.cbxMbBaurate->setCurrentIndex(0);
-		ui.cbxMbParity->setCurrentIndex(0);
-		ui.leMbTcpPort->setText("");
+		//ui.cbxMbType->setCurrentIndex(0);
+		//ui.leMbRtuAddr->setText("");
+		//ui.leMbComPort->setText("");
+		//ui.cbxMbBaurate->setCurrentIndex(0);
+		//ui.cbxMbParity->setCurrentIndex(0);
+		//ui.leMbTcpPort->setText("");
 
 		ui.lePrdKey->setText("");
 		ui.leDeviceName->setText("");
@@ -334,7 +334,7 @@ bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 	int sid = 1;
 	//Fixed to sort by epc when save to xml
 	qSort(tagModel->taglist().begin(), tagModel->taglist().end(), TagAscendingbyEpc);
-	foreach(iTag *tag, tagModel->taglist())
+	for(iTag *tag: tagModel->taglist())
 	{
 		tag->t_sid = sid;
 		xmlWriter.writeStartElement("tag");
