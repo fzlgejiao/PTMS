@@ -2,7 +2,7 @@
 #include "iTmsGui.h"
 #include "irdmview.h"
 #include "icfgpanel.h"
-#include "itagview.h"
+#include "idataview.h"
 #include "irdm.h"
 #include "Model.h"
 
@@ -17,12 +17,12 @@ iTmsGui::iTmsGui(QWidget *parent)
 	QSplitter *splitter = new QSplitter;
 	rdmview		= new iRdmView;
 	cfgpanel	= new iCfgPanel;
-	tagview		= new iTagView;
+	dataView	= new iDataView;
 
 	QSplitter *splitterV = new QSplitter;
 	splitterV->setOrientation(Qt::Vertical);
 	splitterV->addWidget(cfgpanel);
-	splitterV->addWidget(tagview);
+	splitterV->addWidget(dataView);
 
 	splitter->addWidget(rdmview);
 	splitter->addWidget(splitterV);
@@ -38,7 +38,7 @@ iTmsGui::iTmsGui(QWidget *parent)
 	connect(rdmview, SIGNAL(RdmDownloaded(iRdm *)), cfgpanel, SLOT(OnRdmDownloaded(iRdm *)));
 	connect(rdmview, SIGNAL(tagAdded(iTag *)),		cfgpanel, SLOT(OnTagAdded(iTag *)));
 
-	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	tagview, SLOT(OnRdmSelected(iRdm *)));
+	connect(rdmview, SIGNAL(RdmSelected(iRdm *)),	dataView, SLOT(OnRdmSelected(iRdm *)));
 	connect(cfgpanel,SIGNAL(RdmModified()),			rdmview, SLOT(OnRdmModified()));
 
 

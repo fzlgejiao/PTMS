@@ -22,7 +22,7 @@ private:
 	friend class iRdm;
 	friend class TagModel;
 	friend class iCfgPanel;
-	friend class iTagView;
+	friend class iDataView;
 	friend class EthernetCmd;
 
 	int		t_sid;
@@ -51,7 +51,7 @@ private:
 	friend class RdmModel;
 	friend class iRdmView;
 	friend class iCfgPanel;
-	friend class iTagView;
+	friend class iDataView;
 	friend class EthernetCmd;
 
 	QString m_name;

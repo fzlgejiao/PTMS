@@ -116,9 +116,9 @@
     <ClCompile Include="addtagdlg.cpp" />
     <ClCompile Include="EthernetCmd.cpp" />
     <ClCompile Include="icfgpanel.cpp" />
+    <ClCompile Include="idataview.cpp" />
     <ClCompile Include="irdm.cpp" />
     <ClCompile Include="irdmview.cpp" />
-    <ClCompile Include="itagview.cpp" />
     <ClCompile Include="iTmsGui.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -129,8 +129,8 @@
   <ItemGroup>
     <QtUic Include="addtagdlg.ui" />
     <QtUic Include="icfgpanel.ui" />
+    <QtUic Include="idataview.ui" />
     <QtUic Include="irdmview.ui" />
-    <QtUic Include="itagview.ui" />
     <QtUic Include="iTmsGui.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -143,9 +143,6 @@
     <QtMoc Include="icfgpanel.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="itagview.h" />
-  </ItemGroup>
-  <ItemGroup>
     <QtMoc Include="addtagdlg.h" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +153,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="irdm.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="idataview.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\include\QtSerialPort</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtXml;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtSql</IncludePath>
+    </QtMoc>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -7,7 +7,7 @@
 
 class iRdmView;
 class iCfgPanel;
-class iTagView;
+class iDataView;
 class QLabel;
 class QProgressBar;
 class iTmsGui : public QMainWindow
@@ -29,7 +29,7 @@ private:
 	//QLabel*				m_status;
 	iRdmView *			rdmview;
 	iCfgPanel *			cfgpanel;
-	iTagView *			tagview;
+	iDataView*			dataView;
 
 private slots:
 	void onupdateprogressbar(int value, int max);
