@@ -13,8 +13,10 @@ bool createConnection()
 {
 	//file db
 	QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-	db.setDatabaseName("iFishTool.db");
-
+	QString dbfile = qApp->applicationDirPath() + "/" + "iTmsData.db";
+	if (false == QFile::exists(dbfile))
+		qDebug() << "File iTmsData.db does not exist.";
+	db.setDatabaseName(dbfile);
 	if (!db.open()) {
 		QMessageBox::critical(0, qApp->applicationName(),
 			db.lastError().text());
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 	a.setApplicationVersion(QObject::tr("v0.0.4"));
-
+	QString path = a.applicationDirPath();
 	if (!createConnection())																		//open database
 		return 1;
 
