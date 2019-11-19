@@ -58,7 +58,7 @@ bool iSys::DB_save_rdm(iRdm *rdm)
 	{
 		if (query.next())
 		{
-			if (query.exec(QString("UPDATE RDMS SET IP=%1,NAME=%2,VERSW=%3,DESC=%4 WHERE ID='%5'").arg(rdm->m_ip).arg(rdm->m_name).arg(rdm->m_Version).arg(rdm->m_note).arg(rdm->m_MAC)))
+			if (query.exec(QString("UPDATE RDMS SET IP='%1',NAME='%2',VERSW='%3',DESC='%4' WHERE ID='%5'").arg(rdm->m_ip).arg(rdm->m_name).arg(rdm->m_Version).arg(rdm->m_note).arg(rdm->m_MAC)))
 				return true;
 		}
 		else

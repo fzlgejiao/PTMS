@@ -67,6 +67,7 @@ void iDataView::OnRdmSelected(iRdm *rdm)
 	if (tagModel->rowCount() > 0)
 		tagModel->removeRows(0, tagModel->rowCount());
 
+
 	//if (rdm)
 	//{
 	//	//test code
