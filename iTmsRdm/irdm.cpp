@@ -296,10 +296,16 @@ iTag* iRDM::Tag_getbysid(int sid)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
+	static int count = 0;
 	if (event->timerId() == tmrRDM)		//2s
 	{
 		//read tags
-		reader->readtag();
+		//reader->readtag();
+		if (count < 1)
+			reader->Read_start(PLAN_TEMP);
+		//else
+		//	reader->Read_stop(PLAN_TEMP);
+		count++;
 		
 		//upload tag data																				
 		for (iTag* tag : taglist)

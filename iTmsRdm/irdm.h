@@ -28,9 +28,13 @@ class iRDM : public QObject
 	Q_OBJECT
 
 public:
-	iRDM(QObject *parent = NULL);																	
+	static iRDM & Instance()
+	{
+		static iRDM _rdm;
+		return _rdm;
+	}
 	~iRDM();
-
+	iReader* getReader() { return reader; }
 	static  void ERR_msg(const QString& module,const QString& error);
 
 	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
@@ -38,8 +42,7 @@ public:
 	int		Tag_count() { return taglist.count(); }
 
 	void    Tmr_stop() { this->killTimer(tmrRDM);  this->killTimer(tmrTime); this->killTimer(tmrIOT);}
-	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER); tmrIOT = this->startTimer(IOT_TIMER);
-	}
+	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER); tmrIOT = this->startTimer(IOT_TIMER);}
 
 protected:
 
@@ -55,6 +58,7 @@ protected:
 	virtual void timerEvent(QTimerEvent *event);
 
 private:
+	iRDM(QObject *parent = NULL);																	
 	friend class iDevice;
 	friend class iView;
 	friend class iCfgDlg;

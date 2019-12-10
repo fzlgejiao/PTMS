@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	a.setApplicationVersion("V0.1.1");
 	a.setApplicationName("RDM - PTMS");
 
-	iRDM oRDM;
+	iRDM &oRDM = iRDM::Instance();
 	iView view(&oRDM);
 	view.show();
 	view.resize(800, 480);

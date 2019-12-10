@@ -7,6 +7,10 @@
 
 #define PLAN_CNT		2
 #define RD_TIMEOUT		100
+typedef enum {
+	PLAN_TEMP = 0,
+	PLAN_RSSI = 1
+}PLAN_TYPE;
 
 
 class iRDM;
@@ -23,20 +27,24 @@ public:
 	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
 	void readtag();
 	void checkerror();
+	void Read_start(PLAN_TYPE tPlan);
+	void Read_stop(PLAN_TYPE tPlan);
+	void Read_ack_temp(TMR_Reader *rp, const TMR_TagReadData *t);
+	void Read_ack_rssi(TMR_Reader *rp, const TMR_TagReadData *t);
+	void readRSSI();
+	quint64 readtagCalibration(TMR_TagFilter *filter);
 
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
-	quint64 readtagCalibration(TMR_TagFilter *filter);
-	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);
-	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
-	quint64 bytes2longlong(QByteArray& bytes);
-	bool switchplans();
+
+	bool	switchplans();
 
 
 private:
 	iRDM*		RDM;
 	TMR_Reader  *tmrReader;
 	QString		m_uri;
+	quint8		antennaCount;
 	quint8		antennaList[2];
 	TMR_Status  ret;
 	bool		bCreated;
@@ -51,20 +59,13 @@ private:
 	TMR_ReadPlan*	subplanPtrs[PLAN_CNT];
 	TMR_ReadPlan	multiplan;
 
-	//On-chip RSSI read plan
-	TMR_TagFilter	OC_rssi_select;
-	TMR_TagOp		OC_rssi_read;
-	quint8			OC_rssi_mask;
-
-	//read temperature plan
-	TMR_TagFilter	tempselect;
-	TMR_TagOp		tempread;
-
+	TMR_TagFilter rssiFilter;
+	TMR_TagOp		rssiOP;
+	TMR_TagFilter	tempFilter;
+	TMR_TagOp		tempOP;
+	TMR_ReadListenerBlock rlb1;
+	TMR_ReadExceptionListenerBlock reb1;
 	int  cur_plan;
-
-	//Async read
-	TMR_ReadListenerBlock rlb;
-	TMR_ReadExceptionListenerBlock reb;
 
 signals:
 	void tagUpdated(iTag*);
