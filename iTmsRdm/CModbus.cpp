@@ -140,13 +140,15 @@ void CModbus::setModBusfilter()
 void CModbus::onStateChanged(QModbusDevice::State state)
 {
 	m_status = state;
+	qDebug() << "Modbus Status: " << state;
+
 	if (state == QModbusDevice::ConnectedState)
 	{
 	}
 }
 void CModbus::handleDeviceError(QModbusDevice::Error newError)
 {
-
+	qDebug() << "Modbus Error: " << newError;
 }
 void CModbus::onReceivedWritten(QModbusDataUnit::RegisterType table, int address, int size)
 {		
