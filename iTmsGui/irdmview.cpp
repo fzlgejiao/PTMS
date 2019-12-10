@@ -7,6 +7,7 @@
 #include <QItemSelectionModel>
 #include <QMessageBox>
 #include <QInputDialog> 
+#include <QSqlQuery> 
 
 iRdmView::iRdmView(QWidget *parent)
 	: QWidget(parent)
@@ -176,6 +177,10 @@ void iRdmView::OnMsgRdmfound(MSG_PKG & msg)
 	if (rdmModel->hasRdm(rdm->RdmMAC))
 		return;
 	iRdm *newrdm = new iRdm(QString::fromLocal8Bit(rdm->RdmName), rdm->RdmIp, rdm->RdmMAC, rdm->RdmVersion, QString::fromLocal8Bit(rdm->RdmNote),this);
+
+	oSys.DB_save_rdm(newrdm);
+
+
 	newrdm->m_comname = rdm->RdmComName;
 	rdmModel->insertmyrow(0, newrdm);	
 	//todo: select the first rdm
@@ -241,6 +246,7 @@ void iRdmView::OnRdmSelectChanged(const QModelIndex & index)
 		//OnMsgOnlineTagsFound(msg);
 	}
 		
+	oSys.setRdm(rdm);
 	emit RdmSelected(rdm);
 
 }

@@ -42,9 +42,6 @@
     <ClCompile Include="icfgpanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="itagview.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="addtagdlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,6 +54,9 @@
     <ClCompile Include="irdm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="idataview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="iTmsGui.h">
@@ -66,9 +66,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="icfgpanel.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="itagview.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="addtagdlg.h">
@@ -83,6 +80,9 @@
     <QtMoc Include="irdm.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="idataview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="iTmsGui.ui">
@@ -94,10 +94,10 @@
     <QtUic Include="icfgpanel.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="itagview.ui">
+    <QtUic Include="addtagdlg.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="addtagdlg.ui">
+    <QtUic Include="idataview.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

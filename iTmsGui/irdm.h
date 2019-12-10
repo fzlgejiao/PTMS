@@ -22,8 +22,9 @@ private:
 	friend class iRdm;
 	friend class TagModel;
 	friend class iCfgPanel;
-	friend class iTagView;
+	friend class iDataView;
 	friend class EthernetCmd;
+	friend class iSys;
 
 	int		t_sid;
 	quint64 t_uid;
@@ -51,8 +52,11 @@ private:
 	friend class RdmModel;
 	friend class iRdmView;
 	friend class iCfgPanel;
-	friend class iTagView;
+	friend class iDataView;
 	friend class EthernetCmd;
+	friend class iSys;
+	friend class iRdmView;
+	
 
 	QString m_name;
 	QString m_ip;
@@ -78,10 +82,19 @@ public:
 	}
 	~iSys() {}
 
+	void	setRdm(iRdm* rdm) { m_Rdm = rdm; }
+	iRdm*	curRdm() { return m_Rdm; }
+	bool	DB_save_rdm(iRdm *rdm);
+	bool	DB_save_tags(iRdm* rdm);
+	void	DB_clear();
+
+
 	RdmModel	*rdmModel;
 	TagModel	*tagModelOnline;
 	TagModel	*tagModelPara;
 	TagModel	*tagModelData;
+
+
 private:
 	iSys(QObject *parent=0)
 		: QObject(parent)
@@ -90,6 +103,8 @@ private:
 		tagModelOnline = NULL;
 		tagModelPara = NULL;
 		tagModelData = NULL;
-
+		m_Rdm = NULL;
 	}
+
+	iRdm*		m_Rdm;																				
 };
