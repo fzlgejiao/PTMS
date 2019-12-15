@@ -1,6 +1,7 @@
 #include "ireader.h"
 #include "itag.h"
 #include "irdm.h"
+#include "CModbus.h"
 
 iReader::iReader(QObject *parent)
 	: QObject(parent)
@@ -23,12 +24,12 @@ void iReader::checkerror()
 		qDebug() << "Error reader-init : FAILED - " << errormessage;
 	}
 }
-bool iReader::RD_init()
+bool iReader::RD_init(bool force)
 {	
 	//check if need to create reader
 	if (bCreated)
-	{
-		if (m_uri == RDM->RDM_comname)
+	{		
+		if (m_uri == RDM->RDM_comname && force==false)
 			return true;
 		TMR_destroy(tmrReader);
 	}
@@ -287,10 +288,16 @@ void iReader::readtag()
 	//--------------------------test code---------------------
 	int readCount = 0;
 	ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
+
 	if (ret != TMR_SUCCESS)
 	{
 		QString errormessage = QString(TMR_strerr(tmrReader, ret));
 		qDebug() << "Error reader-readtag : FAILED - " << errormessage;
+		qDebug() << QString("Status Error Code=%1").arg(ret, 16, 16);
+
+		RD_init(true);
+		RDM->getCModbus()->MB_init();
+
 		return;
 	}
 	qDebug() << "Info reader-readtag : SUCCESS	ReadCounts=" << readCount;

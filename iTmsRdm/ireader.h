@@ -19,7 +19,7 @@ public:
 	iReader(QObject *parent);
 	~iReader();
 
-	bool RD_init();
+	bool RD_init(bool force=false);
 	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
 	void readtag();
 	void checkerror();
@@ -65,6 +65,7 @@ private:
 	//Async read
 	TMR_ReadListenerBlock rlb;
 	TMR_ReadExceptionListenerBlock reb;
+
 
 signals:
 	void tagUpdated(iTag*);

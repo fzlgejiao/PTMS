@@ -37,6 +37,8 @@ public:
 	iTag*	Tag_getbysid(int sid);
 	int		Tag_count() { return taglist.count(); }
 
+	CModbus* getCModbus() { return modbus; }
+
 	void    Tmr_stop() { this->killTimer(tmrRDM);  this->killTimer(tmrTime); this->killTimer(tmrIOT);}
 	void    Tmr_start() { tmrRDM = this->startTimer(RDM_TIMER); tmrTime = this->startTimer(DATETIME_TIMER); tmrIOT = this->startTimer(IOT_TIMER);
 	}
