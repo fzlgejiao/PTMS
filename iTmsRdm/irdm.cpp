@@ -301,11 +301,11 @@ void iRDM::timerEvent(QTimerEvent *event)
 	{
 		//read tags
 		//reader->readtag();
-		if (count < 1)
-			reader->Read_start(PLAN_TEMP);
-		//else
-		//	reader->Read_stop(PLAN_TEMP);
-		count++;
+
+		reader->stopReading();
+		reader->moveNextPlan();
+		reader->startReading();
+
 		
 		//upload tag data																				
 		for (iTag* tag : taglist)

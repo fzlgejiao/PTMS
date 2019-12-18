@@ -8,8 +8,11 @@
 #define PLAN_CNT		2
 #define RD_TIMEOUT		100
 typedef enum {
-	PLAN_TEMP = 0,
-	PLAN_RSSI = 1
+	PLAN_NONE	= 0,
+	PLAN_CALI	= 1,
+	PLAN_TEMP	= 2,
+	PLAN_OCRSSI = 3,
+	PLAN_NUM	= PLAN_OCRSSI
 }PLAN_TYPE;
 
 
@@ -26,16 +29,20 @@ public:
 	bool RD_init();
 	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
 	void readtag();
+
 	void checkerror();
-	void Read_start(PLAN_TYPE tPlan);
-	void Read_stop(PLAN_TYPE tPlan);
-	void Read_ack_temp(TMR_Reader *rp, const TMR_TagReadData *t);
-	void Read_ack_rssi(TMR_Reader *rp, const TMR_TagReadData *t);
-	void readRSSI();
-	quint64 readtagCalibration(TMR_TagFilter *filter);
+	void moveNextPlan();
+	void startReading();
+	void stopReading();
+	void callbackCalibration(const QString& epc, qint32 rssi,quint64 calibration);
+	void callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode);
+	void callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi);
+
+	PLAN_TYPE	tPlan;
 
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
+	quint64 readtagCalibration(TMR_TagFilter *filter);
 
 	bool	switchplans();
 
@@ -59,7 +66,7 @@ private:
 	TMR_ReadPlan*	subplanPtrs[PLAN_CNT];
 	TMR_ReadPlan	multiplan;
 
-	TMR_TagFilter rssiFilter;
+	TMR_TagFilter	rssiFilter;
 	TMR_TagOp		rssiOP;
 	TMR_TagFilter	tempFilter;
 	TMR_TagOp		tempOP;
