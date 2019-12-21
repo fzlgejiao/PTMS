@@ -125,6 +125,9 @@
          </item>
          <item row="3" column="1">
           <widget class="QComboBox" name="cbxParityBit">
+           <property name="currentIndex">
+            <number>2</number>
+           </property>
            <item>
             <property name="text">
              <string>None</string>
@@ -218,8 +221,11 @@
          </item>
          <item row="1" column="1">
           <widget class="QLineEdit" name="leRdmRTUAddr">
+           <property name="text">
+            <string>1</string>
+           </property>
            <property name="readOnly">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -259,7 +265,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -350,8 +356,8 @@
    <slot>OnRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>255</x>
-     <y>174</y>
+     <x>299</x>
+     <y>126</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
@@ -366,8 +372,8 @@
    <slot>OnConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>106</x>
-     <y>297</y>
+     <x>130</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
@@ -382,8 +388,8 @@
    <slot>OnDisconnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>291</y>
+     <x>299</x>
+     <y>372</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>

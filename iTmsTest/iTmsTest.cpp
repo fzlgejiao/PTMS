@@ -1,10 +1,12 @@
 #include "iTmsTest.h"
 #include <QSerialPortInfo> 
-#include <QSerialPort>
 #include <QSqlTableModel> 
 #include <QSqlQuery> 
 #include <QModbusClient> 
 #include <QModbusRtuSerialMaster> 
+#include <QSqlRecord>
+#include <QDebug>
+#include <QSqlError>
 
 iTmsTest::iTmsTest(QWidget *parent)
 	: QMainWindow(parent)
@@ -19,6 +21,10 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
 	OnRefresh();
+
+	paritymap.insert(0, QSerialPort::NoParity);
+	paritymap.insert(1, QSerialPort::OddParity);
+	paritymap.insert(2, QSerialPort::EvenParity);
 
 	//for tags
 	tagModel = new QSqlTableModel(this);
@@ -50,6 +56,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	DB_clearTags();
 
 	m_nTagStm = 0;
+	m_CurrentTagcnt = 0;
 	m_nTimerId_200ms = startTimer(200);
 	m_nTimerId_5s = startTimer(5000);
 	m_nTimerId_5min = startTimer(300000);
@@ -84,8 +91,8 @@ void iTmsTest::OnConnect()
 
 		modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter,
 			ui.cbxComm->currentText());
-		modbus->setConnectionParameter(QModbusDevice::SerialParityParameter,
-			ui.cbxParityBit->currentText().toInt());
+		
+		modbus->setConnectionParameter(QModbusDevice::SerialParityParameter, paritymap.value(ui.cbxParityBit->currentIndex()));
 		modbus->setConnectionParameter(QModbusDevice::SerialBaudRateParameter,
 			ui.cbxBaudRate->currentText().toInt());
 		modbus->setConnectionParameter(QModbusDevice::SerialDataBitsParameter,
@@ -94,7 +101,7 @@ void iTmsTest::OnConnect()
 			ui.cbxStopBit->currentText().toInt());
 	
 		modbus->setTimeout(500);																	//response timeout
-		modbus->setNumberOfRetries(3);
+		modbus->setNumberOfRetries(0);
 		if (!modbus->connectDevice()) {
 			statusBar()->showMessage(tr("Connect failed: ") + modbus->errorString(), 5000);
 		}
@@ -295,14 +302,17 @@ void iTmsTest::readReady()
 	if (!reply)
 		return;
 
+	//qDebug() << "Reply error="<<reply->error();
+
 	if (reply->error() == QModbusDevice::NoError) {
 		const QModbusDataUnit unit = reply->result();
 		for (uint i = 0; i < unit.valueCount(); i++) {
 			const QString entry = tr("Address: %1, Value: %2").arg(unit.startAddress() + i)
 				.arg(QString::number(unit.value(i),
 					unit.registerType() <= QModbusDataUnit::Coils ? 10 : 16));
-			ui.listValue->addItem(entry);
+		//	ui.listValue->addItem(entry);
 		}
+		dataHandler(unit);
 	}
 	else if (reply->error() == QModbusDevice::ProtocolError) {
 		statusBar()->showMessage(tr("Read response error: %1 (Mobus exception: 0x%2)").
@@ -326,40 +336,164 @@ QModbusDataUnit iTmsTest::readRequest() const
 	{
 	case STM_TAG_INFO://read input regs [0x0000 - 0x000F]
 		type = QModbusDataUnit::InputRegisters;
-		startAddress = 0x0000;
-		numberOfEntries = 16;
+		startAddress = ADDRESS_TAGCOUNT;
+		numberOfEntries = 1;
 		break;
 	case STM_TAG_TEMP:
 		type = QModbusDataUnit::InputRegisters;
-		startAddress = 0x0010;
-		numberOfEntries = 16;
+		startAddress = STARTADDRESS_TEMPERATURE;
+		numberOfEntries = m_CurrentTagcnt;
 		break;
 	case STM_TAG_RSSI:
 		type = QModbusDataUnit::InputRegisters;
-		startAddress = 0x0040;
-		numberOfEntries = 16;
+		startAddress = STARTADDRESS_RSSI;
+		numberOfEntries = m_CurrentTagcnt;
 		break;
 	case STM_TAG_OCRSSI:
 		type = QModbusDataUnit::InputRegisters;
-		startAddress = 0x0070;
-		numberOfEntries = 16;
+		startAddress = STARTADDRESS_OCRSSI;
+		numberOfEntries = m_CurrentTagcnt;
 		break;
 	case STM_TAG_EPC:
 		type = QModbusDataUnit::InputRegisters;
-		startAddress = 0x0160;
-		numberOfEntries = 16;		
+		startAddress = STARTADDRESS_EPC;
+		numberOfEntries = m_CurrentTagcnt * 8;				//EPC length is 8 WORDS 
 		break;
 	case STM_TAG_ONLINE:
 		type = QModbusDataUnit::DiscreteInputs;
-		startAddress = 0x0000;
-		numberOfEntries = 16;
+		startAddress = STARTADDRESS_ONLINE;
+		numberOfEntries = m_CurrentTagcnt;
 		break;
 	case STM_TAG_ALARM:
 		type = QModbusDataUnit::DiscreteInputs;
-		startAddress = 0x0030;
-		numberOfEntries = 16;
+		startAddress = STARTADDRESS_ALARM;
+		numberOfEntries = m_CurrentTagcnt;
 		break;
 	}
 
     return QModbusDataUnit(type, startAddress, numberOfEntries);
+}
+
+void iTmsTest::dataHandler(QModbusDataUnit unit)
+{
+	switch (unit.registerType())
+	{
+	case QModbusDataUnit::InputRegisters:
+	{
+		if ((unit.startAddress() == ADDRESS_TAGCOUNT) && (unit.valueCount() == 1))
+		{
+			m_CurrentTagcnt = unit.value(0);
+			if (tagModel->rowCount() == 0)
+			{
+				insertNewTag2DB(m_CurrentTagcnt);
+			}
+		}
+		else if (unit.startAddress() == STARTADDRESS_TEMPERATURE)								//temperature
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				float temp = unit.value(i)*0.1f;
+
+				QSqlRecord record = tagModel->record(i);
+
+				if (!record.isEmpty()) {
+					record.setValue("TEMP", temp);
+					tagModel->setRecord(i, record);
+				}
+			}
+		}
+		else if (unit.startAddress() == STARTADDRESS_RSSI)								//RSSI
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				qint16 rssi = unit.value(i);
+
+				QSqlRecord record = tagModel->record(i);
+				if (!record.isEmpty()) {
+					record.setValue("RSSI", rssi);
+					tagModel->setRecord(i, record);
+				}
+
+			}
+		}
+		else if (unit.startAddress() == STARTADDRESS_OCRSSI)								//OC_RSSI
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				quint16 oc_rssi = unit.value(i);
+
+				QSqlRecord record = tagModel->record(i);
+				if (!record.isEmpty()) {
+					record.setValue("OCRSSI", oc_rssi);
+					tagModel->setRecord(i, record);
+				}
+			}
+		}
+		else if (unit.startAddress() == STARTADDRESS_EPC)								//EPC 
+		{
+			for (uint i = 0; i < unit.valueCount()/8; i++)
+			{
+				QByteArray epcbytes;
+
+				epcbytes.clear();
+				for (int j = 0; j < 8; j++)
+				{
+					quint16 word = unit.value(8 * i + j);
+					epcbytes.append(HIBYTE(word));
+					epcbytes.append(LOBYTE(word));
+				}
+			
+				QSqlRecord record = tagModel->record(i);
+				if (!record.isEmpty()) {
+					record.setValue("EPC", QString(epcbytes));
+					tagModel->setRecord(i, record);
+				}
+			}
+		}
+	}
+		break;
+
+	case QModbusDataUnit::DiscreteInputs:
+	{
+		if (unit.startAddress() == STARTADDRESS_ONLINE)								//online flag
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				bool online = unit.value(i);
+
+				QSqlRecord record = tagModel->record(i);
+				if (!record.isEmpty()) {
+					record.setValue("OFFLINE", online);
+					tagModel->setRecord(i, record);
+				}
+			}
+		}
+		else if (unit.startAddress() == STARTADDRESS_ALARM)							//alarm flag
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				bool alarm = unit.value(i);
+
+				QSqlRecord record = tagModel->record(i);
+				if (!record.isEmpty()) {
+					record.setValue("ALARM", alarm);
+					tagModel->setRecord(i, record);
+				}
+			}
+		}
+	}
+	break;
+
+	}
+}
+
+void iTmsTest::insertNewTag2DB(int cnt) {
+
+	for (int i = 0; i < cnt; i++) {
+		QSqlRecord record = tagModel->record();
+		record.setValue("SID", i + 1);
+		record.setValue("EPC", " ");						//EPC must not be null
+
+		tagModel->insertRecord(i, record);
+	}
 }

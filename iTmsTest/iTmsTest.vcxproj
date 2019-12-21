@@ -50,11 +50,11 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <QtInstall>5.12.0</QtInstall>
+    <QtInstall>$(DefaultQtVersion)</QtInstall>
     <QtModules>core;gui;serialbus;serialport;sql;widgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <QtInstall>5.12.0</QtInstall>
+    <QtInstall>$(DefaultQtVersion)</QtInstall>
     <QtModules>core;gui;serialbus;serialport;sql;widgets</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
