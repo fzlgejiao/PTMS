@@ -30,8 +30,11 @@ class iRDM : public QObject
 public:
 	static iRDM & Instance()
 	{
-		static iRDM _rdm;
-		return _rdm;
+		if (0 == _rdm)
+		{
+			_rdm = new iRDM();
+		}
+		return *_rdm;
 	}
 	~iRDM();
 	iReader* getReader() { return reader; }
@@ -66,6 +69,7 @@ private:
 	friend class iReader;
 	friend class CModbus;
 
+	static iRDM* _rdm;
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
 	CModbus *	modbus;

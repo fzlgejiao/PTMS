@@ -6,6 +6,7 @@
 #include "CModbus.h"
 #include <QDebug> 
 
+iRDM *iRDM::_rdm = 0;
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
 {

@@ -25,6 +25,11 @@ quint64 bytes2longlong(QByteArray& bytes)
 }
 void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie);
 void exceptionCallback(TMR_Reader *rp, TMR_Status error, void *cookie);
+TMR_ReadPlan	plan;
+TMR_TagFilter	filter;
+TMR_TagOp		tagop;
+TMR_ReadListenerBlock rlb;
+TMR_ReadExceptionListenerBlock reb;
 
 iReader::iReader(QObject *parent)
 	: QObject(parent)
@@ -40,6 +45,13 @@ iReader::iReader(QObject *parent)
 iReader::~iReader()
 {
 	stopReading();
+
+	ret = TMR_removeReadListener(tmrReader, &rlb);
+	//checkerr(tmrReader, ret, "removing read listener");
+
+	ret = TMR_removeReadExceptionListener(tmrReader, &reb);
+	//checkerr(tmrReader, ret, "removing read exception listener");
+
 	TMR_destroy(tmrReader);
 }
 void iReader::checkerror()
@@ -50,8 +62,6 @@ void iReader::checkerror()
 		qDebug() << "Error reader-init : FAILED - " << errormessage;
 	}
 }
-TMR_ReadListenerBlock rlb;
-TMR_ReadExceptionListenerBlock reb;
 bool iReader::RD_init()
 {	
 	//check if need to create reader
@@ -202,6 +212,15 @@ bool iReader::RD_init()
 	//ret = TMR_addReadListener(tmrReader, &rlb);
 	//ret = TMR_addReadExceptionListener(tmrReader, &reb);
 	//ret = TMR_startReading(tmrReader);
+
+		//set callback
+	rlb.listener = callback;
+	rlb.cookie = NULL;
+
+	reb.listener = exceptionCallback;
+	reb.cookie = NULL;
+	ret = TMR_addReadListener(tmrReader, &rlb);
+	ret = TMR_addReadExceptionListener(tmrReader, &reb);
 	return true;
 }
 bool iReader::wirteEpc(const QByteArray& epc_old, const QString& epc_new)
@@ -472,16 +491,7 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 		qDebug() << QString("OC-RSSI : %1").arg(ocrssi);
 		reader->callbackOCRSSI(epc, t->rssi, ocrssi);
 	}
-
-	//TMR_TagOp		readTid;
-	//ret = TMR_TagOp_init_GEN2_ReadData(&readTid, (TMR_GEN2_Bank)(TMR_GEN2_BANK_TID | TMR_GEN2_BANK_TID_ENABLED), 0, 0);
-
-	//TMR_TagOp		tagop;
-	//ret = TMR_TagOp_init_GEN2_ReadData(&tagop, TMR_GEN2_BANK_RESERVED, 0x0E, 1);
-	//ret = TMR_RP_set_tagop(&plan, &tagop);
-
-
-
+/*
 	char dataStr[258] = {0};
 	if (0 < t->data.len)
 	{
@@ -530,18 +540,17 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 		quint64 tid =  bytes2longlong(idbytes);
 		return;
 	}
+*/
 }
 
 void exceptionCallback(TMR_Reader *rp, TMR_Status error, void *cookie)
 {
 	qDebug() << QString("Exception callback Error: %1").arg(TMR_strerr(rp, error));
 }
-TMR_ReadPlan	plan;
-TMR_TagFilter	filter;
-TMR_TagOp		tagop;
+
 void iReader::moveNextPlan()
 {
-	if (tPlan < PLAN_TEMP)
+	if (tPlan < PLAN_OCRSSI)
 		tPlan = (PLAN_TYPE)(tPlan + 1);
 	else
 		tPlan = PLAN_CALI;
@@ -572,11 +581,11 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "setting read plan");
 
 		//set callback
-		rlb.listener = callback;
+		//rlb.listener = callback;
 		rlb.cookie = &tPlan;
 
-		reb.listener = exceptionCallback;
-		reb.cookie = NULL;
+		//reb.listener = exceptionCallback;
+		//reb.cookie = NULL;
 	}
 	else if (tPlan == PLAN_TEMP)
 	{
@@ -598,11 +607,11 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "setting read plan");
 
 		//set callback
-		rlb.listener = callback;
+		//rlb.listener = callback;
 		rlb.cookie = &tPlan;
 
-		reb.listener = exceptionCallback;
-		reb.cookie = NULL;	
+		//reb.listener = exceptionCallback;
+		//reb.cookie = NULL;	
 	}
 	else if (tPlan == PLAN_OCRSSI)
 	{
@@ -625,18 +634,18 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "setting read plan");
 
 		//set callback
-		rlb.listener = callback;
+		//rlb.listener = callback;
 		rlb.cookie = &tPlan;
 
-		reb.listener = exceptionCallback;
-		reb.cookie = NULL;
+		//reb.listener = exceptionCallback;
+		//reb.cookie = NULL;
 	}
 
-	ret = TMR_addReadListener(tmrReader, &rlb);
-	checkerr(tmrReader, ret, "adding read listener");
+	//ret = TMR_addReadListener(tmrReader, &rlb);
+	//checkerr(tmrReader, ret, "adding read listener");
 
-	ret = TMR_addReadExceptionListener(tmrReader, &reb);
-	checkerr(tmrReader, ret, "adding exception listener");
+	//ret = TMR_addReadExceptionListener(tmrReader, &reb);
+	//checkerr(tmrReader, ret, "adding exception listener");
 
 	ret = TMR_startReading(tmrReader);
 	checkerr(tmrReader, ret, "starting reading");
@@ -649,11 +658,11 @@ void iReader::stopReading()
 
 	TMR_stopReading(tmrReader);
 
-	ret = TMR_removeReadListener(tmrReader, &rlb);
-	checkerr(tmrReader, ret, "removing read listener");
+	//ret = TMR_removeReadListener(tmrReader, &rlb);
+	//checkerr(tmrReader, ret, "removing read listener");
 
-	ret = TMR_removeReadExceptionListener(tmrReader, &reb);
-	checkerr(tmrReader, ret, "removing read exception listener");
+	//ret = TMR_removeReadExceptionListener(tmrReader, &reb);
+	//checkerr(tmrReader, ret, "removing read exception listener");
 }
 void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calibration)
 {
