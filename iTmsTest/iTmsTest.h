@@ -8,7 +8,9 @@
 //state machine for reading tag data
 typedef enum
 {
-	STM_TAG_INFO = 0,																				//read input regs [0x0000 - 0x000F]
+	STM_RDM_INFO=0,
+	STM_RDM_SYSTIME,
+	STM_TAG_CNT,																				    //read input reg   0x000F
 	STM_TAG_TEMP,																					//read input regs [0x0010 - 0x003F]
 	STM_TAG_RSSI,																					//read input regs [0x0040 - 0x006F]
 	STM_TAG_OCRSSI,																					//read input regs [0x0070 - 0x009F]
@@ -30,6 +32,10 @@ typedef enum
 
 #define ADDRESS_TAGCOUNT		   0x000F
 
+
+
+#define STARTADDRESS_RDMSYSTIME    0x0000
+#define STARTADDRESS_RDMINFO	   0x0003				//info means Rdm name and version
 
 #define STARTADDRESS_TEMPERATURE   0x0010
 #define STARTADDRESS_RSSI		   0x0040
@@ -58,7 +64,6 @@ protected:
 	QStringList getComms();
 	bool openComm(int baurate, int flow_ctrl, int databits, int stopbits, int parity);
 	void DB_clearTags();																			//clear table 'TAGS'
-	void DB_clearData();																			//clear table 'DATA'
 
 	void read();
 	QModbusDataUnit readRequest() const;
@@ -83,10 +88,15 @@ private:
 
 	QMap<int, QSerialPort::Parity> paritymap;
 
+	void saveHistorydata();
+	QString m_RdmName;
+
 public slots:
 	void OnRefresh();
 	void OnConnect();
 	void OnDisconnect();
 	void OnStateChanged(int state);
 	void readReady();
+	void DB_clearData();																			//clear table 'DATA'
+
 };

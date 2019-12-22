@@ -265,7 +265,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -276,7 +276,20 @@
          <widget class="QTableView" name="tableViewOnline"/>
         </item>
         <item>
-         <widget class="QListWidget" name="listValue"/>
+         <widget class="QPlainTextEdit" name="plainTextEdit">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
+          </property>
+          <property name="maximumBlockCount">
+           <number>100</number>
+          </property>
+          <property name="centerOnScroll">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -397,10 +410,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnClear</sender>
+   <signal>clicked()</signal>
+   <receiver>iTmsTestClass</receiver>
+   <slot>DB_clearData()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>981</x>
+     <y>734</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>474</x>
+     <y>604</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>OnRefresh()</slot>
   <slot>OnConnect()</slot>
   <slot>OnDisconnect()</slot>
+  <slot>DB_clearData()</slot>
  </slots>
 </ui>

@@ -7,6 +7,7 @@
 #include <QSqlRecord>
 #include <QDebug>
 #include <QSqlError>
+#include <QDateTime>
 
 iTmsTest::iTmsTest(QWidget *parent)
 	: QMainWindow(parent)
@@ -246,12 +247,12 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	else if (event->timerId() == m_nTimerId_5s)
 	{
 		//time to refresh tags from table 'TAGS'
-		tagModel->select();
+		//tagModel->select();
 	}
 	else if (event->timerId() == m_nTimerId_5min)
 	{
 		//time to copy table 'TAGS' into table 'DATA'
-
+		saveHistorydata();
 		dataModel->select();
 	}
 }
@@ -264,6 +265,8 @@ void iTmsTest::DB_clearData()
 {
 	QSqlQuery	query;
 	query.exec("DELETE FROM DATA");
+
+	dataModel->select();
 }
 void iTmsTest::OnStateChanged(int state)
 {
@@ -307,10 +310,11 @@ void iTmsTest::readReady()
 	if (reply->error() == QModbusDevice::NoError) {
 		const QModbusDataUnit unit = reply->result();
 		for (uint i = 0; i < unit.valueCount(); i++) {
-			const QString entry = tr("Address: %1, Value: %2").arg(unit.startAddress() + i)
+			const QString entry = tr("Address: 0x%1, Value: %2\n").arg((unit.startAddress() + i),4,16,QChar('0'))
 				.arg(QString::number(unit.value(i),
 					unit.registerType() <= QModbusDataUnit::Coils ? 10 : 16));
-		//	ui.listValue->addItem(entry);
+			//ui.->addItem(entry);
+			ui.plainTextEdit->insertPlainText(entry);
 		}
 		dataHandler(unit);
 	}
@@ -334,7 +338,17 @@ QModbusDataUnit iTmsTest::readRequest() const
 	int numberOfEntries = 16;
 	switch (m_nTagStm)
 	{
-	case STM_TAG_INFO://read input regs [0x0000 - 0x000F]
+	case STM_RDM_INFO:
+		type = QModbusDataUnit::InputRegisters;
+		startAddress = STARTADDRESS_RDMINFO;
+		numberOfEntries = 9;
+		break;
+	case STM_RDM_SYSTIME:
+		type = QModbusDataUnit::InputRegisters;
+		startAddress = STARTADDRESS_RDMSYSTIME;
+		numberOfEntries = 3;
+		break;
+	case STM_TAG_CNT:
 		type = QModbusDataUnit::InputRegisters;
 		startAddress = ADDRESS_TAGCOUNT;
 		numberOfEntries = 1;
@@ -380,7 +394,38 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 	{
 	case QModbusDataUnit::InputRegisters:
 	{
-		if ((unit.startAddress() == ADDRESS_TAGCOUNT) && (unit.valueCount() == 1))
+		if (unit.startAddress() == STARTADDRESS_RDMSYSTIME)
+		{
+			int year = HIBYTE(unit.value(0));
+			int month = LOBYTE(unit.value(0));
+			int day = HIBYTE(unit.value(1));
+			int hour = LOBYTE(unit.value(1));
+			int minute = HIBYTE(unit.value(2));
+			int second = LOBYTE(unit.value(2));
+
+			QString timestr = QString("20%1-%2-%3 %4:%5:%6").arg(year,2,10,QChar('0')).arg(month, 2, 10, QChar('0')).arg(day, 2, 10, QChar('0')).arg(hour, 2, 10, QChar('0')).arg(minute, 2, 10, QChar('0')).arg(second, 2, 10, QChar('0'));
+			ui.leRdmTime->setText(timestr);
+		}
+		else if(unit.startAddress() == STARTADDRESS_RDMINFO)
+		{
+			QByteArray namebytes;
+			namebytes.clear();
+			for (int i = 0; i < 8; i++)
+			{
+				quint16 word = unit.value(i);
+				namebytes.append(HIBYTE(word));
+				namebytes.append(LOBYTE(word));
+			}
+			m_RdmName = QString(namebytes);
+			ui.leRdmName->setText(m_RdmName);
+
+			QString version =QString("V%1").arg(unit.value(8),3,10,QChar('0'));
+			version.insert(2, QChar('.'));
+			version.insert(4, QChar('.'));
+
+			ui.leRdmVersion->setText(version);
+		}
+		else if ((unit.startAddress() == ADDRESS_TAGCOUNT) && (unit.valueCount() == 1))
 		{
 			m_CurrentTagcnt = unit.value(0);
 			if (tagModel->rowCount() == 0)
@@ -399,6 +444,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("TEMP", temp);
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 			}
 		}
@@ -412,6 +458,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("RSSI", rssi);
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 
 			}
@@ -426,6 +473,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("OCRSSI", oc_rssi);
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 			}
 		}
@@ -447,6 +495,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("EPC", QString(epcbytes));
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 			}
 		}
@@ -465,6 +514,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("OFFLINE", online);
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 			}
 		}
@@ -478,6 +528,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				if (!record.isEmpty()) {
 					record.setValue("ALARM", alarm);
 					tagModel->setRecord(i, record);
+					tagModel->select();
 				}
 			}
 		}
@@ -493,7 +544,30 @@ void iTmsTest::insertNewTag2DB(int cnt) {
 		QSqlRecord record = tagModel->record();
 		record.setValue("SID", i + 1);
 		record.setValue("EPC", " ");						//EPC must not be null
-
+		record.setValue("RDMNAME", m_RdmName);						
+		
 		tagModel->insertRecord(i, record);
+	}
+}
+
+void iTmsTest::saveHistorydata()
+{
+	for (int i = 0; i < tagModel->rowCount(); i++) {
+		QSqlRecord record = tagModel->record(i);
+
+		QSqlRecord datarecord = dataModel->record();
+		QDateTime c_time = QDateTime::currentDateTime();
+		c_time.addMSecs(i);
+		datarecord.setValue("TIME", c_time.toString("yy/MM/dd hh:mm:ss.zzz"));
+		datarecord.setValue("SID", record.value("SID"));
+		datarecord.setValue("EPC", record.value("EPC"));
+		datarecord.setValue("TEMP", record.value("TEMP"));
+		datarecord.setValue("RSSI", record.value("RSSI"));
+		datarecord.setValue("OCRSSI", record.value("OCRSSI"));
+		datarecord.setValue("ALARM", record.value("ALARM"));
+		datarecord.setValue("OFFLINE", record.value("OFFLINE"));
+		datarecord.setValue("RDMNAME", record.value("RDMNAME"));
+
+		dataModel->insertRecord(i, datarecord);
 	}
 }

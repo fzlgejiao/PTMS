@@ -77,6 +77,10 @@
 #define InputRegister_SYSDAYHOUR		0x0001
 #define InputRegister_SYSMINSECOND		0x0002
 
+#define InputRegister_RDMNAME			0x0003
+#define InputRegister_RDMVERSION		0x000B
+
+
 #define InputRegister_Tag1Temp			0x0010
 #define InputRegister_Tag2Temp			0x0011
 #define InputRegister_Tag3Temp			0x0012

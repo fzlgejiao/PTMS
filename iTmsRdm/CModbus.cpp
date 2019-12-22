@@ -174,7 +174,22 @@ void CModbus::setupDeviceData()
 	//HoldingRegisters datas
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaudrate, m_rtuparity));
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
+	
+	//save Rdm name and version
+	QByteArray rdm_name = RDM->RDM_name.toLocal8Bit();	
+	if ((rdm_name.length() % 2) != 0)
+		rdm_name.append(QChar(0x00));
 
+	for (int i = 0; i < 8; i++)
+		modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_RDMNAME + i, 0);
+	for (int i = 0; i < rdm_name.length()/2; i++)
+		modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_RDMNAME+i, B2WORD(rdm_name[2 * i], rdm_name[2 * i + 1]));
+
+	QString version= QCoreApplication::applicationVersion();
+	version.remove(QChar('.'));
+	version.remove(QChar('V'));
+
+	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_RDMVERSION, version.toInt());
 	//InputRegister datas,save tag count
 	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_TagCOUNT, RDM->Tag_count());
 
