@@ -53,7 +53,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.tableViewHistory->setColumnWidth(0, 200);
 
 	ui.tabWidget->setCurrentIndex(0);
-
+	ui.plainTextEdit->setMaximumBlockCount(500);
 	DB_clearTags();
 
 	m_nTagStm = 0;
@@ -313,8 +313,7 @@ void iTmsTest::readReady()
 			const QString entry = tr("Address: 0x%1, Value: %2\n").arg((unit.startAddress() + i),4,16,QChar('0'))
 				.arg(QString::number(unit.value(i),
 					unit.registerType() <= QModbusDataUnit::Coils ? 10 : 16));
-			//ui.->addItem(entry);
-			ui.plainTextEdit->insertPlainText(entry);
+			ui.plainTextEdit->appendPlainText(entry);
 		}
 		dataHandler(unit);
 	}
