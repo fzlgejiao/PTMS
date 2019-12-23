@@ -53,7 +53,6 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.tableViewHistory->setColumnWidth(0, 200);
 
 	ui.tabWidget->setCurrentIndex(0);
-	ui.plainTextEdit->setMaximumBlockCount(500);
 	DB_clearTags();
 
 	m_nTagStm = 0;
