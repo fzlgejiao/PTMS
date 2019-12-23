@@ -391,7 +391,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
@@ -465,12 +465,28 @@
    <slot>DB_clearData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>981</x>
-     <y>734</y>
+     <x>716</x>
+     <y>124</y>
     </hint>
     <hint type="destinationlabel">
      <x>474</x>
      <y>604</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSetTempMax</sender>
+   <signal>clicked()</signal>
+   <receiver>iTmsTestClass</receiver>
+   <slot>onSetTempLimit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1120</x>
+     <y>413</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>501</x>
+     <y>474</y>
     </hint>
    </hints>
   </connection>
@@ -480,5 +496,6 @@
   <slot>OnConnect()</slot>
   <slot>OnDisconnect()</slot>
   <slot>DB_clearData()</slot>
+  <slot>onSetTempLimit()</slot>
  </slots>
 </ui>

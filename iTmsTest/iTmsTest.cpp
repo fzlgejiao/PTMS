@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QSqlError>
 #include <QDateTime>
+#include <QSortFilterProxyModel>
 
 iTmsTest::iTmsTest(QWidget *parent)
 	: QMainWindow(parent)
@@ -39,6 +40,21 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.tableViewOnline->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableViewOnline->setAlternatingRowColors(true);
 
+	connect(ui.tableViewOnline->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnCurrentChanged()));
+	/*
+	QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(ui.tableViewOnline->model());
+	QItemSelectionModel *selectionModel = ui.tableViewOnline->selectionModel();
+
+	QModelIndexList indexes = selectionModel->selectedRows();
+	QModelIndex index;
+
+	foreach(index, indexes) {
+		int row = proxy->mapToSource(index).row();
+		tagModel->removeRows(row, 1, QModelIndex());
+	}
+	*/
+	writeRequest = QModbusDataUnit(QModbusDataUnit::Invalid, 0, 1);
+
 	//for data
 	dataModel = new QSqlTableModel(this);
 	dataModel->setTable("DATA");
@@ -61,6 +77,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	m_nTimerId_5s = startTimer(5000);
 	m_nTimerId_5min = startTimer(300000);
 
+	onSetTempLimit();
 
 	connect(modbus, &QModbusClient::errorOccurred, [this](QModbusDevice::Error) {
 		statusBar()->showMessage(modbus->errorString(), 5000);
@@ -237,6 +254,12 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == m_nTimerId_200ms)
 	{
+		//polling write request firstly
+		if (writeRequest.registerType()!= QModbusDataUnit::Invalid) {
+			modbuswrite();
+			writeRequest.setRegisterType(QModbusDataUnit::Invalid);
+			return;
+		}
 		//time read one kind of tag data
 		read();
 		m_nTagStm++;
@@ -381,6 +404,12 @@ QModbusDataUnit iTmsTest::readRequest() const
 		startAddress = STARTADDRESS_ALARM;
 		numberOfEntries = m_CurrentTagcnt;
 		break;
+
+	case STM_TAG_TEMPLIMIT:
+		type = QModbusDataUnit::HoldingRegisters;
+		startAddress = STARTADDRESS_TEMPLIMIT;
+		numberOfEntries = m_CurrentTagcnt;
+		break;		
 	}
 
     return QModbusDataUnit(type, startAddress, numberOfEntries);
@@ -533,6 +562,21 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 	}
 	break;
 
+	case QModbusDataUnit::HoldingRegisters:
+	{
+		for (uint i = 0; i < unit.valueCount(); i++)
+		{
+			quint16 limit = unit.value(i);
+
+			QSqlRecord record = tagModel->record(i);
+			if (!record.isEmpty()) {
+				record.setValue("TEMPMAX", limit);
+				tagModel->setRecord(i, record);
+				tagModel->select();
+			}
+		}
+	}
+
 	}
 }
 
@@ -568,4 +612,62 @@ void iTmsTest::saveHistorydata()
 
 		dataModel->insertRecord(i, datarecord);
 	}
+}
+
+void iTmsTest::onSetTempLimit()
+{
+	//To do:no tag selectd , ignore it
+	//if (ui.tableViewOnline->currentIndex().row() < 0) return;
+
+	QModbusDataUnit::RegisterType type = QModbusDataUnit::HoldingRegisters;
+	int startAddress = STARTADDRESS_TEMPLIMIT;
+	int numberOfEntries = 1;
+
+	quint16 limit = ui.leTempMax->text().trimmed().toInt();
+	writeRequest.setRegisterType(type);
+	writeRequest.setValue(0, limit);
+}
+void iTmsTest::modbuswrite()
+{
+	if (modbus->state() == QModbusDevice::UnconnectedState)
+		return;
+
+	if (auto *reply = modbus->sendWriteRequest(writeRequest, ui.leRdmRTUAddr->text().toInt())) {
+		if (!reply->isFinished())
+			connect(reply, &QModbusReply::finished, this, [this, reply]() {
+			if (reply->error() == QModbusDevice::ProtocolError) {
+				statusBar()->showMessage(tr("Write response error: %1 (Mobus exception: 0x%2)")
+					.arg(reply->errorString()).arg(reply->rawResult().exceptionCode(), -1, 16),
+					5000);
+			}			
+			else if (reply->error() == QModbusDevice::NoError) {
+				statusBar()->showMessage(tr("Set Temperature limit ok!"),5000);
+			}
+			else {
+				statusBar()->showMessage(tr("Write response error: %1 (code: 0x%2)").
+					arg(reply->errorString()).arg(reply->error(), -1, 16), 5000);
+			}
+			reply->deleteLater();
+		});
+		else
+			delete reply; // broadcast replies return immediately
+	}
+	else {
+		statusBar()->showMessage(tr("Write error: ") + modbus->errorString(), 5000);
+	}
+}
+
+void iTmsTest::OnCurrentChanged()
+{
+	QModelIndex index= ui.tableViewOnline->currentIndex();
+
+	if (index.row() < 0) return;
+
+	//QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(ui.tableViewOnline->model());
+		
+	QSqlRecord record=tagModel->record(index.row());
+	int sid = record.value("SID").toInt();
+	qDebug() << "SID=" << sid;
+	ui.leTempMax->setText(record.value("TEMPMAX").toString());
+	writeRequest.setStartAddress(STARTADDRESS_TEMPLIMIT + sid - 1);
 }

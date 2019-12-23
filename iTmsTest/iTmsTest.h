@@ -17,6 +17,7 @@ typedef enum
 	STM_TAG_EPC,																					//read input regs [0x0160 - 0x02D8]
 	STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
 	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
+	STM_TAG_TEMPLIMIT,
 	STM_TAG_END
 }STM_TAG;
 
@@ -42,6 +43,8 @@ typedef enum
 #define STARTADDRESS_OCRSSI		   0x0070
 #define STARTADDRESS_EPC		   0x0160
 
+
+#define STARTADDRESS_TEMPLIMIT     0x0010
 
 #define STARTADDRESS_ONLINE		   0x0000
 #define STARTADDRESS_ALARM		   0x0030
@@ -90,6 +93,8 @@ private:
 
 	void saveHistorydata();
 	QString m_RdmName;
+	QModbusDataUnit writeRequest;
+	void modbuswrite();
 
 public slots:
 	void OnRefresh();
@@ -98,5 +103,7 @@ public slots:
 	void OnStateChanged(int state);
 	void readReady();
 	void DB_clearData();																			//clear table 'DATA'
+	void onSetTempLimit();
+	void OnCurrentChanged();
 
 };
