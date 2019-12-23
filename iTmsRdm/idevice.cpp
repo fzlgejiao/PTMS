@@ -209,10 +209,10 @@ void iDevice::PUB_tag_data(iTag* tag)
 	{
 		para += QString("\"Tag%1_switch\":\"%2\",").arg(tag->T_sid).arg(tag->T_enable);
 	}
-	if (tag->hasDataFlag(Tag_UID))
-	{
-		para += QString("\"Tag%1_UID\":\"%2\",").arg(tag->T_sid).arg(tag->T_uid, 16, 16);
-	}
+	//if (tag->hasDataFlag(Tag_UID))
+	//{
+	//	para += QString("\"Tag%1_UID\":\"%2\",").arg(tag->T_sid).arg(tag->T_uid, 16, 16);
+	//}
 	if (tag->hasDataFlag(Tag_EPC))
 	{
 		para += QString("\"Tag%1_EPC\":\"%2\",").arg(tag->T_sid).arg(tag->T_epc);

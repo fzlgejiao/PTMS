@@ -7,7 +7,7 @@
 
 #define	RDM_TICKS		3		//max times for online check
 #define IOT_TIMER		5000
-#define RDM_TIMER		2000
+#define RDM_TIMER		400
 #define DATETIME_TIMER	1000
 
 enum HWVER {
@@ -40,7 +40,7 @@ public:
 	iReader* getReader() { return reader; }
 	static  void ERR_msg(const QString& module,const QString& error);
 
-	iTag*	Tag_get(quint64 uid) {return  taglist.value(uid, NULL);}
+	iTag*	Tag_get(const QString& epc) {return  taglist.value(epc, NULL);}
 	iTag*	Tag_getbysid(int sid);
 	int		Tag_count() { return taglist.count(); }
 
@@ -55,7 +55,7 @@ protected:
 	void	Cfg_readtags(QXmlStreamReader& xmlReader);
 	void	Cfg_skipUnknownElement(QXmlStreamReader& xmlReader);
 
-	iTag*	Tag_add(int sid,quint64 uid,const QString& epc);
+	iTag*	Tag_add(int sid,const QString& epc);
 	int		HW_ver();
 
 	virtual void timerEvent(QTimerEvent *event);
@@ -76,7 +76,7 @@ private:
 	iBC*		bc;
 	iLed*		led;
 
-	QMap<quint64, iTag *> taglist;																	//<UID,tag>
+	QMap<QString, iTag *> taglist;																	//<epc,tag>
 	QMap<quint64, QByteArray> tagOnline;															//<UID,epc>
 	int			tmrRDM;
 	int         tmrTime;

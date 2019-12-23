@@ -382,7 +382,7 @@ void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
 	int idx = 0;
 	for (iTag *tag : rdm->taglist)
 	{
-		tagsdata->Tags[idx].uid = tag->T_uid;
+		tagsdata->Tags[idx].uid = 0;
 		tagsdata->Tags[idx].sid = tag->T_sid;
 		tagsdata->Tags[idx].upperlimit = tag->T_uplimit;
 		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
@@ -435,7 +435,7 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 	int idx = 0;
 	for (iTag *tag : rdm->taglist)
 	{
-		tagsdata->Tags[idx].uid			= tag->T_uid;
+		tagsdata->Tags[idx].uid			= 0;
 		tagsdata->Tags[idx].sid			= tag->T_sid;
 		tagsdata->Tags[idx].alarm		= tag->isAlarm() ? 1 : 0;
 		tagsdata->Tags[idx].rssi		= tag->T_rssi;
@@ -460,7 +460,7 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 	QByteArray epc_old = rdm->tagOnline.value(rtagepc->uid);
 	bool ret = rdm->reader->wirteEpc(epc_old, rtagepc->epc);
 
-	iTag* tag = rdm->Tag_get(rtagepc->uid);
+	iTag* tag = rdm->Tag_get(QString(epc_old));
 	if (tag)
 	{
 		if (ret)

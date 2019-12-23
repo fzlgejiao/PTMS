@@ -188,19 +188,20 @@ void CModbus::setupDeviceData()
 		modbusDevice->setData(QModbusDataUnit::HoldingRegisters, address + i, tag->T_uplimit);
 
 		/* save all tags UID*/
-		address = InputRegister_Tag1UID;
-		quint64 uid = tag->T_uid;
-		if (uid != 0)
-		{
-			int offset = 0;
-			modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, HI1WORD(uid));
-			offset++;
-			modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, HI2WORD(uid));
-			offset++;
-			modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, LO1WORD(uid));
-			offset++;
-			modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, LO2WORD(uid));
-		}
+		//address = InputRegister_Tag1UID;
+		//quint64 uid = tag->T_uid;
+		//if (uid != 0)
+		//{
+		//	int offset = 0;
+		//	modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, HI1WORD(uid));
+		//	offset++;
+		//	modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, HI2WORD(uid));
+		//	offset++;
+		//	modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, LO1WORD(uid));
+		//	offset++;
+		//	modbusDevice->setData(QModbusDataUnit::InputRegisters, address + 4 * i + offset, LO2WORD(uid));
+		//}
+
 		/* save all tags EPC*/
 		address = InputRegister_Tag1EPC;
 		QString  epc = tag->T_epc;

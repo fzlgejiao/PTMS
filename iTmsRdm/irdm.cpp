@@ -64,7 +64,7 @@ void iRDM::RDM_init()
 	//set tag flags for send the tag info to system
 	for (iTag *tag : taglist)
 	{
-		tag->T_data_flag = Tag_UID | Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi | Tag_Temperature;
+		tag->T_data_flag = Tag_EPC | Tag_Upperlimit | Tag_Switch | Tag_Rssi | Tag_Temperature;
 	}
 
 	emit cfgChanged();
@@ -223,26 +223,23 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 			if (xmlReader.name() == "tag")
 			{
 				int sid;
-				quint64 uid;
 				QString epc;
 				int enable;
 				int max = TAG_T_MAX;
 				sid = xmlReader.attributes().value("sid").toString().toInt();
-				uid = xmlReader.attributes().value("uid").toString().toULongLong();
 				epc = xmlReader.attributes().value("epc").toString();
 				if(xmlReader.attributes().value("max").isEmpty() == false)
 					max = xmlReader.attributes().value("max").toString().toInt();
 				QString note = xmlReader.readElementText();
 
 				//todo: load tag info
-				iTag *tag = Tag_add(sid, uid, epc);
+				iTag *tag = Tag_add(sid, epc);
 				if (tag)
 				{
 					tag->T_uplimit = max;
 					tag->T_note = note;
 				}
 				qDebug() << "tag : sid = " << sid 
-						<< " uid = " << uid 
 					    << " epc = " << epc
 						<< " note = " << note;
 
@@ -277,12 +274,12 @@ void iRDM::Cfg_skipUnknownElement(QXmlStreamReader& xmlReader)
 		}
 	}
 }
-iTag* iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
+iTag* iRDM::Tag_add(int sid, const QString& epc)
 {
-	iTag *tag = new iTag(sid,uid,epc, this);
+	iTag *tag = new iTag(sid,epc, this);
 	if (tag)
 	{
-		taglist.insert(tag->T_uid, tag);
+		taglist.insert(epc, tag);
 	}
 	return tag;
 }
@@ -298,7 +295,7 @@ iTag* iRDM::Tag_getbysid(int sid)
 void iRDM::timerEvent(QTimerEvent *event)
 {
 	static int count = 0;
-	if (event->timerId() == tmrRDM)		//2s
+	if (event->timerId() == tmrRDM)		//400ms
 	{
 		//read tags
 		//reader->readtag();
@@ -324,7 +321,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 				if (tag->T_ticks == 0)
 				{
 					qDebug() << "tag : sid = " << tag->T_sid 
-						<< " uid = " << tag->T_uid 
+						<< " epc = " << tag->T_epc 
 						<< " Alarm : Offline";
 					tag->T_alarm_offline = true;													//offline
 

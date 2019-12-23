@@ -37,7 +37,7 @@ class iTag : public QObject
 	Q_OBJECT
 
 public:
-	iTag(int sid,quint64 uid, const QString& epc,QObject *parent);
+	iTag(int sid, const QString& epc,QObject *parent);
 	~iTag();
 	QString Title() { return QString("Sensor%1").arg(T_sid); }
 	QString Temp() {return isonline() ? QString("%1").arg(T_temp, 0, 'f', 1) : "--.-";}
@@ -65,7 +65,6 @@ private:
 	bool			T_updated;																		//data changed ,but not transmitted
 	bool			T_alarm_offline;																//offline alarm or not(<online -> offline> ==> alarm)
 	bool			T_alarm_temperature;															//temperature out of range alarm
-	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
 	QString			T_note;																			//note
 	qint8			T_rssi;																			//RSSI
