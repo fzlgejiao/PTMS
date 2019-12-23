@@ -15,7 +15,7 @@ typedef enum
 	STM_TAG_RSSI,																					//read input regs [0x0040 - 0x006F]
 	STM_TAG_OCRSSI,																					//read input regs [0x0070 - 0x009F]
 	STM_TAG_EPC,																					//read input regs [0x0160 - 0x02D8]
-	STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
+	//STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
 	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
 	STM_TAG_TEMPLIMIT,
 	STM_TAG_END

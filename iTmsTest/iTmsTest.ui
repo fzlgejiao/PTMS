@@ -291,6 +291,16 @@
            </spacer>
           </item>
           <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>SID:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="combo_sid"/>
+          </item>
+          <item>
            <widget class="QLabel" name="label_9">
             <property name="text">
              <string>报警温度</string>
@@ -304,6 +314,9 @@
               <width>120</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="placeholderText">
+             <string>range:[0-120]</string>
             </property>
            </widget>
           </item>
