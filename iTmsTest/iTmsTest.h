@@ -105,5 +105,6 @@ public slots:
 	void DB_clearData();																			//clear table 'DATA'
 	void onSetTempLimit();
 	void OnCurrentChanged();
-
+	void OnDeleteData();
+	void OnTagDataSelectChanged(const QModelIndex &, const QModelIndex &);
 };

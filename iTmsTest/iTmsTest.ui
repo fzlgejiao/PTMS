@@ -293,7 +293,7 @@
           <item>
            <widget class="QLabel" name="label_10">
             <property name="text">
-             <string>SID:</string>
+             <string>选择传感器(SID):</string>
             </property>
            </widget>
           </item>
@@ -366,6 +366,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QPushButton" name="btnDelete">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="maximumSize">
              <size>
               <width>120</width>
@@ -404,7 +407,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -431,7 +434,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>299</x>
-     <y>126</y>
+     <y>111</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
@@ -446,8 +449,8 @@
    <slot>OnConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>372</y>
+     <x>150</x>
+     <y>364</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
@@ -463,7 +466,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>299</x>
-     <y>372</y>
+     <y>364</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
@@ -478,8 +481,8 @@
    <slot>DB_clearData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>716</x>
-     <y>124</y>
+     <x>1070</x>
+     <y>756</y>
     </hint>
     <hint type="destinationlabel">
      <x>474</x>
@@ -503,6 +506,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnDelete</sender>
+   <signal>clicked()</signal>
+   <receiver>iTmsTestClass</receiver>
+   <slot>OnDeleteData()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>775</x>
+     <y>745</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>427</x>
+     <y>688</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>OnRefresh()</slot>
@@ -510,5 +529,6 @@
   <slot>OnDisconnect()</slot>
   <slot>DB_clearData()</slot>
   <slot>onSetTempLimit()</slot>
+  <slot>OnDeleteData()</slot>
  </slots>
 </ui>

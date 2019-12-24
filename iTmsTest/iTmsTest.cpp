@@ -10,6 +10,8 @@
 #include <QDateTime>
 #include <QSortFilterProxyModel>
 
+#define	ERR_SHOW_TIME		3000
+
 iTmsTest::iTmsTest(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -28,19 +30,23 @@ iTmsTest::iTmsTest(QWidget *parent)
 	paritymap.insert(1, QSerialPort::OddParity);
 	paritymap.insert(2, QSerialPort::EvenParity);
 
+	DB_clearTags();
+
 	//for tags
 	tagModel = new QSqlTableModel(this);
 	tagModel->setTable("TAGS");
 	tagModel->select();
 
+	QSortFilterProxyModel* proxyModelTags = new QSortFilterProxyModel();
+	proxyModelTags->setSourceModel(tagModel);
+	proxyModelTags->setDynamicSortFilter(true);
+
 	ui.tableViewOnline->setSortingEnabled(true);
-	ui.tableViewOnline->setModel(tagModel);
+	ui.tableViewOnline->setModel(proxyModelTags);
 	ui.tableViewOnline->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	ui.tableViewOnline->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui.tableViewOnline->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableViewOnline->setAlternatingRowColors(true);
-
-	//connect(ui.tableViewOnline->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnCurrentChanged()));
 	
 	writeRequest = QModbusDataUnit(QModbusDataUnit::Invalid, 0, 1);
 
@@ -49,8 +55,12 @@ iTmsTest::iTmsTest(QWidget *parent)
 	dataModel->setTable("DATA");
 	dataModel->select();
 
+	QSortFilterProxyModel* proxyModelData = new QSortFilterProxyModel();
+	proxyModelData->setSourceModel(dataModel);
+	proxyModelData->setDynamicSortFilter(true);
+
+	ui.tableViewHistory->setModel(proxyModelData);
 	ui.tableViewHistory->setSortingEnabled(true);
-	ui.tableViewHistory->setModel(dataModel);
 	ui.tableViewHistory->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	ui.tableViewHistory->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui.tableViewHistory->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -58,7 +68,6 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.tableViewHistory->setColumnWidth(0, 200);
 
 	ui.tabWidget->setCurrentIndex(0);
-	DB_clearTags();
 
 	m_nTagStm = 0;
 	m_CurrentTagcnt = 0;
@@ -69,9 +78,12 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.leTempMax->setValidator(new QIntValidator(0, 120, this));
 
 	connect(modbus, &QModbusClient::errorOccurred, [this](QModbusDevice::Error) {
-		statusBar()->showMessage(modbus->errorString(), 5000);
+		statusBar()->showMessage(modbus->errorString(), ERR_SHOW_TIME);
 	});
 	connect(modbus, &QModbusClient::stateChanged,this, &iTmsTest::OnStateChanged);
+
+	//connect(ui.tableViewOnline->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnCurrentChanged()));
+	//connect(ui.tableViewHistory->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataSelectChanged(const QModelIndex &, const QModelIndex &)));
 }
 iTmsTest::~iTmsTest()
 {
@@ -106,10 +118,10 @@ void iTmsTest::OnConnect()
 		modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter,
 			ui.cbxStopBit->currentText().toInt());
 	
-		modbus->setTimeout(500);																	//response timeout
+		modbus->setTimeout(1000);																	//response timeout
 		modbus->setNumberOfRetries(0);
 		if (!modbus->connectDevice()) {
-			statusBar()->showMessage(tr("Connect failed: ") + modbus->errorString(), 5000);
+			statusBar()->showMessage(tr("Connect failed: ") + modbus->errorString(), ERR_SHOW_TIME);
 		}
 		else {
 			ui.btnConnect->setEnabled(false);
@@ -280,35 +292,58 @@ void iTmsTest::DB_clearData()
 
 	dataModel->select();
 }
+void iTmsTest::OnDeleteData()
+{
+	QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(ui.tableViewHistory->model());
+	QItemSelectionModel *selectionModel = ui.tableViewHistory->selectionModel();
+
+	QModelIndexList indexes = selectionModel->selectedRows();
+	QModelIndex index;
+
+	foreach(index, indexes) {
+		int row = proxy->mapToSource(index).row();
+		dataModel->removeRows(row, 1, QModelIndex());
+	}
+}
 void iTmsTest::OnStateChanged(int state)
 {
-	bool connected = (state != QModbusDevice::UnconnectedState);
-	if (connected)
+
+	if (state == QModbusDevice::ConnectedState)
 	{
 		ui.btnConnect->setEnabled(false);
 		ui.btnDisconnect->setEnabled(true);
+		statusBar()->showMessage(tr("ModbusDevice::connected"), 0);
 	}
 	else
 	{
 		ui.btnConnect->setEnabled(true);
 		ui.btnDisconnect->setEnabled(false);
+		QString error;
+		if (state == QModbusDevice::UnconnectedState)
+			error = tr("ModbusDevice::unconnected");
+		else if (state == QModbusDevice::ConnectingState)
+			error = tr("ModbusDevice::connecting");
+		else if (state == QModbusDevice::ClosingState)
+			error = tr("ModbusDevice::closing");
+
+		statusBar()->showMessage(error, 0);
 	}
 }
 void iTmsTest::read()
 {
-	if (modbus->state() == QModbusDevice::UnconnectedState)
-		return;
+	if (modbus->state() == QModbusDevice::ConnectedState)
+	{
+		//statusBar()->clearMessage();
 
-	//statusBar()->clearMessage();
-
-	if (auto *reply = modbus->sendReadRequest(readRequest(), ui.leRdmRTUAddr->text().toInt())) {
-		if (!reply->isFinished())
-			connect(reply, &QModbusReply::finished, this, &iTmsTest::readReady);
-		else
-			delete reply; // broadcast replies return immediately
-	}
-	else {
-		statusBar()->showMessage(tr("Read error: ") + modbus->errorString(), 5000);
+		if (auto *reply = modbus->sendReadRequest(readRequest(), ui.leRdmRTUAddr->text().toInt())) {
+			if (!reply->isFinished())
+				connect(reply, &QModbusReply::finished, this, &iTmsTest::readReady);
+			else
+				delete reply; // broadcast replies return immediately
+		}
+		else {
+			statusBar()->showMessage(tr("Read error: ") + modbus->errorString(), ERR_SHOW_TIME);
+		}
 	}
 }
 void iTmsTest::readReady()
@@ -317,14 +352,12 @@ void iTmsTest::readReady()
 	if (!reply)
 		return;
 
-	//qDebug() << "Reply error="<<reply->error();
-
 	if (reply->error() == QModbusDevice::NoError) {
 		const QModbusDataUnit unit = reply->result();
 		for (uint i = 0; i < unit.valueCount(); i++) {
-			const QString entry = tr("Address: 0x%1, Value: %2\n").arg((unit.startAddress() + i),4,16,QChar('0'))
-				.arg(QString::number(unit.value(i),
-					unit.registerType() <= QModbusDataUnit::Coils ? 10 : 16));
+			const QString entry = tr("Address: 0x%1, Value: %2\n")
+									.arg((unit.startAddress() + i),4,16,QChar('0'))
+									.arg(QString::number(unit.value(i),unit.registerType() <= QModbusDataUnit::Coils ? 10 : 16));
 			ui.plainTextEdit->appendPlainText(entry);
 		}
 		dataHandler(unit);
@@ -332,12 +365,12 @@ void iTmsTest::readReady()
 	else if (reply->error() == QModbusDevice::ProtocolError) {
 		statusBar()->showMessage(tr("Read response error: %1 (Mobus exception: 0x%2)").
 			arg(reply->errorString()).
-			arg(reply->rawResult().exceptionCode(), -1, 16), 5000);
+			arg(reply->rawResult().exceptionCode(), -1, 16), ERR_SHOW_TIME);
 	}
 	else {
 		statusBar()->showMessage(tr("Read response error: %1 (code: 0x%2)").
 			arg(reply->errorString()).
-			arg(reply->error(), -1, 16), 5000);
+			arg(reply->error(), -1, 16), ERR_SHOW_TIME);
 	}
 
 	reply->deleteLater();
@@ -496,7 +529,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 					epcbytes.append(LOBYTE(word));
 				}
 
-				query.exec(QString("UPDATE TAGS SET EPC = %1 WHERE SID = %2").arg(QString(epcbytes)).arg(i + 1));			
+				query.exec(QString("UPDATE TAGS SET EPC = '%1' WHERE SID = %2").arg(QString(epcbytes)).arg(i + 1));			
 			}
 			tagModel->select();
 		}
@@ -546,14 +579,15 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 
 void iTmsTest::insertNewTag2DB(int cnt) {
 
+	ui.combo_sid->clear();
 	for (int i = 0; i < cnt; i++) {
 		QSqlRecord record = tagModel->record();
 		record.setValue("SID", i + 1);
 		record.setValue("EPC", " ");						//EPC must not be null
 		//record.setValue("RDMNAME", m_RdmName);						
 		
-		tagModel->insertRecord(i, record);
-		ui.combo_sid->addItem(QString::number(i + 1));
+		if(tagModel->insertRecord(i, record) == true)
+			ui.combo_sid->addItem(QString::number(i + 1));
 	}
 	if (cnt > 0)
 		ui.combo_sid->setCurrentIndex(0);
@@ -603,14 +637,14 @@ void iTmsTest::modbuswrite()
 			if (reply->error() == QModbusDevice::ProtocolError) {
 				statusBar()->showMessage(tr("Write response error: %1 (Mobus exception: 0x%2)")
 					.arg(reply->errorString()).arg(reply->rawResult().exceptionCode(), -1, 16),
-					5000);
+					ERR_SHOW_TIME);
 			}			
 			else if (reply->error() == QModbusDevice::NoError) {
-				statusBar()->showMessage(tr("Set Temperature limit ok!"),5000);
+				statusBar()->showMessage(tr("Set Temperature limit ok!"), ERR_SHOW_TIME);
 			}
 			else {
 				statusBar()->showMessage(tr("Write response error: %1 (code: 0x%2)").
-					arg(reply->errorString()).arg(reply->error(), -1, 16), 5000);
+					arg(reply->errorString()).arg(reply->error(), -1, 16), ERR_SHOW_TIME);
 			}
 			reply->deleteLater();
 		});
@@ -618,7 +652,7 @@ void iTmsTest::modbuswrite()
 			delete reply; // broadcast replies return immediately
 	}
 	else {
-		statusBar()->showMessage(tr("Write error: ") + modbus->errorString(), 5000);
+		statusBar()->showMessage(tr("Write error: ") + modbus->errorString(), ERR_SHOW_TIME);
 	}
 }
 
@@ -626,7 +660,8 @@ void iTmsTest::OnCurrentChanged()
 {
 	QModelIndex index= ui.tableViewOnline->currentIndex();
 
-	if (index.row() < 0) return;
+	if (index.row() < 0) 
+		return;
 
 	//QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(ui.tableViewOnline->model());
 		
@@ -635,4 +670,32 @@ void iTmsTest::OnCurrentChanged()
 	qDebug() << "SID=" << sid;
 	ui.leTempMax->setText(record.value("TEMPMAX").toString());
 	writeRequest.setStartAddress(STARTADDRESS_TEMPLIMIT + sid - 1);
+}
+void iTmsTest::OnTagDataSelectChanged(const QModelIndex &current, const QModelIndex &previous)
+{
+	if (current.isValid())
+	{
+		//ui.btnDelete->setEnabled(true);
+
+		//QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(ui.tableViewHistory->model());
+		//QItemSelectionModel *selectionModel = ui.tableViewHistory->selectionModel();
+
+		//QModelIndexList indexes = selectionModel->selectedRows();
+		//QModelIndex index;
+
+		////foreach(index, indexes) 
+		//{
+		//	int row = proxy->mapToSource(current).row();
+
+		//	QSqlRecord record = dataModel->record(row);
+		//	int sid = record.value("SID").toInt();
+		//	qDebug() << "SID=" << sid;
+		//	ui.leTempMax->setText(record.value("TEMPMAX").toString());
+		//	ui.leRdmVersion->setText(record.value("EPC").toString());
+
+		//}
+
+	}
+	else
+		ui.btnDelete->setEnabled(false);
 }

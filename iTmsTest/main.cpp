@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	a.setApplicationName(QObject::tr("PTMS - Test"));
-	a.setApplicationVersion("0.0.1");
+	a.setApplicationVersion("0.0.2");
 
 	if (!createConnection())																		//open database
 		return 1;
