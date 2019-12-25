@@ -9,6 +9,7 @@
 #include <QSqlError>
 #include <QDateTime>
 #include <QSortFilterProxyModel>
+#include <QLoggingCategory>
 
 #define	ERR_SHOW_TIME		3000
 
@@ -16,7 +17,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-
+	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=true"));
 	this->setWindowTitle(QString("PTMS - MODBUS %1").arg(qApp->applicationVersion()));
 
 	serial = new QSerialPort(this);
