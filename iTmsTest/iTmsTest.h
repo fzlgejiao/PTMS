@@ -84,6 +84,7 @@ private:
 	QSqlTableModel*	dataModel;
 
 	int m_nTimerId_200ms;																			//time to read one kind of tag data
+	int m_nTimerId_1s;
 	int m_nTimerId_5s;																				//time to refresh tags from table 'TAGS'
 	int	m_nTimerId_5min;																			//time to copy table 'TAGS' into table 'DATA'
 	int m_nTagStm;
@@ -106,5 +107,6 @@ public slots:
 	void onSetTempLimit();
 	void OnCurrentChanged();
 	void OnDeleteData();
+	void OnRefreshData();
 	void OnTagDataSelectChanged(const QModelIndex &, const QModelIndex &);
 };

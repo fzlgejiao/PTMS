@@ -24,6 +24,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
+	ui.leCompiledTime->setText(tr(__DATE__)+","+tr(__TIME__));
 	OnRefresh();
 
 	paritymap.insert(0, QSerialPort::NoParity);
@@ -65,13 +66,14 @@ iTmsTest::iTmsTest(QWidget *parent)
 	ui.tableViewHistory->setSelectionBehavior(QAbstractItemView::SelectRows);
 	ui.tableViewHistory->setSelectionMode(QAbstractItemView::SingleSelection);
 	ui.tableViewHistory->setAlternatingRowColors(true);
-	ui.tableViewHistory->setColumnWidth(0, 200);
+	ui.tableViewHistory->setColumnWidth(0, 250);
 
 	ui.tabWidget->setCurrentIndex(0);
 
 	m_nTagStm = 0;
 	m_CurrentTagcnt = 0;
-	m_nTimerId_200ms = startTimer(200);
+	m_nTimerId_200ms = startTimer(400);
+	m_nTimerId_1s = startTimer(1000);
 	m_nTimerId_5s = startTimer(5000);
 	m_nTimerId_5min = startTimer(300000);
 
@@ -268,16 +270,20 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 				m_nTagStm = 0;
 		}
 	}
-	else if (event->timerId() == m_nTimerId_5s)
+	else if (event->timerId() == m_nTimerId_1s)
 	{
 		//time to refresh tags from table 'TAGS'
-		//tagModel->select();
+		tagModel->select();
+	}
+	else if (event->timerId() == m_nTimerId_5s)
+	{
+
 	}
 	else if (event->timerId() == m_nTimerId_5min)
 	{
 		//time to copy table 'TAGS' into table 'DATA'
 		saveHistorydata();
-		dataModel->select();
+		//dataModel->select();
 	}
 }
 void iTmsTest::DB_clearTags()
@@ -304,6 +310,10 @@ void iTmsTest::OnDeleteData()
 		int row = proxy->mapToSource(index).row();
 		dataModel->removeRows(row, 1, QModelIndex());
 	}
+}
+void iTmsTest::OnRefreshData()
+{
+	dataModel->select();
 }
 void iTmsTest::OnStateChanged(int state)
 {
@@ -492,7 +502,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 			
 				query.exec(QString("UPDATE TAGS SET TEMP = %1 WHERE SID = %2").arg(temp).arg(i+1));
 			}
-			tagModel->select();
+			//tagModel->select();
 		}
 		else if (unit.startAddress() == STARTADDRESS_RSSI)								//RSSI
 		{
@@ -502,7 +512,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 
 				query.exec(QString("UPDATE TAGS SET RSSI = %1 WHERE SID = %2").arg(rssi).arg(i + 1));
 			}
-			tagModel->select();
+			//tagModel->select();
 
 		}
 		else if (unit.startAddress() == STARTADDRESS_OCRSSI)								//OC_RSSI
@@ -512,7 +522,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				quint16 oc_rssi = unit.value(i);
 				query.exec(QString("UPDATE TAGS SET OCRSSI = %1 WHERE SID = %2").arg(oc_rssi).arg(i + 1));
 			}
-			tagModel->select();
+			//tagModel->select();
 
 		}
 		else if (unit.startAddress() == STARTADDRESS_EPC)								//EPC 
@@ -531,7 +541,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 
 				query.exec(QString("UPDATE TAGS SET EPC = '%1' WHERE SID = %2").arg(QString(epcbytes)).arg(i + 1));			
 			}
-			tagModel->select();
+			//tagModel->select();
 		}
 	}
 		break;
@@ -560,7 +570,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 				bool alarm = unit.value(i);
 				query.exec(QString("UPDATE TAGS SET ALARM = %1 WHERE SID = %2").arg(alarm).arg(i + 1));				
 			}
-			tagModel->select();
+			//tagModel->select();
 		}
 	}
 	break;

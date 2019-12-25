@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QGroupBox" name="gbxSerial">
         <property name="maximumSize">
@@ -257,6 +257,20 @@
            </property>
           </widget>
          </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>编译时间：</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="leCompiledTime">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -265,7 +279,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -365,6 +379,22 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
+           <widget class="QPushButton" name="btnRefreshData">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>刷新</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnDelete">
             <property name="enabled">
              <bool>false</bool>
@@ -407,7 +437,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
@@ -481,8 +511,8 @@
    <slot>DB_clearData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1070</x>
-     <y>756</y>
+     <x>1126</x>
+     <y>747</y>
     </hint>
     <hint type="destinationlabel">
      <x>474</x>
@@ -513,12 +543,28 @@
    <slot>OnDeleteData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>775</x>
-     <y>745</y>
+     <x>954</x>
+     <y>747</y>
     </hint>
     <hint type="destinationlabel">
      <x>427</x>
      <y>688</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnRefreshData</sender>
+   <signal>clicked()</signal>
+   <receiver>iTmsTestClass</receiver>
+   <slot>OnRefreshData()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>741</x>
+     <y>732</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>732</y>
     </hint>
    </hints>
   </connection>
@@ -530,5 +576,6 @@
   <slot>DB_clearData()</slot>
   <slot>onSetTempLimit()</slot>
   <slot>OnDeleteData()</slot>
+  <slot>OnRefreshData()</slot>
  </slots>
 </ui>
