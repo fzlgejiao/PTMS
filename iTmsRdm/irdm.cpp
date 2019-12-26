@@ -320,7 +320,9 @@ void iRDM::timerEvent(QTimerEvent *event)
 						<< " uid = " << tag->T_uid 
 						<< " Alarm : Offline";
 					tag->T_alarm_offline = true;													//offline
-
+					tag->T_rssi = -99;
+					tag->T_OC_rssi = -99;
+					tag->T_temp = -99;
 					emit tagLost(tag);
 				}
 			}

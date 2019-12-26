@@ -133,8 +133,8 @@ void iTmsTest::OnConnect()
 }
 void iTmsTest::OnDisconnect()
 {
-	serial->clear();
-	serial->close();
+	//serial->clear();
+	//serial->close();
 	modbus->disconnectDevice();
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
