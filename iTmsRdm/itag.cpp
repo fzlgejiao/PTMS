@@ -8,10 +8,10 @@ iTag::iTag(int sid, quint64 uid, const QString& epc, QObject *parent)
 	T_sid = sid;
 	T_uid = uid;
 	T_epc = epc;
-	T_rssi = -99;
-	T_OC_rssi = -99;
+	T_rssi = 0;
+	T_OC_rssi = 0;
 	T_caldata.all= 0;
-	T_temp= -99;
+	T_temp= 0;
 	T_alarm_offline = false;
 	T_alarm_temperature = false;
 	T_uplimit = TAG_T_MAX;
