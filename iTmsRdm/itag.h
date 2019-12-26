@@ -4,7 +4,7 @@
 
 #define	TAG_TICKS	3		//max times for online check	
 #define TAG_T_MAX	75		//alarm temperature 
-#define TAG_TEMP_NONE	999
+#define TAG_TEMP_NONE	9999
 #define TAG_RSSI_NONE	99
 #define TAG_OCRSSI_NONE	99
 
