@@ -411,7 +411,7 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 		{
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
-				float temp = unit.value(i)*0.1f;
+				float temp = (qint16)(unit.value(i))*0.1f;
 			
 				query.exec(QString("UPDATE TAGS SET TEMP = %1 WHERE SID = %2").arg(temp).arg(i+1));
 			}
