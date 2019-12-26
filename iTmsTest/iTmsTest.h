@@ -65,7 +65,6 @@ public:
 protected:
 	virtual void timerEvent(QTimerEvent *event);
 	QStringList getComms();
-	bool openComm(int baurate, int flow_ctrl, int databits, int stopbits, int parity);
 	void DB_clearTags();																			//clear table 'TAGS'
 
 	void read();
@@ -78,7 +77,6 @@ protected:
 private:
 	Ui::iTmsTestClass ui;
 
-	QSerialPort*	serial;
 	QModbusClient*	modbus;
 	QSqlTableModel*	tagModel;
 	QSqlTableModel*	dataModel;
@@ -96,6 +94,9 @@ private:
 	QString m_RdmName;
 	QModbusDataUnit writeRequest;
 	void modbuswrite();
+
+	int request_cnt;
+	int reply_cnt;
 
 public slots:
 	void OnRefresh();

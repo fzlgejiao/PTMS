@@ -20,13 +20,14 @@ iTmsTest::iTmsTest(QWidget *parent)
 	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=true"));
 	this->setWindowTitle(QString("PTMS - MODBUS %1").arg(qApp->applicationVersion()));
 
-	serial = new QSerialPort(this);
 	modbus = new QModbusRtuSerialMaster(this);
 
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
 	ui.leCompiledTime->setText(tr(__DATE__)+","+tr(__TIME__));
 	OnRefresh();
+	request_cnt = 0;
+	reply_cnt = 0;
 
 	paritymap.insert(0, QSerialPort::NoParity);
 	paritymap.insert(1, QSerialPort::OddParity);
@@ -73,7 +74,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 
 	m_nTagStm = 0;
 	m_CurrentTagcnt = 0;
-	m_nTimerId_200ms = startTimer(400);
+	m_nTimerId_200ms = startTimer(200);
 	m_nTimerId_1s = startTimer(1000);
 	m_nTimerId_5s = startTimer(5000);
 	m_nTimerId_5min = startTimer(300000);
@@ -102,14 +103,7 @@ void iTmsTest::OnRefresh()
 void iTmsTest::OnConnect()
 {
 	if (ui.cbxComm->currentIndex() != -1)
-	{
-		//serial->setPortName(ui.cbxComm->currentText());
-		//openComm(ui.cbxBaudRate->currentText().toInt(),
-		//			0,
-		//			ui.cbxDataBit->currentText().toInt(),
-		//			ui.cbxStopBit->currentText().toInt(),
-		//			ui.cbxParityBit->currentText().toInt());
-
+	{		
 		modbus->setConnectionParameter(QModbusDevice::SerialPortNameParameter,
 			ui.cbxComm->currentText());
 		
@@ -120,7 +114,7 @@ void iTmsTest::OnConnect()
 			ui.cbxDataBit->currentText().toInt());
 		modbus->setConnectionParameter(QModbusDevice::SerialStopBitsParameter,
 			ui.cbxStopBit->currentText().toInt());
-	
+			
 		modbus->setTimeout(1000);																	//response timeout
 		modbus->setNumberOfRetries(0);
 		if (!modbus->connectDevice()) {
@@ -134,110 +128,11 @@ void iTmsTest::OnConnect()
 }
 void iTmsTest::OnDisconnect()
 {
-	serial->clear();
-	serial->close();
+	request_cnt = 0;
+	reply_cnt = 0;
 	modbus->disconnectDevice();
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
-}
-bool iTmsTest::openComm(int baurate, int flow_ctrl, int databits, int stopbits, int parity)
-{
-	bool ret = serial->open(QIODevice::ReadWrite);
-	if (ret == false)
-		return false;
-	//设置波特率
-	switch (baurate)
-	{
-	case 1200:
-		serial->setBaudRate(QSerialPort::Baud1200);
-		break;
-	case 2400:
-		serial->setBaudRate(QSerialPort::Baud2400);
-		break;
-	case 4800:
-		serial->setBaudRate(QSerialPort::Baud4800);
-		break;
-	case 9600:
-		serial->setBaudRate(QSerialPort::Baud9600);
-		break;
-	case 19200:
-		serial->setBaudRate(QSerialPort::Baud19200);
-		break;
-	case 38400:
-		serial->setBaudRate(QSerialPort::Baud38400);
-		break;
-	case 57600:
-		serial->setBaudRate(QSerialPort::Baud57600);
-		break;
-	case 115200:
-		serial->setBaudRate(QSerialPort::Baud115200);
-		break;
-	default:
-		serial->setBaudRate(baurate);
-		break;
-
-	}
-	//设置数据控制流
-	switch (flow_ctrl)   
-	{
-	case 0://不使用流控制
-		serial->setFlowControl(QSerialPort::NoFlowControl);
-		break;
-	case 1://使用硬件流控制
-		serial->setFlowControl(QSerialPort::HardwareControl);
-		break;
-	case 2://使用软件流控制
-		serial->setFlowControl(QSerialPort::SoftwareControl);
-		break;
-	default:
-		serial->setFlowControl(QSerialPort::UnknownFlowControl);
-	}
-	//设置数据位
-	switch (databits)
-	{
-	case 5:
-		serial->setDataBits(QSerialPort::Data5);
-		break;
-	case 6:
-		serial->setDataBits(QSerialPort::Data6);
-		break;
-	case 7:
-		serial->setDataBits(QSerialPort::Data7);
-		break;
-	case 8:
-		serial->setDataBits(QSerialPort::Data8);
-		break;
-	default:
-		serial->setDataBits(QSerialPort::UnknownDataBits);
-		break;
-	}
-	//设置奇偶效验
-	switch (parity)
-	{
-	case 'n':
-	case 'N': //无奇偶校验位。
-		serial->setParity(QSerialPort::NoParity);
-		break;
-	case 'o':
-	case 0://设置为奇校验
-		serial->setParity(QSerialPort::OddParity);
-		break;
-	case 'e':
-	case 'E'://设置为偶校验
-		serial->setParity(QSerialPort::EvenParity);
-		break;
-	default:
-		serial->setParity(QSerialPort::UnknownParity);
-		break;
-	}
-	//设置停止位
-	switch (stopbits)
-	{
-	case 1:  serial->setStopBits(QSerialPort::OneStop); break;
-	case 2:	 serial->setStopBits(QSerialPort::TwoStop); break;
-	default: serial->setStopBits(QSerialPort::UnknownStopBits); break;
-	}
-	return ret;
 }
 
 QStringList iTmsTest::getComms()
@@ -259,7 +154,7 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	if (event->timerId() == m_nTimerId_200ms)
 	{
 		//polling write request firstly
-		if (writeRequest.registerType()!= QModbusDataUnit::Invalid) {
+		if( (writeRequest.registerType()!= QModbusDataUnit::Invalid) && (writeRequest.valueCount()>0)){
 			modbuswrite();
 			writeRequest.setRegisterType(QModbusDataUnit::Invalid);			
 		}
@@ -275,10 +170,22 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	{
 		//time to refresh tags from table 'TAGS'
 		tagModel->select();
+		ui.leRequestCnt->setText(QString::number(request_cnt));
+		ui.leReplyCnt->setText(QString::number(reply_cnt));
+
+		if( (request_cnt - reply_cnt) > 20) 
+		{
+			//reconnect modbus
+			qDebug(QString("Reconnect Modbus :Request=%1 Reply=%2").arg(request_cnt).arg(reply_cnt).toStdString().c_str());
+			request_cnt = 0;
+			reply_cnt = 0;
+			modbus->disconnectDevice();
+			OnConnect();
+		}
 	}
 	else if (event->timerId() == m_nTimerId_5s)
 	{
-
+		
 	}
 	else if (event->timerId() == m_nTimerId_5min)
 	{
@@ -345,10 +252,14 @@ void iTmsTest::read()
 	if (modbus->state() == QModbusDevice::ConnectedState)
 	{
 		//statusBar()->clearMessage();
-
-		if (auto *reply = modbus->sendReadRequest(readRequest(), ui.leRdmRTUAddr->text().toInt())) {
+		QModbusDataUnit request = readRequest();
+		if (request.valueCount() == 0) return;
+		if (auto *reply = modbus->sendReadRequest(request, ui.leRdmRTUAddr->text().toInt())) {
 			if (!reply->isFinished())
+			{
+				request_cnt++;
 				connect(reply, &QModbusReply::finished, this, &iTmsTest::readReady);
+			}
 			else
 				delete reply; // broadcast replies return immediately
 		}
@@ -364,6 +275,7 @@ void iTmsTest::readReady()
 		return;
 
 	if (reply->error() == QModbusDevice::NoError) {
+		reply_cnt++;
 		const QModbusDataUnit unit = reply->result();
 		for (uint i = 0; i < unit.valueCount(); i++) {
 			const QString entry = tr("Address: 0x%1, Value: %2\n")
@@ -644,21 +556,25 @@ void iTmsTest::modbuswrite()
 
 	if (auto *reply = modbus->sendWriteRequest(writeRequest, ui.leRdmRTUAddr->text().toInt())) {
 		if (!reply->isFinished())
+		{
+			request_cnt++;
 			connect(reply, &QModbusReply::finished, this, [this, reply]() {
-			if (reply->error() == QModbusDevice::ProtocolError) {
-				statusBar()->showMessage(tr("Write response error: %1 (Mobus exception: 0x%2)")
-					.arg(reply->errorString()).arg(reply->rawResult().exceptionCode(), -1, 16),
-					ERR_SHOW_TIME);
-			}			
-			else if (reply->error() == QModbusDevice::NoError) {
-				statusBar()->showMessage(tr("Set Temperature limit ok!"), ERR_SHOW_TIME);
-			}
-			else {
-				statusBar()->showMessage(tr("Write response error: %1 (code: 0x%2)").
-					arg(reply->errorString()).arg(reply->error(), -1, 16), ERR_SHOW_TIME);
-			}
-			reply->deleteLater();
-		});
+				if (reply->error() == QModbusDevice::ProtocolError) {
+					statusBar()->showMessage(tr("Write response error: %1 (Mobus exception: 0x%2)")
+						.arg(reply->errorString()).arg(reply->rawResult().exceptionCode(), -1, 16),
+						ERR_SHOW_TIME);
+				}
+				else if (reply->error() == QModbusDevice::NoError) {
+					reply_cnt++;
+					statusBar()->showMessage(tr("Set Temperature limit ok!"), ERR_SHOW_TIME);
+				}
+				else {
+					statusBar()->showMessage(tr("Write response error: %1 (code: 0x%2)").
+						arg(reply->errorString()).arg(reply->error(), -1, 16), ERR_SHOW_TIME);
+				}
+				reply->deleteLater();
+			});
+		}
 		else
 			delete reply; // broadcast replies return immediately
 	}
