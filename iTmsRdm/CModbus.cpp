@@ -432,17 +432,17 @@ void CModbus::updateRdmRegisters(iTag *tag)
 	//update current temperature
 	int sid = tag->T_sid;
 	quint16 address = InputRegister_Tag1Temp + sid - 1;
-	qint16 currenttemp = tag->isonline() == false ? TAG_TEMP_NONE:tag->T_temp * 10;
+	qint16 currenttemp = tag->T_temp * 10;
 	modbusDevice->setData(QModbusDataUnit::InputRegisters, address, currenttemp);
 
 	//update RSSI
 	address = InputRegister_Tag1RSSI + sid - 1;
-	qint16 rssi = tag->isonline() == false ? TAG_RSSI_NONE : tag->T_rssi;
+	qint16 rssi =  tag->T_rssi;
 	modbusDevice->setData(QModbusDataUnit::InputRegisters, address, rssi);
 	
 	//update Oc-RSSI
 	address = InputRegister_Tag1OCRSSI + sid - 1;
-	quint16 oc_rssi = tag->isonline() == false ? TAG_OCRSSI_NONE : tag->T_OC_rssi;
+	quint16 oc_rssi =  tag->T_OC_rssi;
 	modbusDevice->setData(QModbusDataUnit::InputRegisters, address, oc_rssi);
 
 	//update online status
