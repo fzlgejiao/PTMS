@@ -168,8 +168,6 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	}
 	else if (event->timerId() == m_nTimerId_1s)
 	{
-		//time to refresh tags from table 'TAGS'
-		tagModel->select();
 		ui.leRequestCnt->setText(QString::number(request_cnt));
 		ui.leReplyCnt->setText(QString::number(reply_cnt));
 
@@ -182,6 +180,9 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 			modbus->disconnectDevice();
 			OnConnect();
 		}
+		//time to save and refresh tags from table 'TAGS'
+		DB_saveTags();																				//save tags
+		tagModel->select();
 	}
 	else if (event->timerId() == m_nTimerId_5s)
 	{
@@ -190,7 +191,7 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	else if (event->timerId() == m_nTimerId_5min)
 	{
 		//time to copy table 'TAGS' into table 'DATA'
-		saveHistorydata();
+		DB_saveHistory();
 		//dataModel->select();
 	}
 }
@@ -340,11 +341,11 @@ QModbusDataUnit iTmsTest::readRequest() const
 		startAddress = STARTADDRESS_EPC;
 		numberOfEntries = m_CurrentTagcnt * 8;				//EPC length is 8 WORDS 
 		break;
-	/*case STM_TAG_ONLINE:
+	case STM_TAG_ONLINE:
 		type = QModbusDataUnit::DiscreteInputs;
 		startAddress = STARTADDRESS_ONLINE;
 		numberOfEntries = m_CurrentTagcnt;
-		break;*/
+		break;
 	case STM_TAG_ALARM:
 		type = QModbusDataUnit::DiscreteInputs;
 		startAddress = STARTADDRESS_ALARM;
@@ -404,38 +405,36 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 			m_CurrentTagcnt = unit.value(0);
 			if (tagModel->rowCount() == 0)
 			{
-				insertNewTag2DB(m_CurrentTagcnt);
+				DB_createTags(m_CurrentTagcnt);
 			}
 		}
 		else if (unit.startAddress() == STARTADDRESS_TEMPERATURE)								//temperature
 		{
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
-				float temp = (qint16)(unit.value(i))*0.1f;
-			
-				query.exec(QString("UPDATE TAGS SET TEMP = %1 WHERE SID = %2").arg(temp).arg(i+1));
+				iTag* tag = getTag(i + 1);
+				if(tag)
+					tag->T_temp = (qint16)(unit.value(i))*0.1f;
 			}
-			//tagModel->select();
 		}
 		else if (unit.startAddress() == STARTADDRESS_RSSI)								//RSSI
 		{
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
-				qint16 rssi = unit.value(i);
-
-				query.exec(QString("UPDATE TAGS SET RSSI = %1 WHERE SID = %2").arg(rssi).arg(i + 1));
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_rssi = unit.value(i);
 			}
-			//tagModel->select();
 
 		}
 		else if (unit.startAddress() == STARTADDRESS_OCRSSI)								//OC_RSSI
 		{
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
-				quint16 oc_rssi = unit.value(i);
-				query.exec(QString("UPDATE TAGS SET OCRSSI = %1 WHERE SID = %2").arg(oc_rssi).arg(i + 1));
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_OC_rssi = unit.value(i);;
 			}
-			//tagModel->select();
 
 		}
 		else if (unit.startAddress() == STARTADDRESS_EPC)								//EPC 
@@ -452,38 +451,33 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 					epcbytes.append(LOBYTE(word));
 				}
 
-				query.exec(QString("UPDATE TAGS SET EPC = '%1' WHERE SID = %2").arg(QString(epcbytes)).arg(i + 1));			
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_epc = QString(epcbytes);
 			}
-			//tagModel->select();
 		}
 	}
 		break;
 
 	case QModbusDataUnit::DiscreteInputs:
 	{
-		//if (unit.startAddress() == STARTADDRESS_ONLINE)								//online flag
-		//{
-		//	for (uint i = 0; i < unit.valueCount(); i++)
-		//	{
-		//		bool online = unit.value(i);
-
-		//		QSqlRecord record = tagModel->record(i);
-		//		if (!record.isEmpty()) {
-		//			record.setValue("OFFLINE", online);
-		//			tagModel->setRecord(i, record);
-		//			tagModel->select();
-		//		}
-		//	}
-		//}
-		//else 
-		if (unit.startAddress() == STARTADDRESS_ALARM)							//alarm flag
+		if (unit.startAddress() == STARTADDRESS_ONLINE)								//online flag
 		{
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
-				bool alarm = unit.value(i);
-				query.exec(QString("UPDATE TAGS SET ALARM = %1 WHERE SID = %2").arg(alarm).arg(i + 1));				
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_online = unit.value(i);
 			}
-			//tagModel->select();
+		}
+		else if (unit.startAddress() == STARTADDRESS_ALARM)							//alarm flag
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_alarm = unit.value(i);
+			}
 		}
 	}
 	break;
@@ -492,32 +486,58 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 	{
 		for (uint i = 0; i < unit.valueCount(); i++)
 		{
-			quint16 limit = unit.value(i);
-			query.exec(QString("UPDATE TAGS SET TEMPMAX = %1 WHERE SID = %2").arg(limit).arg(i + 1));			
+			iTag* tag = getTag(i + 1);
+			if (tag)
+				tag->T_uplimit = unit.value(i);
 		}
 	}
 	break;
 	}
 }
 
-void iTmsTest::insertNewTag2DB(int cnt) {
+void iTmsTest::DB_createTags(int cnt)
+{
+	qDeleteAll(listTags);
+	listTags.clear();
 
 	ui.combo_sid->clear();
 	for (int i = 0; i < cnt; i++) {
 		QSqlRecord record = tagModel->record();
 		record.setValue("SID", i + 1);
 		record.setValue("EPC", " ");						//EPC must not be null
-		//record.setValue("RDMNAME", m_RdmName);						
+		//record.setValue("RDMNAME", m_RdmName);
+
 		
-		if(tagModel->insertRecord(i, record) == true)
+		if (tagModel->insertRecord(i, record) == true)
+		{
 			ui.combo_sid->addItem(QString::number(i + 1));
+			iTag* tag = new iTag(i + 1);
+			if(tag)
+				listTags.insert(i + 1, tag);
+		}
 	}
 	if (cnt > 0)
 		ui.combo_sid->setCurrentIndex(0);
 }
-
-void iTmsTest::saveHistorydata()
+void iTmsTest::DB_saveTags()
 {
+	QSqlQuery	query;
+	bool ret;
+	for (iTag* tag : listTags)
+	{
+		ret = query.exec(QString("UPDATE TAGS SET EPC = '%1',TEMP = '%2',RSSI = '%3',OCRSSI = '%4',TEMPMAX = %5,ALARM = %6 WHERE SID = %7")
+			.arg(tag->T_epc)
+			.arg(tag->T_online ? QString::number(tag->T_temp,'f',1):"--.-")
+			.arg(tag->T_online ? QString::number(tag->T_rssi):"---")
+			.arg(tag->T_online ? QString::number(tag->T_OC_rssi):"---")
+			.arg(tag->T_uplimit)
+			.arg(tag->T_alarm)
+			.arg(tag->T_sid));
+	}
+}
+void iTmsTest::DB_saveHistory()
+{
+	/*
 	for (int i = 0; i < tagModel->rowCount(); i++) {
 		QSqlRecord record = tagModel->record(i);
 
@@ -535,6 +555,23 @@ void iTmsTest::saveHistorydata()
 		//datarecord.setValue("RDMNAME", record.value("RDMNAME"));
 		datarecord.setValue("TEMPMAX", record.value("TEMPMAX"));
 		dataModel->insertRecord(i, datarecord);
+	}*/
+	QSqlQuery	query;
+	bool ret;
+	int i = 0;
+	for (iTag* tag : listTags)
+	{
+		QDateTime c_time = QDateTime::currentDateTime();
+		c_time.addMSecs(i++);
+		ret = query.exec(QString("INSERT INTO DATA VALUES('%1',%2,'%3','%4','%5','%6', %7,%8)")
+			.arg(c_time.toString("yyyy/MM/dd hh:mm:ss.zzz"))
+			.arg(tag->T_sid)
+			.arg(tag->T_epc)
+			.arg(tag->T_online ? QString::number(tag->T_temp, 'f', 1) : "--.-")
+			.arg(tag->T_online ? QString::number(tag->T_rssi) : "---")
+			.arg(tag->T_online ? QString::number(tag->T_OC_rssi) : "---")
+			.arg(tag->T_uplimit)
+			.arg(tag->T_alarm));
 	}
 }
 

@@ -4,6 +4,8 @@
 #include "ui_iTmsTest.h"
 #include <QModbusDataUnit> 
 #include <QSerialPort>
+#include <QObject>
+#include <QMap>
 
 //state machine for reading tag data
 typedef enum
@@ -15,7 +17,7 @@ typedef enum
 	STM_TAG_RSSI,																					//read input regs [0x0040 - 0x006F]
 	STM_TAG_OCRSSI,																					//read input regs [0x0070 - 0x009F]
 	STM_TAG_EPC,																					//read input regs [0x0160 - 0x02D8]
-	//STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
+	STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
 	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
 	STM_TAG_TEMPLIMIT,
 	STM_TAG_END
@@ -49,7 +51,39 @@ typedef enum
 #define STARTADDRESS_ONLINE		   0x0000
 #define STARTADDRESS_ALARM		   0x0030
 
+class iTag : public QObject
+{
+	Q_OBJECT
 
+public:
+	iTag(int sid, QObject *parent = NULL) 
+	{
+		T_sid = sid; 
+		T_rssi = 0;
+		T_OC_rssi = 0;
+		T_temp = 0.0;
+		T_enable = true;
+		T_online = false;
+		T_alarm = false;
+		T_uplimit = 0;
+	}
+	~iTag() {}
+	//QString Title() { return QString("Sensor%1").arg(T_sid); }
+	//QString Temp() { return isonline() ? QString("%1").arg(T_temp, 0, 'f', 1) : "--.-"; }
+	//QString RSSI() { return isonline() ? QString("%1").arg(T_rssi) : "----"; }
+
+
+	bool			T_enable;
+	int				T_sid;																			//squence id of tag[1 - ], ordered by uid
+	bool			T_online;																		//online alarm
+	bool			T_alarm;																		//temperature out of range alarm
+	QString			T_epc;																			//epc 
+	QString			T_note;																			//note
+	qint16			T_rssi;																			//RSSI
+	quint16			T_OC_rssi;																		//On-chip RSSI
+	float			T_temp;																			//temperature
+	int				T_uplimit;																		//up limit for temperature
+};
 
 class QSerialPort;
 class QSqlTableModel;
@@ -66,13 +100,15 @@ protected:
 	virtual void timerEvent(QTimerEvent *event);
 	QStringList getComms();
 	void DB_clearTags();																			//clear table 'TAGS'
+	void DB_createTags(int cnt);
+	void DB_saveTags();
+	void DB_saveHistory();
 
 	void read();
 	QModbusDataUnit readRequest() const;
 
 	void dataHandler(QModbusDataUnit unit);
-	void insertNewTag2DB(int cnt);
-
+	iTag* getTag(int sid) { return listTags.value(sid, NULL); }
 
 private:
 	Ui::iTmsTestClass ui;
@@ -90,13 +126,14 @@ private:
 
 	QMap<int, QSerialPort::Parity> paritymap;
 
-	void saveHistorydata();
+
 	QString m_RdmName;
 	QModbusDataUnit writeRequest;
 	void modbuswrite();
 
 	int request_cnt;
 	int reply_cnt;
+	QMap<int, iTag *> listTags;
 
 public slots:
 	void OnRefresh();
