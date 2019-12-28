@@ -59,6 +59,7 @@ public:
 	iTag(int sid, QObject *parent = NULL) 
 	{
 		T_sid = sid; 
+		T_epc = " ";
 		T_rssi = 0;
 		T_OC_rssi = 0;
 		T_temp = 0.0;
