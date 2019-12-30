@@ -1,7 +1,6 @@
 #include "irdm.h"
 #include "ireader.h"
 #include "itag.h"
-#include "ibc.h"
 #include "iLed.h"
 #include "CModbus.h"
 #include <QDebug> 
@@ -16,6 +15,8 @@ iRDM::iRDM(QObject *parent)
 	rtubaudrate = 9600;
 	rtuparity = 2;
 	TcpPort = 2902;
+
+	memset(&tagWrite, 0, sizeof(Tag_epc));
 
 	reader		= new iReader(this);
 	iotdevice	= new iDevice(this);
@@ -295,15 +296,29 @@ iTag* iRDM::Tag_getbysid(int sid)
 void iRDM::timerEvent(QTimerEvent *event)
 {
 	static int count = 0;
-	if (event->timerId() == tmrRDM)		//400ms
+	if (event->timerId() == tmrRDM)																	//100ms
 	{
-		//read tags
-		//reader->readtag();
 
-		reader->stopReading();
-		reader->moveNextPlan();
-		reader->startReading();
+		//read/write tags data
+		if (count % 2 == 0)
+		{
+			if (tagWrite.uid != 0)																	//write tag epc if needed
+			{
+				tagWrite.uid = 0;
+				QByteArray epc_old = tagOnline.value(tagWrite.uid);
+				reader->wirteEpc(epc_old, tagWrite.epc);
+			}
+			else
+			{
+				reader->moveNextPlan();
+				reader->startReading();
+			}
 
+		}
+		else
+			reader->stopReading();
+
+		count++;
 		
 		//upload tag data																				
 		for (iTag* tag : taglist)
@@ -333,6 +348,10 @@ void iRDM::timerEvent(QTimerEvent *event)
 	}
 	if (event->timerId() == tmrTime)  //update modbus datetime registers
 	{
+		for (iTag* tag : taglist)
+		{
+			emit tagUpdated(tag);
+		}
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);

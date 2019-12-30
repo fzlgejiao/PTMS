@@ -65,6 +65,7 @@ private:
 	bool			T_updated;																		//data changed ,but not transmitted
 	bool			T_alarm_offline;																//offline alarm or not(<online -> offline> ==> alarm)
 	bool			T_alarm_temperature;															//temperature out of range alarm
+	quint64			T_uid;																			//uid
 	QString			T_epc;																			//epc 
 	QString			T_note;																			//note
 	qint8			T_rssi;																			//RSSI

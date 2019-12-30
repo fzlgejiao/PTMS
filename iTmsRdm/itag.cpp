@@ -7,6 +7,7 @@ iTag::iTag(int sid,const QString& epc, QObject *parent)
 	T_ticks	= 0;
 	T_sid = sid;
 	T_epc = epc;
+	T_uid = 0;
 	T_rssi = 0;
 	T_caldata.all= 0;
 	T_temp= 0;

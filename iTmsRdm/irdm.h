@@ -3,11 +3,11 @@
 #include <QObject>
 #include <QList>
 #include <QTimerEvent> 
-
+#include "ibc.h"
 
 #define	RDM_TICKS		3		//max times for online check
 #define IOT_TIMER		5000
-#define RDM_TIMER		400
+#define RDM_TIMER		100
 #define DATETIME_TIMER	1000
 
 enum HWVER {
@@ -78,6 +78,9 @@ private:
 
 	QMap<QString, iTag *> taglist;																	//<epc,tag>
 	QMap<quint64, QByteArray> tagOnline;															//<UID,epc>
+	Tag_epc		tagWrite;																			//tag to write epc if uid != 0
+
+
 	int			tmrRDM;
 	int         tmrTime;
 	int         tmrIOT;
@@ -115,4 +118,5 @@ public slots:
 signals:
 	void cfgChanged();
 	void tagLost(iTag *);
+	void tagUpdated(iTag *);
 };

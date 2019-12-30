@@ -382,7 +382,7 @@ void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
 	int idx = 0;
 	for (iTag *tag : rdm->taglist)
 	{
-		tagsdata->Tags[idx].uid = 0;
+		tagsdata->Tags[idx].uid = tag->T_uid;
 		tagsdata->Tags[idx].sid = tag->T_sid;
 		tagsdata->Tags[idx].upperlimit = tag->T_uplimit;
 		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
@@ -405,6 +405,7 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
 
 	qDebug() << "Message online tags :";
+
 	int idx = 0;
 	QMapIterator<quint64, QByteArray> i(rdm->tagOnline);
 	while (i.hasNext()) {
@@ -435,7 +436,7 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 	int idx = 0;
 	for (iTag *tag : rdm->taglist)
 	{
-		tagsdata->Tags[idx].uid			= 0;
+		tagsdata->Tags[idx].uid			= tag->T_uid;
 		tagsdata->Tags[idx].sid			= tag->T_sid;
 		tagsdata->Tags[idx].alarm		= tag->isAlarm() ? 1 : 0;
 		tagsdata->Tags[idx].rssi		= tag->T_rssi;
@@ -458,6 +459,9 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 	Tag_epc *rtagepc = (Tag_epc *)msg.cmd_pkg.data;
 
 	QByteArray epc_old = rdm->tagOnline.value(rtagepc->uid);
+
+	memcpy(&rdm->tagWrite, rtagepc, sizeof(Tag_epc));
+/*
 	bool ret = rdm->reader->wirteEpc(epc_old, rtagepc->epc);
 
 	iTag* tag = rdm->Tag_get(QString(epc_old));
@@ -487,6 +491,7 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 	txMsg.rIP = msg.rIP;
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
+*/
 }
 
 void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)

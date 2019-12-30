@@ -242,6 +242,23 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 		qDebug() << QString("OC-RSSI : %1").arg(ocrssi);
 		reader->callbackOCRSSI(epc, t->rssi, ocrssi);
 	}
+	else if (*(int *)cookie == PLAN_TID)
+	{
+		QByteArray byts((char *)t->data.list, t->data.len);
+		QByteArray idbytes;
+		quint8 b0 = byts[0];		//Epc TID first byte may be 0xE0 or 0xE2 in Gen2
+
+		if (b0 == 0xE2)
+			idbytes = byts.right(8);
+		else if (b0 == 0xE0)
+			idbytes = byts.left(8);
+
+
+		quint64 tid = bytes2longlong(idbytes);
+
+		qDebug() << QString("Tid : %1").arg(tid);
+		reader->callbackTid(epc, t->rssi, tid);
+	}
 /*
 	char dataStr[258] = {0};
 	if (0 < t->data.len)
@@ -301,7 +318,7 @@ void exceptionCallback(TMR_Reader *rp, TMR_Status error, void *cookie)
 
 void iReader::moveNextPlan()
 {
-	if (tPlan < PLAN_OCRSSI)
+	if (tPlan < PLAN_NUM)
 		tPlan = (PLAN_TYPE)(tPlan + 1);
 	else
 		tPlan = PLAN_CALI;
@@ -391,7 +408,28 @@ void iReader::startReading()
 		//reb.listener = exceptionCallback;
 		//reb.cookie = NULL;
 	}
+	else if (tPlan == PLAN_TID)
+	{
+		ret = TMR_RP_init_simple(&plan, antennaCount, antennaList, TMR_TAG_PROTOCOL_GEN2, 1000);
+		checkerr(tmrReader, ret, "initializing read plan : read calibration");
 
+		//read all TID BANK
+		ret = TMR_TagOp_init_GEN2_ReadData(&tagop, TMR_GEN2_BANK_TID, 0, 0);
+		checkerr(tmrReader, ret, "initializing tagop");
+		ret = TMR_RP_set_tagop(&plan, &tagop);
+		checkerr(tmrReader, ret, "setting tagop");
+
+		// Commit read plan 
+		ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
+		checkerr(tmrReader, ret, "setting read plan");
+
+		//set callback
+		//rlb.listener = callback;
+		rlb.cookie = &tPlan;
+
+		//reb.listener = exceptionCallback;
+		//reb.cookie = NULL;
+	}
 	//ret = TMR_addReadListener(tmrReader, &rlb);
 	//checkerr(tmrReader, ret, "adding read listener");
 
@@ -419,10 +457,6 @@ void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calib
 {
 	qDebug() << "callbackCalibration............";
 
-	//add tag into online list
-	//RDM->tagOnline.insert(tid, tEPC);
-	qDebug() << "Online tags count: " << RDM->tagOnline.count();
-
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
 	{
@@ -433,13 +467,13 @@ void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calib
 		tag->T_rssi = rssi;
 		tag->T_data_flag |= Tag_Online;
 
-		qDebug() << "managed tag : sid = " << tag->T_sid
-			<< " epc = " << tag->T_epc
-			<< " rssi = " << tag->T_rssi
-			<< " temperature = " << tag->T_temp
-			<< " temp_alarmed = " << tag->T_alarm_temperature;
+		//qDebug() << "managed tag : sid = " << tag->T_sid
+		//	<< " epc = " << tag->T_epc
+		//	<< " rssi = " << tag->T_rssi
+		//	<< " temperature = " << tag->T_temp
+		//	<< " temp_alarmed = " << tag->T_alarm_temperature;
 
-		emit tagUpdated(tag);
+		//emit tagUpdated(tag);
 	}
 	else
 	{
@@ -449,10 +483,6 @@ void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calib
 void iReader::callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode)
 {
 	qDebug() << "callbackTempCode............";
-
-	//add tag into online list
-	//RDM->tagOnline.insert(tid, tEPC);
-	qDebug() << "Online tags count: " << RDM->tagOnline.count();
 
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
@@ -472,14 +502,15 @@ void iReader::callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode)
 				tag->T_temp = Temp;
 				if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
 					tag->T_alarm_temperature = true;
-				qDebug() << "managed tag : sid = " << tag->T_sid
-					<< " epc = " << tag->T_epc
-					<< " rssi = " << tag->T_rssi
-					<< " temperature = " << tag->T_temp
-					<< " temp_alarmed = " << tag->T_alarm_temperature;
+
+				//qDebug() << "managed tag : sid = " << tag->T_sid
+				//	<< " epc = " << tag->T_epc
+				//	<< " rssi = " << tag->T_rssi
+				//	<< " temperature = " << tag->T_temp
+				//	<< " temp_alarmed = " << tag->T_alarm_temperature;
 			}
 		}
-		emit tagUpdated(tag);
+		//emit tagUpdated(tag);
 	}
 	else
 	{
@@ -491,10 +522,6 @@ void iReader::callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi)
 {
 	qDebug() << "callbackOCRSSI............";
 
-	//add tag into online list
-	//RDM->tagOnline.insert(tid, tEPC);
-	qDebug() << "Online tags count: " << RDM->tagOnline.count();
-
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
 	{
@@ -505,13 +532,45 @@ void iReader::callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi)
 		tag->T_OC_rssi = ocrssi;
 		tag->T_data_flag |= Tag_Online;
 
-		qDebug() << "managed tag : sid = " << tag->T_sid
-			<< " epc = " << tag->T_epc
-			<< " rssi = " << tag->T_rssi
-			<< " temperature = " << tag->T_temp
-			<< " temp_alarmed = " << tag->T_alarm_temperature;
+		//qDebug() << "managed tag : sid = " << tag->T_sid
+		//	<< " epc = " << tag->T_epc
+		//	<< " rssi = " << tag->T_rssi
+		//	<< " temperature = " << tag->T_temp
+		//	<< " temp_alarmed = " << tag->T_alarm_temperature;
 
-		emit tagUpdated(tag);
+		//emit tagUpdated(tag);
+	}
+	else
+	{
+		qDebug() << "unknown tag : epc = " << epc;
+	}
+}
+void iReader::callbackTid(const QString& epc, qint32 rssi, qint64 tid)
+{
+
+	qDebug() << "callbackTid............";
+
+	//add tag into online list
+	RDM->tagOnline.insert(tid, epc.toLatin1());
+	qDebug() << "Online tags count: " << RDM->tagOnline.count();
+
+	iTag * tag = RDM->Tag_get(epc);
+	if (tag)
+	{
+		tag->T_ticks = TAG_TICKS;
+		tag->T_alarm_offline = false;
+		tag->T_epc = epc;
+		tag->T_rssi = rssi;
+		tag->T_uid = tid;
+		tag->T_data_flag |= Tag_Online;
+
+		//qDebug() << "managed tag : sid = " << tag->T_sid
+		//	<< " epc = " << tag->T_epc
+		//	<< " rssi = " << tag->T_rssi
+		//	<< " temperature = " << tag->T_temp
+		//	<< " temp_alarmed = " << tag->T_alarm_temperature;
+
+		//emit tagUpdated(tag);
 	}
 	else
 	{

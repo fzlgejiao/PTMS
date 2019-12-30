@@ -12,7 +12,8 @@ typedef enum {
 	PLAN_CALI	= 1,
 	PLAN_TEMP	= 2,
 	PLAN_OCRSSI = 3,
-	PLAN_NUM	= PLAN_OCRSSI
+	PLAN_TID	= 4,
+	PLAN_NUM	= PLAN_TID
 }PLAN_TYPE;
 
 
@@ -36,6 +37,7 @@ public:
 	void callbackCalibration(const QString& epc, qint32 rssi,quint64 calibration);
 	void callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode);
 	void callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi);
+	void callbackTid(const QString& epc, qint32 rssi, qint64 tid);
 
 	PLAN_TYPE	tPlan;
 
