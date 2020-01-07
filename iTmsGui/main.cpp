@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	//QTextCodec::setCodecForTr(tc);																//这个函数的作用是设置传给tr函数时的默认字串编码
 
 	QApplication a(argc, argv);
-	a.setApplicationVersion(QObject::tr("v0.0.4"));
+	a.setApplicationVersion(QObject::tr("v0.1.0"));
 	QString path = a.applicationDirPath();
 	if (!createConnection())																		//open database
 		return 1;

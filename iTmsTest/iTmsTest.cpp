@@ -62,7 +62,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	proxyModelData->setSourceModel(dataModel);
 	proxyModelData->setDynamicSortFilter(true);
 
-	ui.tableViewHistory->setModel(proxyModelData);
+	ui.tableViewHistory->setModel(dataModel);
 	ui.tableViewHistory->setSortingEnabled(true);
 	ui.tableViewHistory->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	ui.tableViewHistory->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -192,7 +192,7 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	{
 		//time to copy table 'TAGS' into table 'DATA'
 		DB_saveHistory();
-		//dataModel->select();
+		dataModel->select();
 	}
 }
 void iTmsTest::DB_clearTags()
@@ -521,15 +521,18 @@ void iTmsTest::DB_createTags(int cnt)
 }
 void iTmsTest::DB_saveTags()
 {
+	if (modbus->state() != QModbusDevice::ConnectedState)
+		return;
+
 	QSqlQuery	query;
 	bool ret;
 	for (iTag* tag : listTags)
 	{
 		ret = query.exec(QString("UPDATE TAGS SET EPC = '%1',TEMP = '%2',RSSI = '%3',OCRSSI = '%4',TEMPMAX = %5,ALARM = %6 WHERE SID = %7")
 			.arg(tag->T_epc)
-			.arg(tag->T_online ? QString::number(tag->T_temp,'f',1):"--.-")
-			.arg(tag->T_online ? QString::number(tag->T_rssi):"---")
-			.arg(tag->T_online ? QString::number(tag->T_OC_rssi):"---")
+			.arg(tag->Temp())
+			.arg(tag->RSSI())
+			.arg(tag->OCRSSI())
 			.arg(tag->T_uplimit)
 			.arg(tag->T_alarm)
 			.arg(tag->T_sid));
@@ -537,25 +540,28 @@ void iTmsTest::DB_saveTags()
 }
 void iTmsTest::DB_saveHistory()
 {
-	/*
-	for (int i = 0; i < tagModel->rowCount(); i++) {
-		QSqlRecord record = tagModel->record(i);
+	if (modbus->state() != QModbusDevice::ConnectedState)
+		return;
 
-		QSqlRecord datarecord = dataModel->record();
-		QDateTime c_time = QDateTime::currentDateTime();
-		c_time.addMSecs(i);
-		datarecord.setValue("TIME", c_time.toString("yyyy/MM/dd hh:mm:ss.zzz"));
-		datarecord.setValue("SID", record.value("SID"));
-		datarecord.setValue("EPC", record.value("EPC"));
-		datarecord.setValue("TEMP", record.value("TEMP"));
-		datarecord.setValue("RSSI", record.value("RSSI"));
-		datarecord.setValue("OCRSSI", record.value("OCRSSI"));
-		datarecord.setValue("ALARM", record.value("ALARM"));
-		//datarecord.setValue("OFFLINE", record.value("OFFLINE"));
-		//datarecord.setValue("RDMNAME", record.value("RDMNAME"));
-		datarecord.setValue("TEMPMAX", record.value("TEMPMAX"));
-		dataModel->insertRecord(i, datarecord);
-	}*/
+	//QDateTime c_time = QDateTime::currentDateTime();
+	//int i = 0;
+	//for (iTag* tag : listTags)
+	//{
+	//	QSqlRecord datarecord = dataModel->record();
+	//	c_time = c_time.addMSecs(i++);
+	//	datarecord.setValue("TIME", c_time.toString("yyyy/MM/dd hh:mm:ss.zzz"));
+	//	datarecord.setValue("SID", tag->T_sid);
+	//	datarecord.setValue("EPC", tag->T_epc);
+	//	datarecord.setValue("TEMP", tag->Temp());
+	//	datarecord.setValue("RSSI", tag->RSSI());
+	//	datarecord.setValue("OCRSSI", tag->OCRSSI());
+	//	datarecord.setValue("TEMPMAX", tag->T_uplimit);
+	//	datarecord.setValue("ALARM", tag->T_alarm);
+	//	//datarecord.setValue("OFFLINE", record.value("OFFLINE"));
+	//	//datarecord.setValue("RDMNAME", record.value("RDMNAME"));
+	//	dataModel->insertRecord(0, datarecord);
+	//}
+
 	QSqlQuery	query;
 	bool ret;
 	int i = 0;

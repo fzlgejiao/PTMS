@@ -59,6 +59,7 @@ public:
 	iTag(int sid, QObject *parent = NULL) 
 	{
 		T_sid = sid; 
+		T_epc = " ";
 		T_rssi = 0;
 		T_OC_rssi = 0;
 		T_temp = 0.0;
@@ -68,9 +69,9 @@ public:
 		T_uplimit = 0;
 	}
 	~iTag() {}
-	//QString Title() { return QString("Sensor%1").arg(T_sid); }
-	//QString Temp() { return isonline() ? QString("%1").arg(T_temp, 0, 'f', 1) : "--.-"; }
-	//QString RSSI() { return isonline() ? QString("%1").arg(T_rssi) : "----"; }
+	QString Temp() { return T_online ? QString("%1").arg(T_temp, 0, 'f', 1) : "--.-"; }
+	QString RSSI() { return T_online ? QString("%1").arg(T_rssi) : "---"; }
+	QString OCRSSI() { return T_online ? QString("%1").arg(T_OC_rssi) : "---"; }
 
 
 	bool			T_enable;
