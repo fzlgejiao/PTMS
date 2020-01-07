@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QVariant>
 #include "tm_reader.h"
 
 
@@ -13,9 +14,15 @@ typedef enum {
 	PLAN_TEMP	= 2,
 	PLAN_OCRSSI = 3,
 	PLAN_TID	= 4,
-	PLAN_NUM	= PLAN_TID
 }PLAN_TYPE;
 
+typedef struct {
+	quint8		tType;
+	qint32		tRSSI;
+	QString		tEPC;
+	QVariant	tValue;
+	bool		tChanged;
+}TAGDATA;
 
 class iRDM;
 class iTag;
@@ -31,15 +38,19 @@ public:
 	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
 
 	void checkerror();
-	void moveNextPlan();
-	void startReading();
+	void startReading(PLAN_TYPE nPlan);
 	void stopReading();
 	void callbackCalibration(const QString& epc, qint32 rssi,quint64 calibration);
 	void callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode);
 	void callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi);
 	void callbackTid(const QString& epc, qint32 rssi, qint64 tid);
 
+	bool tagReady() { return tagData.tChanged; }
+	void setTagDirty() { tagData.tChanged = false; }
+
+	TMR_Reader  *tmrReader;
 	PLAN_TYPE	tPlan;
+	TAGDATA		tagData;
 
 protected:
 
@@ -47,7 +58,6 @@ protected:
 
 private:
 	iRDM*		RDM;
-	TMR_Reader  *tmrReader;
 	QString		m_uri;
 	quint8		antennaCount;
 	quint8		antennaList[2];

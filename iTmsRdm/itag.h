@@ -57,6 +57,7 @@ private:
 	friend class CModbus;
 	friend class iCfgDlg;
 	friend class iBC;
+	friend class iThread;
 
 
 	bool			T_enable;

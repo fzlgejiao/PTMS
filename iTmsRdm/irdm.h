@@ -16,13 +16,13 @@ enum HWVER {
 	HW_V3
 };
 
-
 class iReader;
 class iDevice;
 class iTag;
 class iBC;
 class CModbus;
 class iLed;
+class iThread;
 class iRDM : public QObject
 {
 	Q_OBJECT
@@ -68,8 +68,10 @@ private:
 	friend class iBC;
 	friend class iReader;
 	friend class CModbus;
+	friend class iThread;
 
 	static iRDM* _rdm;
+	iThread*	thread;
 	iReader*	reader;																				//RFID reader
 	iDevice*	iotdevice;																			//IOT device
 	CModbus *	modbus;
@@ -119,4 +121,31 @@ signals:
 	void cfgChanged();
 	void tagLost(iTag *);
 	void tagUpdated(iTag *);
+};
+
+class iRDM;
+class iTag;
+class iThread : public QThread
+{
+	Q_OBJECT
+
+public:
+	iThread(iRDM *rdm);
+	~iThread() {}
+	void stop() { m_bStopped = true; }
+	void restart()
+	{
+		m_bStopped = false;
+		start();
+	}
+
+protected:
+	void run();
+
+private:
+	volatile bool	m_bStopped;
+	iRDM			*RDM;
+
+signals:
+	void tagUpdated(iTag*);
 };

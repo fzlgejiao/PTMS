@@ -34,6 +34,9 @@ iReader::iReader(QObject *parent)
 	bCreated = false;
 	tPlan = PLAN_NONE;
 	antennaCount = 1;		//default use antenna 1
+
+	tagData.tChanged = false;
+	tagData.tType = PLAN_NONE;
 }
 
 iReader::~iReader()
@@ -107,6 +110,7 @@ bool iReader::RD_init()
 	TMR_GEN2_Session session = TMR_GEN2_SESSION_S0;
 	TMR_GEN2_Tari tari = TMR_GEN2_TARI_25US;
 	TMR_GEN2_TagEncoding tagcoding = TMR_GEN2_MILLER_M_4;
+	int offtime = 25, ontime = 75;
 
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_REGION_ID, &region);
 	if (ret != TMR_SUCCESS) return false;
@@ -128,7 +132,10 @@ bool iReader::RD_init()
 	//if (ret != TMR_SUCCESS) return false;		
 	//ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_TAGENCODING, &tagcoding);
 	//if (ret != TMR_SUCCESS) return false;	
-
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_ASYNCOFFTIME, &offtime);
+	//if (ret != TMR_SUCCESS) return false;
+	//ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_ASYNCONTIME, &ontime);
+	//if (ret != TMR_SUCCESS) return false;
 		
 	//Auto check connected antennas
 	antennaCount = 2;		//M6E micro support 2 antenna
@@ -210,37 +217,45 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 	QString epc = tEPC;
 	QDateTime datetime = QDateTime::currentDateTime();
 	QString time = datetime.toString("yyyy-MM-dd   hh:mm:ss.zzz");
-	qDebug() << QString("%1 - Background read: epc=%2,rssi=%3").arg(time).arg(epc).arg(t->rssi);
+	qDebug() << QString("%1 - Background read: plan=%2,epc=%3,rssi=%4").arg(time).arg(*(int *)cookie).arg(epc).arg(t->rssi);
 
-	TMR_TagFilter epcfilter;
-	ret = TMR_TF_init_tag(&epcfilter, (TMR_TagData *)&t->tag);
-	if (ret != TMR_SUCCESS) 
-		return;
-	
+	//TMR_TagFilter epcfilter;
+	//ret = TMR_TF_init_tag(&epcfilter, (TMR_TagData *)&t->tag);
+	//if (ret != TMR_SUCCESS) 
+	//	return;
+
+
 	iRDM& RDM = iRDM::Instance();
 	iReader* reader = RDM.getReader();
 	if (!reader)
 		return;
 	if (t->data.len == 0)
 		return;
+
 	if (*(int *)cookie == PLAN_CALI)
 	{
 		QByteArray Calibratebytes((char *)t->data.list, t->data.len);
 		quint64 cali = bytes2longlong(Calibratebytes);
 		qDebug() << QString("calibration : %1").arg(cali);
-		reader->callbackCalibration(epc, t->rssi,cali);
+
+		//reader->callbackCalibration(epc, t->rssi,cali);
+		reader->tagData.tValue = cali;
 	}
 	else if (*(int *)cookie == PLAN_TEMP)
 	{
 		ushort temperaturecode = (t->data.list[0] << 8) + t->data.list[1];
 		qDebug() << QString("Temp code : %1").arg(temperaturecode, 4, 16);
-		reader->callbackTempCode(epc, t->rssi, temperaturecode);
+		
+		//reader->callbackTempCode(epc, t->rssi, temperaturecode);
+		reader->tagData.tValue = temperaturecode;
 	}
 	else if (*(int *)cookie == PLAN_OCRSSI)
 	{
 		qint8 ocrssi = t->data.list[1];
 		qDebug() << QString("OC-RSSI : %1").arg(ocrssi);
-		reader->callbackOCRSSI(epc, t->rssi, ocrssi);
+		
+		//reader->callbackOCRSSI(epc, t->rssi, ocrssi);
+		reader->tagData.tValue = ocrssi;
 	}
 	else if (*(int *)cookie == PLAN_TID)
 	{
@@ -257,8 +272,15 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 		quint64 tid = bytes2longlong(idbytes);
 
 		qDebug() << QString("Tid : %1").arg(tid);
-		reader->callbackTid(epc, t->rssi, tid);
+		
+		//reader->callbackTid(epc, t->rssi, tid);
+		reader->tagData.tValue = tid;
 	}
+	reader->tagData.tType = *(int *)cookie;
+	reader->tagData.tEPC = epc;
+	reader->tagData.tRSSI = t->rssi;
+	reader->tagData.tChanged = true;
+
 /*
 	char dataStr[258] = {0};
 	if (0 < t->data.len)
@@ -314,16 +336,15 @@ void callback(TMR_Reader *rp, const TMR_TagReadData *t, void *cookie)
 void exceptionCallback(TMR_Reader *rp, TMR_Status error, void *cookie)
 {
 	qDebug() << QString("Exception callback Error: %1").arg(TMR_strerr(rp, error));
+	iRDM& RDM = iRDM::Instance();
+	iReader* reader = RDM.getReader();
+	if (reader)
+	{
+		TMR_stopReading(reader->tmrReader);
+	}
 }
 
-void iReader::moveNextPlan()
-{
-	if (tPlan < PLAN_NUM)
-		tPlan = (PLAN_TYPE)(tPlan + 1);
-	else
-		tPlan = PLAN_CALI;
-}
-void iReader::startReading()
+void iReader::startReading(PLAN_TYPE nPlan)
 {
 	uint8_t			data[258];
 	TMR_Status		ret;
@@ -331,6 +352,7 @@ void iReader::startReading()
 	dataList.len = dataList.max = 258;
 	dataList.list = data;
 	int readCount = 0;
+	tPlan = nPlan;
 	if (tPlan == PLAN_NONE)
 		return;
 	if (tPlan == PLAN_CALI)
@@ -343,6 +365,9 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "initializing tagop");
 		ret = TMR_RP_set_tagop(&plan, &tagop);
 		checkerr(tmrReader, ret, "setting tagop");
+
+		ret = TMR_RP_set_enableAutonomousRead(&plan, true);
+		checkerr(tmrReader, ret, "setting autonomous read");
 
 		// Commit read plan 
 		ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
@@ -369,6 +394,9 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "initializing tagop");
 		ret = TMR_RP_set_tagop(&plan, &tagop);
 		checkerr(tmrReader, ret, "setting tagop");
+
+		ret = TMR_RP_set_enableAutonomousRead(&plan, true);
+		checkerr(tmrReader, ret, "setting autonomous read");
 
 		// Commit read plan 
 		ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
@@ -397,6 +425,9 @@ void iReader::startReading()
 		ret = TMR_RP_set_tagop(&plan, &tagop);
 		checkerr(tmrReader, ret, "setting tagop");
 
+		ret = TMR_RP_set_enableAutonomousRead(&plan, true);
+		checkerr(tmrReader, ret, "setting autonomous read");
+
 		// Commit read plan 
 		ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
 		checkerr(tmrReader, ret, "setting read plan");
@@ -418,6 +449,9 @@ void iReader::startReading()
 		checkerr(tmrReader, ret, "initializing tagop");
 		ret = TMR_RP_set_tagop(&plan, &tagop);
 		checkerr(tmrReader, ret, "setting tagop");
+
+		ret = TMR_RP_set_enableAutonomousRead(&plan, true);
+		checkerr(tmrReader, ret, "setting autonomous read");
 
 		// Commit read plan 
 		ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &plan);
@@ -442,8 +476,6 @@ void iReader::startReading()
 void iReader::stopReading()
 {
 	TMR_Status		ret;
-	if (tPlan == PLAN_NONE)
-		return;
 
 	TMR_stopReading(tmrReader);
 
@@ -455,7 +487,7 @@ void iReader::stopReading()
 }
 void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calibration)
 {
-	qDebug() << "callbackCalibration............";
+	qDebug() << "callbackCalibration............................................................";
 
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
@@ -482,7 +514,7 @@ void iReader::callbackCalibration(const QString& epc, qint32 rssi, quint64 calib
 }
 void iReader::callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode)
 {
-	qDebug() << "callbackTempCode............";
+	qDebug() << "callbackTempCode............................................................";
 
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
@@ -520,7 +552,7 @@ void iReader::callbackTempCode(const QString& epc, qint32 rssi, ushort tempCode)
 }
 void iReader::callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi)
 {
-	qDebug() << "callbackOCRSSI............";
+	qDebug() << "callbackOCRSSI............................................................";
 
 	iTag * tag = RDM->Tag_get(epc);
 	if (tag)
@@ -548,7 +580,7 @@ void iReader::callbackOCRSSI(const QString& epc, qint32 rssi, qint8 ocrssi)
 void iReader::callbackTid(const QString& epc, qint32 rssi, qint64 tid)
 {
 
-	qDebug() << "callbackTid............";
+	qDebug() << "callbackTid............................................................";
 
 	//add tag into online list
 	RDM->tagOnline.insert(tid, epc.toLatin1());

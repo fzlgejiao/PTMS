@@ -25,13 +25,20 @@ iRDM::iRDM(QObject *parent)
 	led			= new iLed(this);
 
 	RDM_init();
-
 	Tmr_start();
 
+	thread = new iThread(this);
+	thread->start();
+	connect(thread, SIGNAL(tagUpdated(iTag*)), this, SIGNAL(tagUpdated(iTag *)));
 }
 
 iRDM::~iRDM()
 {
+	thread->stop();
+	while (thread->isRunning())
+	{
+		;
+	}
 }
 void iRDM::ERR_msg(const QString& module, const QString& error)
 {
@@ -295,31 +302,54 @@ iTag* iRDM::Tag_getbysid(int sid)
 }
 void iRDM::timerEvent(QTimerEvent *event)
 {
-	static int count = 0;
-	if (event->timerId() == tmrRDM)																	//100ms
+	static quint8 idx = 0;
+	if (event->timerId() == tmrRDM)	//100ms, switch read plan
 	{
-
+		qDebug() << "iRDM::timerEvent,  " << idx;
 		//read/write tags data
-		if (count % 2 == 0)
+		if (idx%2 == 0)
 		{
-			if (tagWrite.uid != 0)																	//write tag epc if needed
+			//if (tagWrite.uid != 0)																	//write tag epc if needed
+			//{
+			//	tagWrite.uid = 0;
+			//	QByteArray epc_old = tagOnline.value(tagWrite.uid);
+			//	reader->wirteEpc(epc_old, tagWrite.epc);
+			//}
+			//else
+			if(idx == 0)
 			{
-				tagWrite.uid = 0;
-				QByteArray epc_old = tagOnline.value(tagWrite.uid);
-				reader->wirteEpc(epc_old, tagWrite.epc);
+				reader->startReading(PLAN_CALI);
+				qDebug() << "iRDM::timerEvent,  start plan: CALI";
 			}
-			else
+			else if (idx == 2)
 			{
-				reader->moveNextPlan();
-				reader->startReading();
+				reader->startReading(PLAN_TEMP);
+				qDebug() << "iRDM::timerEvent,  start plan: TEMP";
 			}
-
+			else if (idx == 4)
+			{
+				reader->startReading(PLAN_OCRSSI);
+				qDebug() << "iRDM::timerEvent,  start plan: OCRSSI";
+			}
+			else if (idx == 6)
+			{
+				reader->startReading(PLAN_TID);
+				qDebug() << "iRDM::timerEvent,  start plan: TID";
+			}
 		}
 		else
+		{
 			reader->stopReading();
+			qDebug() << "iRDM::timerEvent,  stop plan";
+		}
 
-		count++;
+		idx++;
+		if (idx >= 8)
+			idx = 0;
 		
+	}
+	if (event->timerId() == tmrTime)  //1s,update modbus datetime registers
+	{
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
@@ -328,15 +358,15 @@ void iRDM::timerEvent(QTimerEvent *event)
 
 			tag->T_data_flag |= Tag_Online;
 			if (tag->isonline())
-				tag->T_data_flag |= Tag_Temperature|Tag_Rssi|Tag_Alarm;
-			
+				tag->T_data_flag |= Tag_Temperature | Tag_Rssi | Tag_Alarm;
+
 			if (tag->T_ticks)
 			{
 				tag->T_ticks--;
 				if (tag->T_ticks == 0)
 				{
-					qDebug() << "tag : sid = " << tag->T_sid 
-						<< " epc = " << tag->T_epc 
+					qDebug() << "tag : sid = " << tag->T_sid
+						<< " epc = " << tag->T_epc
 						<< " Alarm : Offline";
 					tag->T_alarm_offline = true;													//offline
 
@@ -344,19 +374,13 @@ void iRDM::timerEvent(QTimerEvent *event)
 				}
 			}
 			modbus->updateRdmRegisters(tag);
-		}
-	}
-	if (event->timerId() == tmrTime)  //update modbus datetime registers
-	{
-		for (iTag* tag : taglist)
-		{
 			emit tagUpdated(tag);
 		}
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);
 	}
-	if (event->timerId() == tmrIOT)  //update tag data to IOT ,5s
+	if (event->timerId() == tmrIOT)  //5s, update tag data to IOT
 	{
 		iotdevice->IOT_tick();
 		iotdevice->PUB_rdm_event();
@@ -377,3 +401,73 @@ int	iRDM::HW_ver()
 	return HW_V2;
 }
 
+//-------------------------------------------------------------------------------------------------
+//
+//	Read Thread funcs
+//
+//-------------------------------------------------------------------------------------------------
+iThread::iThread(iRDM* rdm)
+{
+	RDM = rdm;
+	m_bStopped = false;
+}
+void iThread::run()
+{
+	iReader* pReader = RDM->getReader();
+	while (m_bStopped == false)
+	{
+		if (pReader->tagReady())																	//tag data is ready
+		{
+			pReader->setTagDirty();																	//clear data ready flag
+
+			TAGDATA &tData = pReader->tagData;
+			iTag * tag = RDM->Tag_get(tData.tEPC);
+			if (tag)
+			{
+				tag->T_ticks = TAG_TICKS;
+				tag->T_alarm_offline = false;
+				tag->T_epc = tData.tEPC;
+				tag->T_rssi = tData.tRSSI;
+
+				switch (tData.tType)
+				{
+				case PLAN_CALI:
+					tag->T_caldata.all = tData.tValue.toULongLong();
+					break;
+				case PLAN_TEMP:
+					{
+						ushort tempCode = tData.tValue.toUInt();
+						if (tempCode > 0 && tag->T_caldata.all != 0)
+						{
+							float Temp = tag->parseTCode(tempCode);
+							if (tag->T_temp == 0.0														//init temperature
+								|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
+							{
+								tag->T_temp = Temp;
+								if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
+									tag->T_alarm_temperature = true;
+							}
+						}
+					}
+					break;
+				case PLAN_OCRSSI:
+					tag->T_OC_rssi = tData.tValue.toInt();
+					break;
+				case PLAN_TID:
+					{
+						tag->T_uid = tData.tValue.toULongLong();
+						//add tag into online list
+						RDM->tagOnline.insert(tag->T_uid, tag->T_epc.toLatin1());
+						qDebug() << "Online tags count: " << RDM->tagOnline.count();
+					}
+					break;
+
+				}
+
+				tag->T_data_flag |= Tag_Online;
+				//emit tagUpdated(tag);																//tag data updated
+			}
+		}
+		msleep(10);																					//sleep for GUI
+	}
+}
