@@ -30,6 +30,10 @@ iRDM::iRDM(QObject *parent)
 
 iRDM::~iRDM()
 {
+	if (reader->isRunning()) {
+		reader->quit();		
+		reader->wait();		
+	}
 }
 void iRDM::ERR_msg(const QString& module, const QString& error)
 {
@@ -56,6 +60,9 @@ void iRDM::RDM_init()
 		iRDM::ERR_msg("MODBUS", "Module init failed.");
 	if (reader->RD_init() == false)
 		reader->checkerror();
+	else
+		reader->start();
+
 
 	RDM_available = false;
 	RDM_ticks = RDM_TICKS;																			//for IOT online check
@@ -299,7 +306,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 	if (event->timerId() == tmrRDM)		//2s
 	{
 		//read tags
-		reader->readtag();
+		//reader->readtag();
 		
 		//upload tag data																				
 		for (iTag* tag : taglist)

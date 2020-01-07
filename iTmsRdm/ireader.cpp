@@ -4,7 +4,7 @@
 #include "CModbus.h"
 
 iReader::iReader(QObject *parent)
-	: QObject(parent)
+	: QThread(parent)
 {
 	RDM = (iRDM *)parent;
 	tmrReader = new TMR_Reader();
@@ -267,128 +267,134 @@ quint64 iReader::readtagCalibration(TMR_TagFilter *filter)
 
 	return bytes2longlong(Calibratebytes);
 }
-void iReader::readtag()
+//void iReader::readtag()
+void iReader::run()
 {
 	TMR_Status		ret;
-	
-	//clear old online tags before read again
-	RDM->tagOnline.clear();
-	if (!switchplans()) return;
-
-
-	//--------------------------test code---------------------
-	//quint64 tid1 = 1;
-	//for (uchar i = 0; i < 16; i++)
-	//{
-	//	tid1 = i;
-	//	QByteArray epc1;
-	//	epc1.append('1'+i);
-	//	RDM->tagOnline.insert(tid1, epc1);
-	//}
-	//--------------------------test code---------------------
-	int readCount = 0;
-	ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
-
-	if (ret != TMR_SUCCESS)
+	while (true)
 	{
-		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "Error reader-readtag : FAILED - " << errormessage;
-		qDebug() << QString("Status Error Code=%1").arg(ret, 16, 16);
 
-		RD_init(true);
-		RDM->getCModbus()->MB_init();
+		//clear old online tags before read again
+		RDM->tagOnline.clear();
+		if (!switchplans()) return;
 
-		return;
-	}
-	qDebug() << "Info reader-readtag : SUCCESS	ReadCounts=" << readCount;
 
-	while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
-	{
-		TMR_TagReadData trd;
-		//prepare data buff
-		//quint8 dataBuff[256];
-		quint8 databuffer[4];
-		//ret = TMR_TRD_init_data(&trd, sizeof(dataBuff), dataBuff);		
-		
-		trd.data.max = sizeof(databuffer);
-		trd.data.list = databuffer;
-		trd.data.len = 0;
+		//--------------------------test code---------------------
+		//quint64 tid1 = 1;
+		//for (uchar i = 0; i < 16; i++)
+		//{
+		//	tid1 = i;
+		//	QByteArray epc1;
+		//	epc1.append('1'+i);
+		//	RDM->tagOnline.insert(tid1, epc1);
+		//}
+		//--------------------------test code---------------------
+		int readCount = 0;
+		ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
 
-		ret = TMR_getNextTag(tmrReader, &trd);
-		if (ret != TMR_SUCCESS) 
-			continue;
-
-		//read tag ok!
-		TMR_TagFilter epcfilter;
-		ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
 		if (ret != TMR_SUCCESS)
-			continue;
-			
-		if (trd.data.len > 0)
 		{
-			//get Tid ,epc		
-			quint64 tid = readtagTid(&epcfilter);
-			if (tid == 0) 
+			QString errormessage = QString(TMR_strerr(tmrReader, ret));
+			qDebug() << "Error reader-readtag : FAILED - " << errormessage;
+			qDebug() << QString("Status Error Code=%1").arg(ret, 16, 16);
+
+			RD_init(true);
+			RDM->getCModbus()->MB_init();
+
+			return;
+		}
+		qDebug() << "Info reader-readtag : SUCCESS	ReadCounts=" << readCount;
+
+		while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
+		{
+			TMR_TagReadData trd;
+			//prepare data buff
+			//quint8 dataBuff[256];
+			quint8 databuffer[4];
+			//ret = TMR_TRD_init_data(&trd, sizeof(dataBuff), dataBuff);		
+
+			trd.data.max = sizeof(databuffer);
+			trd.data.list = databuffer;
+			trd.data.len = 0;
+
+			ret = TMR_getNextTag(tmrReader, &trd);
+			if (ret != TMR_SUCCESS)
 				continue;
-			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
-			
-			//add tag into online list
-			RDM->tagOnline.insert(tid, tEPC);
 
-			iTag * tag = RDM->Tag_get(tid);
-			if (tag )
+			//read tag ok!
+			TMR_TagFilter epcfilter;
+			ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
+			if (ret != TMR_SUCCESS)
+				continue;
+
+			if (trd.data.len > 0)
 			{
-				tag->T_ticks = TAG_TICKS;
-				tag->T_alarm_offline = false;
-				tag->T_epc = tEPC;
-				tag->T_rssi = trd.rssi;
-				tag->T_data_flag |= Tag_Online; 
-				if (tag->T_caldata.all == 0)
-					tag->T_caldata.all = readtagCalibration(&epcfilter);
+				//get Tid ,epc		
+				quint64 tid = readtagTid(&epcfilter);
+				if (tid == 0)
+					continue;
+				QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
 
-				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
-				if (data0 != 0)
+				//add tag into online list
+				RDM->tagOnline.insert(tid, tEPC);
+
+				iTag * tag = RDM->Tag_get(tid);
+				if (tag)
 				{
-					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
-					if (temperaturecode > 0)
+					tag->T_ticks = TAG_TICKS;
+					tag->T_alarm_offline = false;
+					tag->T_epc = tEPC;
+					tag->T_rssi = trd.rssi;
+					tag->T_data_flag |= Tag_Online;
+					if (tag->T_caldata.all == 0)
+						tag->T_caldata.all = readtagCalibration(&epcfilter);
+
+					quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
+					if (data0 != 0)
 					{
-						float Temp = tag->parseTCode(temperaturecode);
-						if (tag->T_temp == 0.0														//init temperature
-							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
+						ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
+						if (temperaturecode > 0)
 						{
-							tag->T_temp = Temp;
-							if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
-								tag->T_alarm_temperature = true;
-							qDebug()<< "managed tag : sid = " << tag->T_sid
+							float Temp = tag->parseTCode(temperaturecode);
+							if (tag->T_temp == 0.0														//init temperature
+								|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
+							{
+								tag->T_temp = Temp;
+								if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
+									tag->T_alarm_temperature = true;
+								qDebug() << "managed tag : sid = " << tag->T_sid
 									<< " uid = " << tag->T_uid
 									<< " epc = " << tag->T_epc
 									<< " rssi = " << tag->T_rssi
 									<< " temperature = " << tag->T_temp
 									<< " temp_alarmed = " << tag->T_alarm_temperature;
+							}
 						}
 					}
-				}
-				else 
-				{
-					tag->T_OC_rssi = trd.data.list[1];
+					else
+					{
+						tag->T_OC_rssi = trd.data.list[1];
 
-					qDebug()<< "managed tag : sid = " << tag->T_sid
+						qDebug() << "managed tag : sid = " << tag->T_sid
 							<< " uid = " << tag->T_uid
 							<< " epc = " << tag->T_epc
 							<< " rssi = " << tag->T_rssi
 							<< " Oc-rssi = " << tag->T_OC_rssi
 							<< "frequency =" << trd.frequency;
+					}
+					emit tagUpdated(tag);
 				}
-				emit tagUpdated(tag);
-			}
-			else
-			{
-				qDebug() << "unknown tag : uid = " << tid << "epc = " << tEPC;
-			}
+				else
+				{
+					qDebug() << "unknown tag : uid = " << tid << "epc = " << tEPC;
+				}
 
+			}
 		}
+		qDebug() << "Online tags count: " << RDM->tagOnline.count();
+
+		msleep(10);
 	}
-	qDebug() << "Online tags count: " << RDM->tagOnline.count();
 
 }
 void iReader::readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie)

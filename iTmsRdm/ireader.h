@@ -1,17 +1,17 @@
 #pragma once
 
-#include <QObject>
+#include <QThread>
 #include <QMap>
 #include "tm_reader.h"
 
 
 #define PLAN_CNT		2
-#define RD_TIMEOUT		100
+#define RD_TIMEOUT		1500
 
 
 class iRDM;
 class iTag;
-class iReader : public QObject
+class iReader : public QThread
 {
 	Q_OBJECT
 
@@ -21,7 +21,7 @@ public:
 
 	bool RD_init(bool force=false);
 	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
-	void readtag();
+	//void readtag();
 	void checkerror();
 
 protected:
@@ -31,6 +31,8 @@ protected:
 	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
 	quint64 bytes2longlong(QByteArray& bytes);
 	bool switchplans();
+
+	virtual void run();
 
 
 private:
@@ -60,6 +62,8 @@ private:
 	TMR_TagFilter	tempselect;
 	TMR_TagOp		tempread;
 
+	TMR_TagOp		lock_op;
+	TMR_GEN2_Password accessPassword;
 	int  cur_plan;
 
 	//Async read
