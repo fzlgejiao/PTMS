@@ -288,10 +288,10 @@ void iBC::UDP_cmd_discover(const MSG_PKG& msg)
 	RDM_Paramters rdm_p;
 	memset(&rdm_p, 0, sizeof(rdm_p));
 	strcpy(rdm_p.RdmIp,		getIP().toLatin1());
-	strcpy(rdm_p.RdmName,	rdm->RDM_name.toLocal8Bit());
+	strcpy(rdm_p.RdmName,	rdm->RDM_name.toLatin1());
 	strcpy(rdm_p.RdmMAC,	getMAC().toLatin1());
 	strcpy(rdm_p.RdmVersion, qApp->applicationVersion().toLatin1());
-	strcpy(rdm_p.RdmNote,	rdm->RDM_note.toLocal8Bit());
+	strcpy(rdm_p.RdmNote,	rdm->RDM_note.toLatin1());
 	strcpy(rdm_p.RdmComName, rdm->RDM_comname.toLatin1());
 
 	//todo: send back local ip to remote
@@ -385,8 +385,8 @@ void iBC::UDP_cmd_tags_para(const MSG_PKG& msg)
 		tagsdata->Tags[idx].uid = tag->T_uid;
 		tagsdata->Tags[idx].sid = tag->T_sid;
 		tagsdata->Tags[idx].upperlimit = tag->T_uplimit;
-		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
-		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLocal8Bit());
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
 		idx++;
 	}
 
@@ -404,16 +404,17 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 
 	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
 
+	rdm->Mutex.lock();
 	qDebug() << "Message online tags :";
 	int idx = 0;
-	QMapIterator<quint64, QByteArray> i(rdm->tagOnline);
-	while (i.hasNext()) {
-		i.next();
-		tagsdata->Tags[idx].uid = i.key();
-		memcpy(tagsdata->Tags[idx].name, i.value().data(),i.value().count());
+	for(iTag *tag : rdm->tagOnline)
+	{
+		tagsdata->Tags[idx].uid = tag->T_uid;
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
 		idx++;
-		qDebug() << "uid = " << i.key() << " epc = " << i.value();
+		qDebug() << "uid = " << tag->T_uid << " epc = " << tag->T_epc;
 	}
+	rdm->Mutex.unlock();
 	tagsdata->Header.tagcount = idx;																//online tags count
 
 	txMsg.rIP = msg.rIP;
@@ -442,8 +443,8 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 		tagsdata->Tags[idx].oc_rssi		= tag->T_OC_rssi;
 		tagsdata->Tags[idx].temperature = tag->T_temp*10;
 		tagsdata->Tags[idx].online		= tag->isonline()?1 : 0;
-		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLocal8Bit());
-		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLocal8Bit());
+		strcpy(tagsdata->Tags[idx].name, tag->T_epc.toLatin1());
+		strcpy(tagsdata->Tags[idx].note, tag->T_note.toLatin1());
 		idx++;
 	}
 
@@ -454,21 +455,31 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 
 void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 {//cmd=0x08,ack write tag epc
+
+	//stop read thread fisrt
+	rdm->reader->RD_stop();
+	while (rdm->reader->isRunning());
+
 	//write tag epc
 	Tag_epc *rtagepc = (Tag_epc *)msg.cmd_pkg.data;
 
-	QByteArray epc_old = rdm->tagOnline.value(rtagepc->uid);
-	bool ret = rdm->reader->wirteEpc(epc_old, rtagepc->epc);
-
-	iTag* tag = rdm->Tag_get(rtagepc->uid);
-	if (tag)
+	rdm->Mutex.lock();
+	iTag* t = rdm->tagOnline.value(rtagepc->uid,NULL);												//online tag
+	if (t)
 	{
-		if (ret)
-			tag->T_epc = rtagepc->epc;
-		else
-			tag->T_epc = epc_old;
-	}
+		bool ret = rdm->reader->wirteEpc(t->T_epc, rtagepc->epc);
 
+		iTag* tag = rdm->Tag_get(rtagepc->uid);														//managed tag
+		if (tag)
+		{
+			if (ret)
+			{
+				t->T_epc	= rtagepc->epc;															//change to online tag epc
+				tag->T_epc	= rtagepc->epc;															//change to managed tag epc
+			}
+		}
+	}
+	rdm->Mutex.unlock();
 
 	//ack back
 	MSG_PKG txMsg;
@@ -477,16 +488,21 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 	txMsg.cmd_pkg.header.cmd = UDP_SETTAGEPC;
 	txMsg.cmd_pkg.header.len = sizeof(Tag_epc);
 
-	Tag_epc *tagpec = (Tag_epc *)txMsg.cmd_pkg.data;
-	tagpec->uid = rtagepc->uid;
-	if(ret)
-		strcpy(tagpec->epc , rtagepc->epc);
+	Tag_epc *xtagpec = (Tag_epc *)txMsg.cmd_pkg.data;
+	if (t)
+	{
+		xtagpec->uid = t->T_uid;
+		strcpy(xtagpec->epc , t->T_epc.toLatin1());
+	}
 	else
-		memcpy(tagpec->epc, epc_old.data(), epc_old.count());
+		memcpy(xtagpec, rtagepc, sizeof(Tag_epc));													//no change for tag epc
 
 	txMsg.rIP = msg.rIP;
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
+
+	//restart read thread again
+	rdm->reader->RD_restart();
 }
 
 void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)

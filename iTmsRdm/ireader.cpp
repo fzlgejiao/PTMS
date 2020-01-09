@@ -10,6 +10,7 @@ iReader::iReader(QObject *parent)
 	tmrReader = new TMR_Reader();
 	bCreated = false;
 	cur_plan = 0;
+	bStopped = false;
 }
 
 iReader::~iReader()
@@ -185,7 +186,7 @@ bool iReader::RD_init(bool force)
 	//if (ret != TMR_SUCCESS) goto Failed;
 	return true;
 }
-bool iReader::wirteEpc(const QByteArray& epc_old, const QString& epc_new)
+bool iReader::wirteEpc(const QString& epc_old, const QString& epc_new)
 {
 	TMR_TagData		oldepc;
 	TMR_TagData		newepc;
@@ -194,10 +195,10 @@ bool iReader::wirteEpc(const QByteArray& epc_old, const QString& epc_new)
 	TMR_Status		ret;
 
 	oldepc.epcByteCount = epc_old.count();
-	memcpy(oldepc.epc, epc_old.data(), epc_old.count());
+	strcpy((char *)oldepc.epc, epc_old.toLatin1());
 
 	newepc.epcByteCount = epc_new.count();
-	memcpy(newepc.epc, epc_new.toStdString().c_str(), epc_new.count());
+	strcpy((char *)newepc.epc, epc_new.toLatin1());
 
 	ret = TMR_TagOp_init_GEN2_WriteTag(&tagop, &newepc);
 	if (ret != TMR_SUCCESS) 
@@ -271,12 +272,22 @@ quint64 iReader::readtagCalibration(TMR_TagFilter *filter)
 void iReader::run()
 {
 	TMR_Status		ret;
-	while (true)
+	while (bStopped == false)
 	{
+		QString datetime = QDateTime::currentDateTime().toString("yyyy-MM-dd   hh:mm:ss:zzz");
+		qDebug() << datetime << " iReader::run";
 
-		//clear old online tags before read again
-		RDM->tagOnline.clear();
-		if (!switchplans()) return;
+		RDM->Mutex.lock();
+		//tick for online check before read again
+		for (iTag *t : RDM->tagOnline)
+		{
+			if (t->T_ticks > 0)
+				t->T_ticks--;
+		}
+		RDM->Mutex.unlock();
+
+		if (!switchplans()) 
+			return;
 
 
 		//--------------------------test code---------------------
@@ -290,7 +301,7 @@ void iReader::run()
 		//}
 		//--------------------------test code---------------------
 		int readCount = 0;
-		ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
+		ret = TMR_read(tmrReader, 500, &readCount);
 
 		if (ret != TMR_SUCCESS)
 		{
@@ -310,7 +321,7 @@ void iReader::run()
 			TMR_TagReadData trd;
 			//prepare data buff
 			//quint8 dataBuff[256];
-			quint8 databuffer[4];
+			quint8 databuffer[256];
 			//ret = TMR_TRD_init_data(&trd, sizeof(dataBuff), dataBuff);		
 
 			trd.data.max = sizeof(databuffer);
@@ -336,14 +347,21 @@ void iReader::run()
 				QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
 
 				//add tag into online list
-				RDM->tagOnline.insert(tid, tEPC);
+				RDM->Mutex.lock();
+				iTag* t = RDM->tagOnline.value(tid, NULL);
+				if (t)//existing tag 
+					t->T_ticks = TAG_TICKS;
+				else  //a new tag
+					RDM->tagOnline.insert(tid, new iTag(0, tid, QString(tEPC),NULL));
+				RDM->Mutex.unlock();
 
+				//deal with managed tags
 				iTag * tag = RDM->Tag_get(tid);
 				if (tag)
 				{
 					tag->T_ticks = TAG_TICKS;
 					tag->T_alarm_offline = false;
-					tag->T_epc = tEPC;
+					//tag->T_epc = tEPC;
 					tag->T_rssi = trd.rssi;
 					tag->T_data_flag |= Tag_Online;
 					if (tag->T_caldata.all == 0)
@@ -366,7 +384,7 @@ void iReader::run()
 									<< " uid = " << tag->T_uid
 									<< " epc = " << tag->T_epc
 									<< " rssi = " << tag->T_rssi
-									<< " temperature = " << tag->T_temp
+									<< " temp = " << tag->T_temp
 									<< " temp_alarmed = " << tag->T_alarm_temperature;
 							}
 						}
@@ -380,9 +398,9 @@ void iReader::run()
 							<< " epc = " << tag->T_epc
 							<< " rssi = " << tag->T_rssi
 							<< " Oc-rssi = " << tag->T_OC_rssi
-							<< "frequency =" << trd.frequency;
+							<< " frequency =" << trd.frequency;
 					}
-					emit tagUpdated(tag);
+					//emit tagUpdated(tag);
 				}
 				else
 				{
@@ -391,7 +409,28 @@ void iReader::run()
 
 			}
 		}
+
+		//tick for online check before read again
+		RDM->Mutex.lock();
+		for (auto it = RDM->tagOnline.begin(); it != RDM->tagOnline.end();)
+		{
+			iTag* tag = it.value();
+			if (tag && tag->T_ticks == 0)
+			{
+				it = RDM->tagOnline.erase(it);
+				delete tag;
+			}
+			else
+				++it;
+		}
+
 		qDebug() << "Online tags count: " << RDM->tagOnline.count();
+		for (iTag *tag : RDM->tagOnline)
+		{
+			qDebug() << " uid = " << tag->T_uid
+				<< " epc = " << tag->T_epc;
+		}
+		RDM->Mutex.unlock();
 
 		msleep(10);
 	}

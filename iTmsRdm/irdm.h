@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QList>
 #include <QTimerEvent> 
+#include <QMutex> 
 
 
 #define	RDM_TICKS		3		//max times for online check
@@ -71,11 +72,12 @@ private:
 	iLed*		led;
 
 	QMap<quint64, iTag *> taglist;																	//<UID,tag>
-	QMap<quint64, QByteArray> tagOnline;															//<UID,epc>
+	QMap<quint64, iTag *> tagOnline;																//<UID,tag>
 	int			tmrRDM;
 	int         tmrTime;
 	int         tmrIOT;
 	int			RDM_ticks;
+	QMutex		Mutex;
 
 
 	//iot info
@@ -109,4 +111,5 @@ public slots:
 signals:
 	void cfgChanged();
 	void tagLost(iTag *);
+	void tagUpdated(iTag *);
 };

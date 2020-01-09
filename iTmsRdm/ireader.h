@@ -20,9 +20,15 @@ public:
 	~iReader();
 
 	bool RD_init(bool force=false);
-	bool wirteEpc(const QByteArray& epc_old, const QString& epc_new);
+	bool wirteEpc(const QString& epc_old, const QString& epc_new);
 	//void readtag();
 	void checkerror();
+	void RD_stop() { bStopped = true; }
+	void RD_restart()
+	{
+		bStopped = false;
+		start();
+	}
 
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
@@ -30,7 +36,7 @@ protected:
 	void	readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie);
 	void	exceptioncallback(TMR_Reader *reader, TMR_Status error, void *cookie);
 	quint64 bytes2longlong(QByteArray& bytes);
-	bool switchplans();
+	bool	switchplans();
 
 	virtual void run();
 
@@ -42,6 +48,7 @@ private:
 	quint8		antennaList[2];
 	TMR_Status  ret;
 	bool		bCreated;
+	bool		bStopped;
 
 	//reader parameters
 	QString		group;

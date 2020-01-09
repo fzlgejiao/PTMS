@@ -30,10 +30,8 @@ iRDM::iRDM(QObject *parent)
 
 iRDM::~iRDM()
 {
-	if (reader->isRunning()) {
-		reader->quit();		
-		reader->wait();		
-	}
+	reader->RD_stop();
+	while (reader->isRunning());
 }
 void iRDM::ERR_msg(const QString& module, const QString& error)
 {
@@ -329,17 +327,20 @@ void iRDM::timerEvent(QTimerEvent *event)
 					tag->T_alarm_offline = true;													//offline
 					emit tagLost(tag);
 				}
+				else
+					emit tagUpdated(tag);
+
 			}
 			modbus->updateRdmRegisters(tag);
 		}
 	}
-	if (event->timerId() == tmrTime)  //update modbus datetime registers
+	if (event->timerId() == tmrTime)  //1s,update modbus datetime registers
 	{
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);
 	}
-	if (event->timerId() == tmrIOT)  //update tag data to IOT ,5s
+	if (event->timerId() == tmrIOT)  //5s,update tag data to IOT
 	{
 		iotdevice->IOT_tick();
 		iotdevice->PUB_rdm_event();
