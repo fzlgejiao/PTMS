@@ -71,7 +71,7 @@ bool iReader::RD_init(bool force)
 	int power = 3000;
 	bool is_send_sl = true;
 	int t4 = 3000;
-	//bool uniquebydata = true;									//if one simple plan ,not necessary publish by data
+	bool uniquebydata = false;									//if one simple plan ,not necessary publish by data
 	bool checkport = true;
 	TMR_GEN2_Session session = TMR_GEN2_SESSION_S0;
 	TMR_GEN2_Tari tari = TMR_GEN2_TARI_25US;
@@ -87,8 +87,8 @@ bool iReader::RD_init(bool force)
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_T4, &t4);
 	if (ret != TMR_SUCCESS) return false;
-	//ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGREADDATA_UNIQUEBYDATA, &uniquebydata);
-	//if (ret != TMR_SUCCESS) return false;
+	ret = TMR_paramSet(tmrReader, TMR_PARAM_TAGREADDATA_UNIQUEBYDATA, &uniquebydata);
+	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_ANTENNA_CHECKPORT, &checkport);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_GEN2_SESSION, &session);
@@ -145,6 +145,8 @@ bool iReader::RD_init(bool force)
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_tagop(&subplan[subplanindex], &OC_rssi_read);
 	if (ret != TMR_SUCCESS) return false;
+	/* Stop N trigger */
+	TMR_RP_set_stopTrigger(&subplan[subplanindex], 12);
 	subplanindex++;
 
 	//plan to Read tag temperature	
@@ -156,6 +158,8 @@ bool iReader::RD_init(bool force)
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_RP_set_tagop(&subplan[subplanindex], &tempread);
 	if (ret != TMR_SUCCESS) return false;
+	/* Stop N trigger */
+	TMR_RP_set_stopTrigger(&subplan[subplanindex], 12);
 	subplanindex++;
 
 	//ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
@@ -274,7 +278,7 @@ void iReader::run()
 	TMR_Status		ret;
 	while (bStopped == false)
 	{
-		QString datetime = QDateTime::currentDateTime().toString("yyyy-MM-dd   hh:mm:ss:zzz");
+		QString datetime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
 		qDebug() << datetime << " iReader::run";
 
 		RDM->Mutex.lock();
@@ -301,7 +305,7 @@ void iReader::run()
 		//}
 		//--------------------------test code---------------------
 		int readCount = 0;
-		ret = TMR_read(tmrReader, 500, &readCount);
+		ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
 
 		if (ret != TMR_SUCCESS)
 		{
@@ -332,19 +336,22 @@ void iReader::run()
 			if (ret != TMR_SUCCESS)
 				continue;
 
+			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
+			qDebug() << "Fetching tag : epc = " << tEPC;
+			
 			//read tag ok!
 			TMR_TagFilter epcfilter;
 			ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
 			if (ret != TMR_SUCCESS)
 				continue;
 
-			if (trd.data.len > 0)
+			//if (trd.data.len > 0)
 			{
 				//get Tid ,epc		
 				quint64 tid = readtagTid(&epcfilter);
 				if (tid == 0)
 					continue;
-				QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
+				
 
 				//add tag into online list
 				RDM->Mutex.lock();
@@ -408,6 +415,7 @@ void iReader::run()
 				}
 
 			}
+			
 		}
 
 		//tick for online check before read again
