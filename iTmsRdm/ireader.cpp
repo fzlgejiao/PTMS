@@ -130,8 +130,6 @@ bool iReader::RD_init(bool force)
 		subplanPtrs[i] = &subplan[i];
 	}
 
-	int subplanindex = 0;
-
 	//plan to Read On-chip RSSI
 	OC_rssi_mask = 0x1F;
 	ret = TMR_TF_init_gen2_select(&OC_rssi_select, false, TMR_GEN2_BANK_USER, 0xD0, 8, &OC_rssi_mask);
@@ -141,26 +139,26 @@ bool iReader::RD_init(bool force)
 
 	ret = TMR_TagOp_init_GEN2_ReadData(&OC_rssi_read, TMR_GEN2_BANK_RESERVED, 0xD, 1);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_RP_set_filter(&subplan[subplanindex], &OC_rssi_select);
+	ret = TMR_RP_set_filter(&subplan[PLAN_OCRSSI], &OC_rssi_select);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_RP_set_tagop(&subplan[subplanindex], &OC_rssi_read);
+	ret = TMR_RP_set_tagop(&subplan[PLAN_OCRSSI], &OC_rssi_read);
 	if (ret != TMR_SUCCESS) return false;
 	/* Stop N trigger */
-	TMR_RP_set_stopTrigger(&subplan[subplanindex], 12);
-	subplanindex++;
+	TMR_RP_set_stopTrigger(&subplan[PLAN_OCRSSI], STOP_N_TRIGGER);
+
 
 	//plan to Read tag temperature	
 	ret = TMR_TF_init_gen2_select(&tempselect, false, TMR_GEN2_BANK_USER, 0xE0, 0, 0);
 	if (ret != TMR_SUCCESS) return false;
 	ret = TMR_TagOp_init_GEN2_ReadData(&tempread, TMR_GEN2_BANK_RESERVED, 0x0E, 1);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_RP_set_filter(&subplan[subplanindex], &tempselect);
+	ret = TMR_RP_set_filter(&subplan[PLAN_TEMP], &tempselect);
 	if (ret != TMR_SUCCESS) return false;
-	ret = TMR_RP_set_tagop(&subplan[subplanindex], &tempread);
+	ret = TMR_RP_set_tagop(&subplan[PLAN_TEMP], &tempread);
 	if (ret != TMR_SUCCESS) return false;
 	/* Stop N trigger */
-	TMR_RP_set_stopTrigger(&subplan[subplanindex], 12);
-	subplanindex++;
+	TMR_RP_set_stopTrigger(&subplan[PLAN_TEMP], STOP_N_TRIGGER);
+
 
 	//ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
 	//if (ret != TMR_SUCCESS) return false;
@@ -272,14 +270,13 @@ quint64 iReader::readtagCalibration(TMR_TagFilter *filter)
 
 	return bytes2longlong(Calibratebytes);
 }
-//void iReader::readtag()
 void iReader::run()
 {
 	TMR_Status		ret;
 	while (bStopped == false)
 	{
 		QString datetime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
-		qDebug() << datetime << " iReader::run";
+		qDebug() << "[Running] - " << qPrintable(datetime);
 
 		RDM->Mutex.lock();
 		//tick for online check before read again
@@ -290,27 +287,22 @@ void iReader::run()
 		}
 		RDM->Mutex.unlock();
 
+		for (iTag *t : RDM->taglist)
+		{
+			if (t->T_ticks > 0)
+				t->T_ticks--;
+		}
+
 		if (!switchplans()) 
 			return;
 
-
-		//--------------------------test code---------------------
-		//quint64 tid1 = 1;
-		//for (uchar i = 0; i < 16; i++)
-		//{
-		//	tid1 = i;
-		//	QByteArray epc1;
-		//	epc1.append('1'+i);
-		//	RDM->tagOnline.insert(tid1, epc1);
-		//}
-		//--------------------------test code---------------------
 		int readCount = 0;
 		ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
 
 		if (ret != TMR_SUCCESS)
 		{
 			QString errormessage = QString(TMR_strerr(tmrReader, ret));
-			qDebug() << "Error reader-readtag : FAILED - " << errormessage;
+			qDebug() << "[Reading] : FAILED - " << errormessage;
 			qDebug() << QString("Status Error Code=%1").arg(ret, 16, 16);
 
 			RD_init(true);
@@ -318,26 +310,20 @@ void iReader::run()
 
 			return;
 		}
-		qDebug() << "Info reader-readtag : SUCCESS	ReadCounts=" << readCount;
+		qDebug() << "[Reading] : SUCCESS	ReadCounts=" << readCount;
 
 		while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 		{
 			TMR_TagReadData trd;
 			//prepare data buff
-			//quint8 dataBuff[256];
 			quint8 databuffer[256];
-			//ret = TMR_TRD_init_data(&trd, sizeof(dataBuff), dataBuff);		
-
-			trd.data.max = sizeof(databuffer);
-			trd.data.list = databuffer;
-			trd.data.len = 0;
+			ret = TMR_TRD_init_data(&trd, sizeof(databuffer), databuffer);
 
 			ret = TMR_getNextTag(tmrReader, &trd);
 			if (ret != TMR_SUCCESS)
 				continue;
 
-			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
-			qDebug() << "Fetching tag : epc = " << tEPC;
+
 			
 			//read tag ok!
 			TMR_TagFilter epcfilter;
@@ -345,78 +331,81 @@ void iReader::run()
 			if (ret != TMR_SUCCESS)
 				continue;
 
-			//if (trd.data.len > 0)
-			{
-				//get Tid ,epc		
-				quint64 tid = readtagTid(&epcfilter);
-				if (tid == 0)
-					continue;
+			//get Tid ,epc		
+			quint64 tid = readtagTid(&epcfilter);
+			if (tid == 0)
+				continue;
 				
+			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
 
-				//add tag into online list
-				RDM->Mutex.lock();
-				iTag* t = RDM->tagOnline.value(tid, NULL);
-				if (t)//existing tag 
-					t->T_ticks = TAG_TICKS;
-				else  //a new tag
-					RDM->tagOnline.insert(tid, new iTag(0, tid, QString(tEPC),NULL));
-				RDM->Mutex.unlock();
-
-				//deal with managed tags
-				iTag * tag = RDM->Tag_get(tid);
-				if (tag)
+			//add tag into online list
+			RDM->Mutex.lock();
+			iTag* t = RDM->tagOnline.value(tid, NULL);
+			if (t)//existing tag 
+				t->T_ticks = TAG_TICKS;
+			else  //a new tag
+			{
+				iTag* tag = new iTag(0, tid, QString(tEPC), NULL);
+				if(tag)
 				{
-					tag->T_ticks = TAG_TICKS;
-					tag->T_alarm_offline = false;
-					//tag->T_epc = tEPC;
 					tag->T_rssi = trd.rssi;
-					tag->T_data_flag |= Tag_Online;
-					if (tag->T_caldata.all == 0)
-						tag->T_caldata.all = readtagCalibration(&epcfilter);
+					RDM->tagOnline.insert(tid, tag);
+				}
+			}
+			RDM->Mutex.unlock();
 
-					quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
-					if (data0 != 0)
+			//deal with managed tags
+			iTag * tag = RDM->Tag_get(tid);
+			if (tag)
+			{
+				tag->T_ticks = TAG_TICKS;
+				tag->T_alarm_offline = false;
+				//tag->T_epc = tEPC;
+				tag->T_rssi = trd.rssi;
+				tag->T_data_flag |= Tag_Online;
+				if (tag->T_caldata.all == 0)
+					tag->T_caldata.all = readtagCalibration(&epcfilter);
+
+				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
+				if (PLAN_TEMP == cur_plan)
+				{
+					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
+					if (temperaturecode > 0)
 					{
-						ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
-						if (temperaturecode > 0)
+						float Temp = tag->parseTCode(temperaturecode);
+						if (tag->T_temp == 0.0														//init temperature
+							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
 						{
-							float Temp = tag->parseTCode(temperaturecode);
-							if (tag->T_temp == 0.0														//init temperature
-								|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
-							{
-								tag->T_temp = Temp;
-								if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
-									tag->T_alarm_temperature = true;
-								qDebug() << "managed tag : sid = " << tag->T_sid
-									<< " uid = " << tag->T_uid
-									<< " epc = " << tag->T_epc
-									<< " rssi = " << tag->T_rssi
-									<< " temp = " << tag->T_temp
-									<< " temp_alarmed = " << tag->T_alarm_temperature;
-							}
+							tag->T_temp = Temp;
+							if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
+								tag->T_alarm_temperature = true;
+							//qDebug() << "managed tag : sid = " << tag->T_sid
+							//	<< " uid = " << tag->T_uid
+							//	<< " epc = " << tag->T_epc
+							//	<< " rssi = " << tag->T_rssi
+							//	<< " temp = " << tag->T_temp
+							//	<< " temp_alarmed = " << tag->T_alarm_temperature;
 						}
 					}
-					else
-					{
-						tag->T_OC_rssi = trd.data.list[1];
-
-						qDebug() << "managed tag : sid = " << tag->T_sid
-							<< " uid = " << tag->T_uid
-							<< " epc = " << tag->T_epc
-							<< " rssi = " << tag->T_rssi
-							<< " Oc-rssi = " << tag->T_OC_rssi
-							<< " frequency =" << trd.frequency;
-					}
-					//emit tagUpdated(tag);
 				}
-				else
+				else if(PLAN_OCRSSI == cur_plan)
 				{
-					qDebug() << "unknown tag : uid = " << tid << "epc = " << tEPC;
-				}
+					tag->T_OC_rssi = trd.data.list[1];
 
+					//qDebug() << "managed tag : sid = " << tag->T_sid
+					//	<< " uid = " << tag->T_uid
+					//	<< " epc = " << tag->T_epc
+					//	<< " rssi = " << tag->T_rssi
+					//	<< " Oc-rssi = " << tag->T_OC_rssi
+					//	<< " frequency =" << trd.frequency;
+				}
+				//emit tagUpdated(tag);
 			}
-			
-		}
+			else
+			{
+				qDebug("%s",QString("[Unknown] : uid = %1,epc = %2").arg(tid).arg(QString(tEPC)));
+			}
+		}//end while
 
 		//tick for online check before read again
 		RDM->Mutex.lock();
@@ -432,14 +421,21 @@ void iReader::run()
 				++it;
 		}
 
-		qDebug() << "Online tags count: " << RDM->tagOnline.count();
+		//print out online and managed tags
+		qDebug("[Online ] : count = %d",RDM->tagOnline.count());
+		qDebug("        %s",qPrintable(QString("%1,%2,%3,%4").arg("TID", 20).arg("EPC", 16).arg("RSSI", 6).arg("TICKS", 6)) );
 		for (iTag *tag : RDM->tagOnline)
 		{
-			qDebug() << " uid = " << tag->T_uid
-				<< " epc = " << tag->T_epc;
+			qDebug("        %s", qPrintable(QString("%1,%2,%3,%4").arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->T_rssi, 6).arg(tag->T_ticks, 6)));
 		}
 		RDM->Mutex.unlock();
 
+		qDebug("[Managed] : count = %d", RDM->tagOnline.count());
+		qDebug("    %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg("SID", 2).arg("TID", 20).arg("EPC", 16).arg("RSSI", 6).arg("OCRSSI", 6).arg("TEMP",6).arg("TEMPA", 6).arg("TICKS", 6)));
+		for (iTag *tag : RDM->taglist)
+		{
+			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->T_rssi, 6).arg(tag->T_OC_rssi, 6).arg(tag->T_temp, 6,'f',1).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
+		}
 		msleep(10);
 	}
 
@@ -487,17 +483,15 @@ quint64 iReader::bytes2longlong(QByteArray& bytes)
 }
 bool iReader::switchplans()
 {
-	if (cur_plan == PLAN_CNT)
-	{
+	if (!tmrReader->connected) 
+		return false;
+
+	cur_plan++;
+	if (cur_plan >= PLAN_CNT)
 		cur_plan = 0;
-	}
-	if (!tmrReader->connected) return false;
 	ret = TMR_paramSet(tmrReader, TMR_PARAM_READ_PLAN, &subplan[cur_plan]);
 	if (ret == TMR_SUCCESS)
-	{
-		cur_plan++;
 		return true;
-	}
 	else
 		return false;
 }

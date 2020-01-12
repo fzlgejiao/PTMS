@@ -2,7 +2,7 @@
 
 #include <QObject>
 
-#define	TAG_TICKS	3		//max times for online check	
+#define	TAG_TICKS	6		//max times for online check	
 #define TAG_T_MAX	75		//alarm temperature 
 
 enum TagDataFlag {

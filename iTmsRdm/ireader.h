@@ -4,9 +4,14 @@
 #include <QMap>
 #include "tm_reader.h"
 
-
-#define PLAN_CNT		2
+enum
+{
+	PLAN_OCRSSI	= 0,
+	PLAN_TEMP	= 1,
+	PLAN_CNT
+};
 #define RD_TIMEOUT		500
+#define STOP_N_TRIGGER	12
 
 
 class iRDM;
@@ -21,7 +26,6 @@ public:
 
 	bool RD_init(bool force=false);
 	bool wirteEpc(const QString& epc_old, const QString& epc_new);
-	//void readtag();
 	void checkerror();
 	void RD_stop() { bStopped = true; }
 	void RD_restart()

@@ -272,7 +272,12 @@ void iBC::OnFileDone(bool ok)
 		switch (filetype)
 		{
 		case XmlFile:
+			//stop read thread fisrt
+			rdm->reader->RD_stop();
+			while (rdm->reader->isRunning());
 			emit reloadXml();
+			//restart read thread again
+			rdm->reader->RD_restart();
 			break;
 
 		case TarFile:

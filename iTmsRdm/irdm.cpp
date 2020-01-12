@@ -302,10 +302,7 @@ iTag* iRDM::Tag_getbysid(int sid)
 void iRDM::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == tmrRDM)		//2s
-	{
-		//read tags
-		//reader->readtag();
-		
+	{	
 		//upload tag data																				
 		for (iTag* tag : taglist)
 		{
@@ -315,23 +312,11 @@ void iRDM::timerEvent(QTimerEvent *event)
 			tag->T_data_flag |= Tag_Online;
 			if (tag->isonline())
 				tag->T_data_flag |= Tag_Temperature|Tag_Rssi|Tag_Alarm;
-			
-			if (tag->T_ticks)
-			{
-				tag->T_ticks--;
-				if (tag->T_ticks == 0)
-				{
-					qDebug() << "tag : sid = " << tag->T_sid 
-						<< " uid = " << tag->T_uid 
-						<< " Alarm : Offline";
-					tag->T_alarm_offline = true;													//offline
-					emit tagLost(tag);
-				}
-				else
-					emit tagUpdated(tag);
+			else
+				tag->T_alarm_offline = true;														//offline
 
-			}
-			modbus->updateRdmRegisters(tag);
+			modbus->updateRdmRegisters(tag);														//update tag data for modbus
+			emit tagUpdated(tag);
 		}
 	}
 	if (event->timerId() == tmrTime)  //1s,update modbus datetime registers
