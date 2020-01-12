@@ -281,11 +281,11 @@ bool TagModel::setData(const QModelIndex &index, const QVariant &value, int role
 				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称不能为空."));			//change epc failed
 				return false;
 			}
-			else if (oSys.tagModelOnline->hasTag(epc) || oSys.tagModelPara->hasTag(epc) || oSys.tagModelData->hasTag(epc))
-			{
-				emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称已经存在."));			//change epc failed
-				return false;
-			}
+			//else if (oSys.tagModelOnline->hasTag(epc) || oSys.tagModelPara->hasTag(epc) || oSys.tagModelData->hasTag(epc))
+			//{
+			//	emit dataFailed(index, QString::fromLocal8Bit("更改失败：标签名称已经存在."));			//change epc failed
+			//	return false;
+			//}
 			else
 				tag->t_epc = epc;
 		}
@@ -370,7 +370,7 @@ void TagModel::setTagEpc(quint64 uid, const QString& epc)
 	{
 		if (listTags[i]->t_uid == uid)
 		{
-			setData(index(i, _Model::EPC), epc,Qt::DisplayRole);									//temp solution: to avoid re-calling dataChanged 
+			setData(index(i, _Model::EPC), epc,Qt::EditRole);									//temp solution: to avoid re-calling dataChanged 
 			return;
 		}
 	}

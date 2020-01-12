@@ -52,7 +52,7 @@ iDataView::iDataView(QWidget *parent)
 	m_n5mTimerId = startTimer(300000);
 
 	connect(&netcmd, SIGNAL(TagsDataReady(MSG_PKG&)), this, SLOT(OnMsgTagsDataReady(MSG_PKG&)));
-	connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnMsgTagEpc(MSG_PKG&)));
+	//connect(&netcmd, SIGNAL(TagEpcReady(MSG_PKG&)), this, SLOT(OnMsgTagEpc(MSG_PKG&)));
 	connect(ui.btnDelete, SIGNAL(clicked()), this, SLOT(OnDeleteData()));
 	connect(ui.btnClear, SIGNAL(clicked()), this, SLOT(OnClearData()));
 	connect(ui.tableOldTags->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagsOldSelected()));

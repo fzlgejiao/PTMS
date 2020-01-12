@@ -269,6 +269,8 @@ void iCfgPanel::OnMsgTagEpc(MSG_PKG& msg)
 	Tag_epc *tagEpc = (Tag_epc *)msg.cmd_pkg.data;
 
 	tagModel->setTagEpc(tagEpc->uid, QString::fromLocal8Bit(tagEpc->epc));								//acked for epc change
+	if(tagModel->hasTag(tagEpc->uid))																	//download setting when managed-tag epc changed
+		OnRdmDownloaded(oSys.curRdm());
 }
 bool iCfgPanel::saveRdmXml(iRdm *Rdm)
 {
