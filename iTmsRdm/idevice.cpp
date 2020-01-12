@@ -82,7 +82,7 @@ void iDevice::OnStateChanged(QMqttClient::ClientState state)
 	QMqttClient::ClientState status = client->state();
 	if (status == QMqttClient::Connected)					//if first connected, publish my version
 	{
-		qDebug() << "RDM : connected";
+		qDebug() << "[  IOT  ] : connected";
 		RDM->RDM_available = true;																	//device is connected
 
 		PUB_ota_data(OTA_Version);
@@ -93,12 +93,12 @@ void iDevice::OnStateChanged(QMqttClient::ClientState state)
 	}
 	else if (status == QMqttClient::Disconnected)
 	{
-		qDebug() << "RDM : disconnected";
+		qDebug() << "[  IOT  ] : disconnected";
 		RDM->RDM_available = false;
 	}
 	else if (status == QMqttClient::Connecting)
 	{
-		qDebug() << "RDM : connecting";
+		qDebug() << "[  IOT  ] : connecting";
 		RDM->RDM_available = false;
 	}
 }

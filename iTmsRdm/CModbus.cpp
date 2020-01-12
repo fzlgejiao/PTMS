@@ -149,6 +149,9 @@ void CModbus::onStateChanged(QModbusDevice::State state)
 void CModbus::handleDeviceError(QModbusDevice::Error newError)
 {
 	qDebug() << "Modbus Error: " << newError;
+#ifdef __linux__
+	MB_init();
+#endif
 }
 void CModbus::onReceivedWritten(QModbusDataUnit::RegisterType table, int address, int size)
 {		
