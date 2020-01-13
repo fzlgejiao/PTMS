@@ -77,6 +77,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	m_nTimerId_200ms = startTimer(200);
 	m_nTimerId_1s = startTimer(1000);
 	m_nTimerId_5s = startTimer(5000);
+	m_nTimerId_30s = startTimer(30000);
 	m_nTimerId_5min = startTimer(300000);
 
 	ui.leTempMax->setValidator(new QIntValidator(0, 120, this));
@@ -187,6 +188,30 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	else if (event->timerId() == m_nTimerId_5s)
 	{
 		
+	}
+	else if (event->timerId() == m_nTimerId_30s)
+	{
+		for (iTag* tag : listTags)
+		{
+			if (tag->listTemps.count() >= 3)
+			{
+				tag->listTemps.dequeue();
+			}
+			tag->listTemps.enqueue(tag->T_temp);
+			float max = -50, min = 200;
+			for (float temp : tag->listTemps)
+			{
+				if (temp > max)
+					max = temp;
+				if (temp < min)
+					min = temp;
+			}
+			if ((max - min) > 2)
+			{
+				QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss.zzz");
+				DB_saveHistory(tag, time);
+			}
+		}
 	}
 	else if (event->timerId() == m_nTimerId_5min)
 	{
@@ -540,37 +565,23 @@ void iTmsTest::DB_saveTags()
 }
 void iTmsTest::DB_saveHistory()
 {
-	if (modbus->state() != QModbusDevice::ConnectedState)
-		return;
-
-	//QDateTime c_time = QDateTime::currentDateTime();
-	//int i = 0;
-	//for (iTag* tag : listTags)
-	//{
-	//	QSqlRecord datarecord = dataModel->record();
-	//	c_time = c_time.addMSecs(i++);
-	//	datarecord.setValue("TIME", c_time.toString("yyyy/MM/dd hh:mm:ss.zzz"));
-	//	datarecord.setValue("SID", tag->T_sid);
-	//	datarecord.setValue("EPC", tag->T_epc);
-	//	datarecord.setValue("TEMP", tag->Temp());
-	//	datarecord.setValue("RSSI", tag->RSSI());
-	//	datarecord.setValue("OCRSSI", tag->OCRSSI());
-	//	datarecord.setValue("TEMPMAX", tag->T_uplimit);
-	//	datarecord.setValue("ALARM", tag->T_alarm);
-	//	//datarecord.setValue("OFFLINE", record.value("OFFLINE"));
-	//	//datarecord.setValue("RDMNAME", record.value("RDMNAME"));
-	//	dataModel->insertRecord(0, datarecord);
-	//}
-
-	QSqlQuery	query;
-	bool ret;
 	int i = 0;
 	for (iTag* tag : listTags)
 	{
 		QDateTime c_time = QDateTime::currentDateTime();
 		c_time.addMSecs(i++);
-		ret = query.exec(QString("INSERT INTO DATA VALUES('%1',%2,'%3','%4','%5','%6', %7,%8)")
-			.arg(c_time.toString("yyyy/MM/dd hh:mm:ss.zzz"))
+		QString time = c_time.toString("yyyy/MM/dd hh:mm:ss.zzz");
+		DB_saveHistory(tag, time);
+	}
+}
+void iTmsTest::DB_saveHistory(iTag *tag, const QString& time)
+{
+	if (modbus->state() != QModbusDevice::ConnectedState)
+		return;
+
+	QSqlQuery	query;
+	bool	ret = query.exec(QString("INSERT INTO DATA VALUES('%1',%2,'%3','%4','%5','%6', %7,%8)")
+			.arg(time)
 			.arg(tag->T_sid)
 			.arg(tag->T_epc)
 			.arg(tag->T_online ? QString::number(tag->T_temp, 'f', 1) : "--.-")
@@ -578,9 +589,8 @@ void iTmsTest::DB_saveHistory()
 			.arg(tag->T_online ? QString::number(tag->T_OC_rssi) : "---")
 			.arg(tag->T_uplimit)
 			.arg(tag->T_alarm));
-	}
-}
 
+}
 void iTmsTest::onSetTempLimit()
 {
 	if((ui.combo_sid->currentText().isEmpty()) || (ui.leTempMax->text().isEmpty()) ) return;

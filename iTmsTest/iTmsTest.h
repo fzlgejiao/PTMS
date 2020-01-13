@@ -6,6 +6,7 @@
 #include <QSerialPort>
 #include <QObject>
 #include <QMap>
+#include <QQueue> 
 
 //state machine for reading tag data
 typedef enum
@@ -19,7 +20,7 @@ typedef enum
 	STM_TAG_EPC,																					//read input regs [0x0160 - 0x02D8]
 	STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
 	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
-	STM_TAG_TEMPLIMIT,
+	STM_TAG_TEMPLIMIT,																				//read holding regs [0x0010 - 0x003F]
 	STM_TAG_END
 }STM_TAG;
 
@@ -84,6 +85,7 @@ public:
 	quint16			T_OC_rssi;																		//On-chip RSSI
 	float			T_temp;																			//temperature
 	int				T_uplimit;																		//up limit for temperature
+	QQueue<float>	listTemps;
 };
 
 class QSerialPort;
@@ -104,6 +106,7 @@ protected:
 	void DB_createTags(int cnt);
 	void DB_saveTags();
 	void DB_saveHistory();
+	void DB_saveHistory(iTag *tag,const QString& time);
 
 	void read();
 	QModbusDataUnit readRequest() const;
@@ -121,6 +124,7 @@ private:
 	int m_nTimerId_200ms;																			//time to read one kind of tag data
 	int m_nTimerId_1s;
 	int m_nTimerId_5s;																				//time to refresh tags from table 'TAGS'
+	int m_nTimerId_30s;																				//time to monitor temp change over [-2,2]
 	int	m_nTimerId_5min;																			//time to copy table 'TAGS' into table 'DATA'
 	int m_nTagStm;
 	int m_CurrentTagcnt;
