@@ -373,31 +373,18 @@ void iReader::run()
 					if (temperaturecode > 0)
 					{
 						float Temp = tag->parseTCode(temperaturecode);
-						if (tag->T_temp == 0.0														//init temperature
-							|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
+						//if (tag->T_temp == 0.0														//init temperature
+						//	|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
 						{
 							tag->T_temp = Temp;
 							if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
 								tag->T_alarm_temperature = true;
-							//qDebug() << "managed tag : sid = " << tag->T_sid
-							//	<< " uid = " << tag->T_uid
-							//	<< " epc = " << tag->T_epc
-							//	<< " rssi = " << tag->T_rssi
-							//	<< " temp = " << tag->T_temp
-							//	<< " temp_alarmed = " << tag->T_alarm_temperature;
 						}
 					}
 				}
 				else if(PLAN_OCRSSI == cur_plan)
 				{
 					tag->T_OC_rssi = trd.data.list[1];
-
-					//qDebug() << "managed tag : sid = " << tag->T_sid
-					//	<< " uid = " << tag->T_uid
-					//	<< " epc = " << tag->T_epc
-					//	<< " rssi = " << tag->T_rssi
-					//	<< " Oc-rssi = " << tag->T_OC_rssi
-					//	<< " frequency =" << trd.frequency;
 				}
 				//emit tagUpdated(tag);
 			}
@@ -434,7 +421,7 @@ void iReader::run()
 		qDebug("    %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg("SID", 2).arg("TID", 20).arg("EPC", 16).arg("RSSI", 6).arg("OCRSSI", 6).arg("TEMP",6).arg("TEMPA", 6).arg("TICKS", 6)));
 		for (iTag *tag : RDM->taglist)
 		{
-			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->T_rssi, 6).arg(tag->T_OC_rssi, 6).arg(tag->T_temp, 6,'f',1).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
+			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->RSSI(), 6).arg(tag->OCRSSI(), 6).arg(tag->Temp(),6).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
 		}
 		msleep(10);
 	}
