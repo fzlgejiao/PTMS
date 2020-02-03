@@ -11,7 +11,7 @@ enum
 	PLAN_CNT
 };
 #define RD_TIMEOUT		500
-#define STOP_N_TRIGGER	12
+#define STOP_N_TRIGGER	16
 
 
 class iRDM;
@@ -25,14 +25,19 @@ public:
 	~iReader();
 
 	bool RD_init(bool force=false);
-	bool wirteEpc(const QString& epc_old, const QString& epc_new);
-	void checkerror();
-	void RD_stop() { bStopped = true; }
+	void RD_stop() 
+	{
+		bStopped = true; 
+		while (isRunning());
+	}
 	void RD_restart()
 	{
 		bStopped = false;
 		start();
 	}
+	bool wirteEpc(const QString& epc_old, const QString& epc_new);
+	QString RD_ErrMsg() { return QString(TMR_strerr(tmrReader, ret)); }
+	bool RD_isError() { return bError; }
 
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
@@ -43,7 +48,7 @@ protected:
 	bool	switchplans();
 
 	virtual void run();
-
+	void	handleError();
 
 private:
 	iRDM*		RDM;
@@ -53,6 +58,7 @@ private:
 	TMR_Status  ret;
 	bool		bCreated;
 	bool		bStopped;
+	bool		bError;
 
 	//reader parameters
 	QString		group;

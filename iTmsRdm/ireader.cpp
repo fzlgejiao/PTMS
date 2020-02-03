@@ -3,6 +3,7 @@
 #include "irdm.h"
 #include "CModbus.h"
 
+
 iReader::iReader(QObject *parent)
 	: QThread(parent)
 {
@@ -17,16 +18,14 @@ iReader::~iReader()
 {
 	TMR_destroy(tmrReader);
 }
-void iReader::checkerror()
+void iReader::handleError()
 {
-	//if (ret != TMR_SUCCESS)
-	{
-		QString errormessage = QString(TMR_strerr(tmrReader, ret));
-		qDebug() << "Error reader-init : FAILED - " << errormessage;
-	}
+	bError	 = true;
+	bStopped = true;
 }
 bool iReader::RD_init(bool force)
 {	
+
 	//check if need to create reader
 	if (bCreated)
 	{		
@@ -34,6 +33,8 @@ bool iReader::RD_init(bool force)
 			return true;
 		TMR_destroy(tmrReader);
 	}
+
+	RD_stop();																				//stop reader thread when re-init reader
 
 	m_uri = RDM->RDM_comname;
 	ret = TMR_create(tmrReader, m_uri.toStdString().c_str());
@@ -157,7 +158,8 @@ bool iReader::RD_init(bool force)
 	ret = TMR_RP_set_tagop(&subplan[PLAN_TEMP], &tempread);
 	if (ret != TMR_SUCCESS) return false;
 	/* Stop N trigger */
-	TMR_RP_set_stopTrigger(&subplan[PLAN_TEMP], STOP_N_TRIGGER);
+	ret = TMR_RP_set_stopTrigger(&subplan[PLAN_TEMP], STOP_N_TRIGGER);
+	if (ret != TMR_SUCCESS) return false;
 
 
 	//ret = TMR_RP_init_multi(&multiplan, subplanPtrs, PLAN_CNT, 0);
@@ -186,6 +188,8 @@ bool iReader::RD_init(bool force)
 	//if (ret != TMR_SUCCESS) goto Failed;
 	//ret = TMR_startReading(reader);
 	//if (ret != TMR_SUCCESS) goto Failed;
+	RD_restart();
+	bError = false;
 	return true;
 }
 bool iReader::wirteEpc(const QString& epc_old, const QString& epc_new)
@@ -215,7 +219,7 @@ bool iReader::wirteEpc(const QString& epc_old, const QString& epc_new)
 		return true;
 	else
 	{
-		qDebug() << "Error reader-wirteEpc : FAILED - " << QString(TMR_strerr(tmrReader, ret));
+		qDebug() << "[Writing] : FAILED - " << QString(TMR_strerr(tmrReader, ret));
 		return false;
 	}
 }
@@ -276,9 +280,9 @@ void iReader::run()
 	while (bStopped == false)
 	{
 		QString datetime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss:zzz");
-		qDebug() << "[Running] - " << qPrintable(datetime);
+		qDebug() << "[Running] : " << qPrintable(datetime);
 
-		RDM->Mutex.lock();
+		RDM->Mutex.lock();																			//lock for online tag list during tag ticks in reading thread												
 		//tick for online check before read again
 		for (iTag *t : RDM->tagOnline)
 		{
@@ -293,22 +297,20 @@ void iReader::run()
 				t->T_ticks--;
 		}
 
-		if (!switchplans()) 
-			return;
+		if (!switchplans())
+		{
+			return handleError();
+		}
 
 		int readCount = 0;
 		ret = TMR_read(tmrReader, RD_TIMEOUT, &readCount);
-
 		if (ret != TMR_SUCCESS)
 		{
 			QString errormessage = QString(TMR_strerr(tmrReader, ret));
 			qDebug() << "[Reading] : FAILED - " << errormessage;
 			qDebug() << QString("Status Error Code=%1").arg(ret, 16, 16);
 
-			RD_init(true);
-			RDM->getCModbus()->MB_init();
-
-			return;
+			return handleError();
 		}
 		qDebug() << "[Reading] : SUCCESS	ReadCounts=" << readCount;
 
@@ -318,28 +320,36 @@ void iReader::run()
 			//prepare data buff
 			quint8 databuffer[256];
 			ret = TMR_TRD_init_data(&trd, sizeof(databuffer), databuffer);
+			if (ret != TMR_SUCCESS)
+			{
+				return handleError();
+			}
 
 			ret = TMR_getNextTag(tmrReader, &trd);
 			if (ret != TMR_SUCCESS)
-				continue;
+			{
+				return handleError();
+			}
 
-
-			
 			//read tag ok!
 			TMR_TagFilter epcfilter;
 			ret = TMR_TF_init_tag(&epcfilter, &trd.tag);
 			if (ret != TMR_SUCCESS)
-				continue;
+			{
+				return handleError();
+			}
 
 			//get Tid ,epc		
 			quint64 tid = readtagTid(&epcfilter);
 			if (tid == 0)
-				continue;
+			{
+				return handleError();
+			}				
 				
 			QByteArray tEPC((char *)trd.tag.epc, trd.tag.epcByteCount);
 
 			//add tag into online list
-			RDM->Mutex.lock();
+			RDM->Mutex.lock();																		//lock for online tag list during tag ticks in reading thread
 			iTag* t = RDM->tagOnline.value(tid, NULL);
 			if (t)//existing tag 
 				t->T_ticks = TAG_TICKS;
@@ -358,6 +368,7 @@ void iReader::run()
 			iTag * tag = RDM->Tag_get(tid);
 			if (tag)
 			{
+
 				tag->T_ticks = TAG_TICKS;
 				tag->T_alarm_offline = false;
 				//tag->T_epc = tEPC;
@@ -366,19 +377,21 @@ void iReader::run()
 				if (tag->T_caldata.all == 0)
 					tag->T_caldata.all = readtagCalibration(&epcfilter);
 
-				quint8 data0 = trd.data.list[0];	//use the data0 check the OC-Rssi plan or temperature plan
 				if (PLAN_TEMP == cur_plan)
 				{
 					ushort temperaturecode = (trd.data.list[0] << 8) + trd.data.list[1];
 					if (temperaturecode > 0)
 					{
 						float Temp = tag->parseTCode(temperaturecode);
-						//if (tag->T_temp == 0.0														//init temperature
-						//	|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature
+						if (Temp <= TAG_T_MAX && Temp >= TAG_T_MIN)
 						{
-							tag->T_temp = Temp;
-							if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
-								tag->T_alarm_temperature = true;
+							if (qAbs(tag->T_temp) <= 5.0 												//init temperature/in range[-5.0,5.0]
+								|| (qAbs(Temp - tag->T_temp) < qAbs(tag->T_temp)*0.5))					//reasonable temperature variation
+							{
+								tag->T_temp = Temp;
+								if (tag->T_temp > tag->T_uplimit)										//bigger than up limit
+									tag->T_alarm_temperature = true;
+							}
 						}
 					}
 				}
@@ -392,10 +405,10 @@ void iReader::run()
 			{
 				qDebug("%s",QString("[Unknown] : uid = %1,epc = %2").arg(tid).arg(QString(tEPC)));
 			}
-		}//end while
+		}//end while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 
 		//tick for online check before read again
-		RDM->Mutex.lock();
+		RDM->Mutex.lock();																			//lock for online tag list during tag ticks in reading thread
 		for (auto it = RDM->tagOnline.begin(); it != RDM->tagOnline.end();)
 		{
 			iTag* tag = it.value();
@@ -417,14 +430,15 @@ void iReader::run()
 		}
 		RDM->Mutex.unlock();
 
-		qDebug("[Managed] : count = %d", RDM->tagOnline.count());
+		qDebug("[Managed] : count = %d", RDM->taglist.count());
 		qDebug("    %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg("SID", 2).arg("TID", 20).arg("EPC", 16).arg("RSSI", 6).arg("OCRSSI", 6).arg("TEMP",6).arg("TEMPA", 6).arg("TICKS", 6)));
 		for (iTag *tag : RDM->taglist)
 		{
 			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->RSSI(), 6).arg(tag->OCRSSI(), 6).arg(tag->Temp(),6).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
 		}
 		msleep(10);
-	}
+	}//while (bStopped == false)
+
 
 }
 void iReader::readcallback(TMR_Reader *reader, const TMR_TagReadData *t, void *cookie)

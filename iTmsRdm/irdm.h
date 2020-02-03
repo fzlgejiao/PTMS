@@ -107,6 +107,7 @@ private:
 
 public slots:
 	void RDM_init();
+	void RD_handleError();
 
 signals:
 	void cfgChanged();

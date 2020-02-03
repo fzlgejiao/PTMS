@@ -25,17 +25,15 @@ iRDM::iRDM(QObject *parent)
 	RDM_init();
 
 	Tmr_start();
-
 }
 
 iRDM::~iRDM()
 {
-	reader->RD_stop();
-	while (reader->isRunning());
+	reader->RD_stop();																				//stop thread before in ~iRDM
 }
 void iRDM::ERR_msg(const QString& module, const QString& error)
 {
-	qDebug() << module + " : " + error;
+	qDebug() << qPrintable(module + " : " + error);
 }
 void iRDM::RDM_init()
 {
@@ -54,12 +52,10 @@ void iRDM::RDM_init()
 	RDM_comname = "tmr:///dev/ttySC0";
 #endif
 	iotdevice->IOT_init();
-	if(modbus->MB_init() == false)
-		iRDM::ERR_msg("MODBUS", "Module init failed.");
-	if (reader->RD_init() == false)
-		reader->checkerror();
-	else
-		reader->start();
+	if(modbus->MB_init() == false)																	//re-init modbus module
+		iRDM::ERR_msg("[MODBUS ]", "Module init failed.");
+	if(reader->RD_init() == false)																	//re-init reader when re-init rdm
+		iRDM::ERR_msg("[READER ]", "reader init failed. Error : " + reader->RD_ErrMsg());
 
 
 	RDM_available = false;
@@ -230,7 +226,7 @@ void iRDM::Cfg_readtags(QXmlStreamReader& xmlReader)
 				quint64 uid;
 				QString epc;
 				int enable;
-				int max = TAG_T_MAX;
+				int max = TAG_T_ALM;
 				sid = xmlReader.attributes().value("sid").toString().toInt();
 				uid = xmlReader.attributes().value("uid").toString().toULongLong();
 				epc = xmlReader.attributes().value("epc").toString();
@@ -324,6 +320,11 @@ void iRDM::timerEvent(QTimerEvent *event)
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);
+
+		if (reader->RD_isError())
+		{
+			RD_handleError();
+		}
 	}
 	if (event->timerId() == tmrIOT)  //5s,update tag data to IOT
 	{
@@ -346,3 +347,9 @@ int	iRDM::HW_ver()
 	return HW_V2;
 }
 
+void iRDM::RD_handleError()
+{
+	qDebug() << "[RDERROR] : re-init rd and modbus now.";
+	reader->RD_init(true);																			//re-init reader when error happen
+	modbus->MB_init();																				//re-init modbus when error happen
+}

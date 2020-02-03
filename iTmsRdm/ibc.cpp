@@ -272,12 +272,9 @@ void iBC::OnFileDone(bool ok)
 		switch (filetype)
 		{
 		case XmlFile:
-			//stop read thread fisrt
-			rdm->reader->RD_stop();
-			while (rdm->reader->isRunning());
+			rdm->reader->RD_stop();																	//stop read thread first when download xml file
 			emit reloadXml();
-			//restart read thread again
-			rdm->reader->RD_restart();
+			rdm->reader->RD_restart();																//restart read thread again
 			break;
 
 		case TarFile:
@@ -409,7 +406,7 @@ void iBC::UDP_cmd_tags_online(const MSG_PKG& msg)
 
 	Tags_Online *tagsdata = (Tags_Online *)txMsg.cmd_pkg.data;
 
-	rdm->Mutex.lock();
+	rdm->Mutex.lock();																				//lock for online tag list during UDP:get online tags
 	qDebug() << "Message online tags :";
 	int idx = 0;
 	for(iTag *tag : rdm->tagOnline)
@@ -461,14 +458,12 @@ void iBC::UDP_cmd_tags_data(const MSG_PKG& msg)
 void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 {//cmd=0x08,ack write tag epc
 
-	//stop read thread fisrt
-	rdm->reader->RD_stop();
-	while (rdm->reader->isRunning());
+	rdm->reader->RD_stop();																			//stop read thread first when write epc
 
 	//write tag epc
 	Tag_epc *rtagepc = (Tag_epc *)msg.cmd_pkg.data;
 
-	rdm->Mutex.lock();
+	rdm->Mutex.lock();																				//lock for online tag list during UDP:write tag epc
 	iTag* t = rdm->tagOnline.value(rtagepc->uid,NULL);												//online tag
 	if (t)
 	{
@@ -506,8 +501,7 @@ void iBC::UDP_cmd_tag_epc(const MSG_PKG& msg)
 	txMsg.rPort = msg.rPort;
 	UDP_send(txMsg);
 
-	//restart read thread again
-	rdm->reader->RD_restart();
+	rdm->reader->RD_restart();																		//restart read thread again
 }
 
 void iBC::UDP_cmd_rdm_ip(const MSG_PKG& msg)

@@ -11,7 +11,7 @@ CModbus::CModbus(QObject *parent)
 	: QObject(parent)
 {
 	//close the Modbus's warning message output
-	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=false"));
+	QLoggingCategory::setFilterRules(QStringLiteral("qt.modbus.warning=true"));
 
 	RDM= (iRDM *)parent;
 	
@@ -140,7 +140,7 @@ void CModbus::setModBusfilter()
 void CModbus::onStateChanged(QModbusDevice::State state)
 {
 	m_status = state;
-	qDebug() << "Modbus Status: " << state;
+	qDebug() << "[Modbus ] Status : " << state;
 
 	if (state == QModbusDevice::ConnectedState)
 	{
@@ -148,7 +148,7 @@ void CModbus::onStateChanged(QModbusDevice::State state)
 }
 void CModbus::handleDeviceError(QModbusDevice::Error newError)
 {
-	qDebug() << "Modbus Error: " << newError;
+	qDebug() << "[Modbus ] Error  : " << newError;
 #ifdef __linux__
 	MB_init();
 #endif
