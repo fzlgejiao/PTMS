@@ -57,6 +57,7 @@ iTmsTest::iTmsTest(QWidget *parent)
 	dataModel = new QSqlTableModel(this);
 	dataModel->setTable("DATA");
 	dataModel->select();
+	while (dataModel->canFetchMore()) dataModel->fetchMore();
 
 	QSortFilterProxyModel* proxyModelData = new QSortFilterProxyModel();
 	proxyModelData->setSourceModel(dataModel);
@@ -218,6 +219,7 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 		//time to copy table 'TAGS' into table 'DATA'
 		DB_saveHistory();
 		dataModel->select();
+		while (dataModel->canFetchMore()) dataModel->fetchMore();
 	}
 }
 void iTmsTest::DB_clearTags()
@@ -248,6 +250,7 @@ void iTmsTest::OnDeleteData()
 void iTmsTest::OnRefreshData()
 {
 	dataModel->select();
+	while (dataModel->canFetchMore()) dataModel->fetchMore();
 }
 void iTmsTest::OnStateChanged(int state)
 {
