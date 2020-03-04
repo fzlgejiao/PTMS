@@ -317,6 +317,7 @@ void iRDM::timerEvent(QTimerEvent *event)
 	}
 	if (event->timerId() == tmrTime)  //1s,update modbus datetime registers
 	{
+		qDebug() << "[Modbus ] Status : " << modbus->status();
 		modbus->updatesystime(QDateTime::currentDateTime());
 
 		led->toggleled((int)LED_STATUS);
