@@ -13,6 +13,7 @@ typedef enum
 {
 	STM_RDM_INFO=0,
 	STM_RDM_SYSTIME,
+	STM_RDM_READERTEMP,
 	STM_TAG_CNT,																				    //read input reg   0x000F
 	STM_TAG_TEMP,																					//read input regs [0x0010 - 0x003F]
 	STM_TAG_RSSI,																					//read input regs [0x0040 - 0x006F]
@@ -40,6 +41,7 @@ typedef enum
 
 #define STARTADDRESS_RDMSYSTIME    0x0000
 #define STARTADDRESS_RDMINFO	   0x0003				//info means Rdm name and version
+#define STARTADDRESS_READERTEMP	   0x000C				
 
 #define STARTADDRESS_TEMPERATURE   0x0010
 #define STARTADDRESS_RSSI		   0x0040

@@ -79,6 +79,7 @@
 
 #define InputRegister_RDMNAME			0x0003
 #define InputRegister_RDMVERSION		0x000B
+#define InputRegister_RDMTEMP			0x000C
 
 
 #define InputRegister_Tag1Temp			0x0010

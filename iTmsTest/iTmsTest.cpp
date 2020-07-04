@@ -344,6 +344,11 @@ QModbusDataUnit iTmsTest::readRequest() const
 		startAddress = STARTADDRESS_RDMSYSTIME;
 		numberOfEntries = 3;
 		break;
+	case STM_RDM_READERTEMP:
+		type = QModbusDataUnit::InputRegisters;
+		startAddress = STARTADDRESS_READERTEMP;
+		numberOfEntries = 1;
+		break;		
 	case STM_TAG_CNT:
 		type = QModbusDataUnit::InputRegisters;
 		startAddress = ADDRESS_TAGCOUNT;
@@ -427,6 +432,12 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 			version.insert(4, QChar('.'));
 
 			ui.leRdmVersion->setText(version);
+		}
+		else if (unit.startAddress() == STARTADDRESS_READERTEMP)
+		{
+			quint16 readertemp=unit.value(0);
+
+			ui.leReaderTemp->setText(QString::number(readertemp));
 		}
 		else if ((unit.startAddress() == ADDRESS_TAGCOUNT) && (unit.valueCount() == 1))
 		{

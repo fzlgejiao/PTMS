@@ -2,6 +2,7 @@
 #include "irdm.h"
 #include <QModbusRtuSerialSlave>
 #include <QModbusTcpServer>
+#include "ireader.h"
 
 #if __linux__
 #include <time.h>
@@ -150,7 +151,7 @@ void CModbus::handleDeviceError(QModbusDevice::Error newError)
 {
 	qDebug() << "[Modbus ] Error  : " << newError;
 #ifdef __linux__
-	MB_init();
+	//MB_init();
 #endif
 }
 void CModbus::onReceivedWritten(QModbusDataUnit::RegisterType table, int address, int size)
@@ -432,6 +433,9 @@ void CModbus::updateRdmRegisters(iTag *tag)
 {	
 	if (!tag) return;
 	if (m_status != QModbusDevice::ConnectedState) return;
+
+	modbusDevice->setData(QModbusDataUnit::InputRegisters, InputRegister_RDMTEMP, RDM->reader->get_reader_temp());
+		   
 	//update current temperature
 	int sid = tag->T_sid;
 	quint16 address = InputRegister_Tag1Temp + sid - 1;

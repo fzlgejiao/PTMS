@@ -39,6 +39,10 @@ public:
 	QString RD_ErrMsg() { return QString(TMR_strerr(tmrReader, ret)); }
 	bool RD_isError() { return bError; }
 
+	quint8 get_reader_temp() {
+		return reader_temp;
+	}
+
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
 	quint64 readtagCalibration(TMR_TagFilter *filter);
@@ -86,6 +90,8 @@ private:
 	//Async read
 	TMR_ReadListenerBlock rlb;
 	TMR_ReadExceptionListenerBlock reb;
+
+	quint8 reader_temp;
 
 
 signals:

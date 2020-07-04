@@ -12,6 +12,8 @@ iReader::iReader(QObject *parent)
 	bCreated = false;
 	cur_plan = 0;
 	bStopped = false;
+
+	reader_temp = 0;
 }
 
 iReader::~iReader()
@@ -313,6 +315,12 @@ void iReader::run()
 			return handleError();
 		}
 		qDebug() << "[Reading] : SUCCESS	ReadCounts=" << readCount;
+
+		ret = TMR_paramGet(tmrReader, TMR_PARAM_RADIO_TEMPERATURE, &reader_temp);
+		if (ret != TMR_SUCCESS) {
+			qDebug() << "[Error] :" << QString(TMR_strerr(tmrReader, ret));
+			return handleError();
+		}		
 
 		while (TMR_SUCCESS == TMR_hasMoreTags(tmrReader))
 		{
