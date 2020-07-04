@@ -444,7 +444,7 @@ void iReader::run()
 		{
 			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->RSSI(), 6).arg(tag->OCRSSI(), 6).arg(tag->Temp(),6).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
 		}
-		msleep(10);
+		msleep(5000);
 	}//while (bStopped == false)
 
 
