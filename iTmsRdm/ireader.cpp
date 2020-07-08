@@ -71,7 +71,7 @@ bool iReader::RD_init(bool force)
 
 	//set parameters to reader
 	TMR_Region region = TMR_REGION_PH;
-	int power = 3000;
+	int power = 2300;
 	bool is_send_sl = true;
 	int t4 = 3000;
 	bool uniquebydata = false;									//if one simple plan ,not necessary publish by data

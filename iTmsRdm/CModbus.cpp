@@ -52,11 +52,11 @@ bool CModbus::MB_initRTU(QString comname, quint8 slaveaddress, int baudrate, QSe
 	if (modbusDevice)
 	{
 		//if same device, no need to create again
-		if (comname == m_rtucomname
-			&& slaveaddress == m_rtuslaveaddress
-			&& baudrate == m_rtubaudrate
-			&& parity == m_rtuparity)
-			return true;
+		//if (comname == m_rtucomname
+		//	&& slaveaddress == m_rtuslaveaddress
+		//	&& baudrate == m_rtubaudrate
+		//	&& parity == m_rtuparity)
+		//	return true;
 		modbusDevice->disconnectDevice();
 		delete modbusDevice;
 		modbusDevice = NULL;
@@ -99,9 +99,9 @@ bool CModbus::MB_initTCP(QString ipaddress, int port, quint8 slaveaddress)
 	if (modbusDevice)
 	{
 		//if same device, no need to create again
-		if (ipaddress == m_ipaddress
-			&& slaveaddress == m_rtuslaveaddress)
-			return true;
+		//if (ipaddress == m_ipaddress
+		//	&& slaveaddress == m_rtuslaveaddress)
+		//	return true;
 
 		modbusDevice->disconnectDevice();
 		delete modbusDevice;
@@ -151,7 +151,7 @@ void CModbus::handleDeviceError(QModbusDevice::Error newError)
 {
 	qDebug() << "[Modbus ] Error  : " << newError;
 #ifdef __linux__
-	//MB_init();
+	MB_init();
 #endif
 }
 void CModbus::onReceivedWritten(QModbusDataUnit::RegisterType table, int address, int size)
