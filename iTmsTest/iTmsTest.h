@@ -115,10 +115,11 @@ protected:
 
 	void dataHandler(QModbusDataUnit unit);
 	iTag* getTag(int sid) { return listTags.value(sid, NULL); }
-
+	void createStatusBar();
 private:
 	Ui::iTmsTestClass ui;
 
+	QLabel*			sCompiled;
 	QModbusClient*	modbus;
 	QSqlTableModel*	tagModel;
 	QSqlTableModel*	dataModel;

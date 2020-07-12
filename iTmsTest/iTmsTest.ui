@@ -198,31 +198,24 @@
          <string>设备信息</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="leCompiledTime">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="leRdmTime">
            <property name="readOnly">
             <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>软件版本：</string>
            </property>
           </widget>
          </item>
          <item row="8" column="1">
-          <widget class="QLineEdit" name="leReplyCnt">
+          <widget class="QLineEdit" name="leReaderTemp">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>回复总数：</string>
+         <item row="7" column="1">
+          <widget class="QLineEdit" name="leReplyCnt">
+           <property name="readOnly">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -240,13 +233,31 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="leRdmRTUAddr">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>1</string>
+            <string>设备地址：</string>
            </property>
-           <property name="readOnly">
-            <bool>false</bool>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>请求总数：</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>回复总数：</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>读写器温度：</string>
            </property>
           </widget>
          </item>
@@ -257,29 +268,25 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_8">
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>设备地址：</string>
+            <string>软件版本：</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="label_12">
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="leRdmRTUAddr">
            <property name="text">
-            <string>请求总数：</string>
+            <string>1</string>
            </property>
-          </widget>
-         </item>
-         <item row="6" column="1">
-          <widget class="QLineEdit" name="leRequestCnt">
            <property name="readOnly">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="leRdmTime">
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="leRequestCnt">
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -289,27 +296,6 @@
           <widget class="QLineEdit" name="leRdmName">
            <property name="readOnly">
             <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_11">
-           <property name="text">
-            <string>编译时间：</string>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="1">
-          <widget class="QLineEdit" name="leReaderTemp">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="0">
-          <widget class="QLabel" name="label_14">
-           <property name="text">
-            <string>读写器温度：</string>
            </property>
           </widget>
          </item>

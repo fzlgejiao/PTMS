@@ -24,7 +24,6 @@ iTmsTest::iTmsTest(QWidget *parent)
 
 	ui.btnConnect->setEnabled(true);
 	ui.btnDisconnect->setEnabled(false);
-	ui.leCompiledTime->setText(tr(__DATE__)+","+tr(__TIME__));
 	OnRefresh();
 	request_cnt = 0;
 	reply_cnt = 0;
@@ -83,6 +82,8 @@ iTmsTest::iTmsTest(QWidget *parent)
 
 	ui.leTempMax->setValidator(new QIntValidator(0, 120, this));
 
+	createStatusBar();
+
 	connect(modbus, &QModbusClient::errorOccurred, [this](QModbusDevice::Error) {
 		statusBar()->showMessage(modbus->errorString(), ERR_SHOW_TIME);
 	});
@@ -96,6 +97,18 @@ iTmsTest::~iTmsTest()
 	if (modbus)
 		modbus->disconnectDevice();
 	delete modbus;
+}
+void iTmsTest::createStatusBar()
+{
+	sCompiled = new QLabel(this);
+	sCompiled->setMinimumSize(120, 20);
+	sCompiled->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	sCompiled->setText(QString::fromLocal8Bit("±àÒëÊ±¼ä : ") + tr(__DATE__) + "," + tr(__TIME__));
+	sCompiled->setFrameShape(QFrame::Panel);
+	sCompiled->setFrameShadow(QFrame::Sunken);
+
+	statusBar()->insertPermanentWidget(0, sCompiled);
+
 }
 void iTmsTest::OnRefresh()
 {

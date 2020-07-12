@@ -12,6 +12,7 @@ iTmsGui::iTmsGui(QWidget *parent)
 	: QMainWindow(parent),EnetCmd(EthernetCmd::Instance())
 {
 	ui.setupUi(this);
+	this->setWindowTitle(QString("PTMS - TOOL %1").arg(qApp->applicationVersion()));
 
 	//setup views
 	QSplitter *splitter = new QSplitter;
@@ -52,7 +53,7 @@ void iTmsGui::createStatusBar()
 	sBarVersion = new QLabel(this);
 	sBarVersion->setMinimumSize(120, 20);
 	sBarVersion->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-	sBarVersion->setText(qApp->applicationVersion());
+	sBarVersion->setText(QString::fromLocal8Bit("±àÒëÊ±¼ä : ") + tr(__DATE__) + "," + tr(__TIME__));
 	sBarVersion->setFrameShape(QFrame::Panel);
 	sBarVersion->setFrameShadow(QFrame::Sunken);
 
