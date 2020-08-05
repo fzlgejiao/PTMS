@@ -5,6 +5,7 @@
 #include "iLed.h"
 #include "CModbus.h"
 #include <QDebug> 
+#include <QtXml/QDomDocument>
 
 iRDM::iRDM(QObject *parent)
 	: QObject(parent)	
@@ -276,6 +277,48 @@ void iRDM::Cfg_skipUnknownElement(QXmlStreamReader& xmlReader)
 			xmlReader.readNext();
 		}
 	}
+}
+void iRDM::Cfg_changeTagUpLimit(iTag* tag, int max)
+{
+/*	QString xml = QCoreApplication::applicationDirPath() + "/iTmsRdm.xml";
+	QFile file(xml);
+	if (!file.open(QFile::ReadOnly | QFile::Text)) 
+		return ;
+	
+	QDomDocument doc;
+	if (!doc.setContent(&file, false))
+		return;
+
+	QDomElement root = doc.documentElement();
+	QString name = root.nodeName();
+	QDomNodeList nlist = root.elementsByTagName("tags"); 
+	for (int i = 0; i < nlist.count(); i++)
+	{
+		QDomElement eleTags = nlist.at(i).toElement();
+		QDomElement eleTag = eleTags.firstChildElement();
+		while (!eleTag.isNull())
+		{
+			QDomAttr attrUid = eleTag.attributeNode("uid");
+			name = attrUid.value();
+			QString uid = QString("%1").arg(tag->T_uid, 20);
+			if (attrUid.value().toULongLong() == tag->T_uid)
+			{
+				QDomAttr attrMax = eleTag.attributeNode("max");
+				attrMax.setValue(QString::number(max));
+
+			}
+			eleTag = eleTag.nextSiblingElement();
+		}
+	}
+	file.close();
+
+	if (!file.open(QFile::WriteOnly | QFile::Truncate))
+		return;
+	//输出到文件
+	QTextStream out_stream(&file);
+	doc.save(out_stream, 4); //缩进4格
+	file.close();
+*/
 }
 iTag* iRDM::Tag_add(int sid, quint64 uid, const QString& epc)
 {

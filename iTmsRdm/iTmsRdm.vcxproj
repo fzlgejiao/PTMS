@@ -66,11 +66,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;QT_XML_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;..\libs\pthread\include;..\libs\MercuryAPI\include;..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;..\libs\pthread\include;..\libs\MercuryAPI\include;..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -79,11 +79,11 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\libs\MercuryAPI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5Mqttd.lib;Qt5Cored.lib;Qt5Networkd.lib;MercuryAPI.lib;Ws2_32.lib;Qt5SerialBusd.lib;Qt5SerialPortd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5Mqttd.lib;Qt5Cored.lib;Qt5Networkd.lib;MercuryAPI.lib;Ws2_32.lib;Qt5SerialBusd.lib;Qt5SerialPortd.lib;Qt5Xmld.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
-      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;..\libs\pthread\include;..\libs\MercuryAPI\include;..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</Define>
+      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;..\libs\pthread\include;..\libs\MercuryAPI\include;..\libs\ltkc\include;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</IncludePath>
+      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;__STDC_LIMIT_MACROS;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;_CRT_SECURE_NO_DEPRECATE;QT_XML_LIB;%(PreprocessorDefinitions)</Define>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -95,11 +95,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-API-1.31.3.36-2|Win32'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;QT_XML_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <AdditionalOptions>-Zc:rvalueCast -Zc:inline -Zc:strictStrings -Zc:throwingNew -Zc:referenceBinding -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -108,11 +108,11 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\libs-API-1.31.3.36-2\MercuryAPI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5Mqttd.lib;Qt5Cored.lib;Qt5Networkd.lib;Qt5SerialBusd.lib;Qt5SerialPortd.lib;MercuryAPI.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5Mqttd.lib;Qt5Cored.lib;Qt5Networkd.lib;Qt5SerialBusd.lib;Qt5SerialPortd.lib;MercuryAPI.lib;Ws2_32.lib;Qt5Xmld.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
-      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</Define>
+      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtMqtt;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</IncludePath>
+      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_MQTT_LIB;QT_GUI_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;QT_XML_LIB;%(PreprocessorDefinitions)</Define>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -124,10 +124,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_NETWORK_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_NETWORK_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;QT_XML_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMqtt;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMqtt;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -135,11 +135,11 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\libs-API-1.31.3.36-2\MercuryAPI\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Network.lib;Qt5SerialBus.lib;Qt5SerialPort.lib;Qt5Widgets.lib;Qt5Mqtt.lib;MercuryAPI.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Network.lib;Qt5SerialBus.lib;Qt5SerialPort.lib;Qt5Widgets.lib;Qt5Mqtt.lib;MercuryAPI.lib;Ws2_32.lib;Qt5Xml.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
-      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMqtt;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_NETWORK_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</Define>
+      <IncludePath>.;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\mkspecs\win32-msvc;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtMqtt;..\libs-API-1.31.3.36-2\pthread\include;..\libs-API-1.31.3.36-2\MercuryAPI\include;..\libs-API-1.31.3.36-2\ltkc\include;$(QTDIR)\include\QtXml;%(AdditionalIncludeDirectories)</IncludePath>
+      <Define>UNICODE;_UNICODE;WIN32;_ENABLE_EXTENDED_ALIGNED_STORAGE;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_NETWORK_LIB;QT_SERIALBUS_LIB;QT_SERIALPORT_LIB;QT_WIDGETS_LIB;__STDC_LIMIT_MACROS;_CRT_SECURE_NO_DEPRECATE;HAVE_STRUCT_TIMESPEC;QT_XML_LIB;%(PreprocessorDefinitions)</Define>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>

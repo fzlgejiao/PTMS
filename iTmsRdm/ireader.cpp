@@ -12,7 +12,7 @@ iReader::iReader(QObject *parent)
 	bCreated = false;
 	cur_plan = 0;
 	bStopped = false;
-
+	power = 2300;
 	reader_temp = 0;
 }
 
@@ -24,6 +24,11 @@ void iReader::handleError()
 {
 	bError	 = true;
 	bStopped = true;
+}
+void iReader::RD_setPower(int pwr)
+{
+	power = pwr;
+	RD_init(true);
 }
 bool iReader::RD_init(bool force)
 {	
@@ -71,7 +76,6 @@ bool iReader::RD_init(bool force)
 
 	//set parameters to reader
 	TMR_Region region = TMR_REGION_PH;
-	int power = 2300;
 	bool is_send_sl = true;
 	int t4 = 3000;
 	bool uniquebydata = false;									//if one simple plan ,not necessary publish by data
@@ -444,7 +448,7 @@ void iReader::run()
 		{
 			qDebug("     %s", qPrintable(QString("%1,%2,%3,%4,%5,%6,%7,%8").arg(tag->T_sid, 2).arg(tag->T_uid, 20).arg(tag->T_epc, 16).arg(tag->RSSI(), 6).arg(tag->OCRSSI(), 6).arg(tag->Temp(),6).arg(tag->T_alarm_temperature, 6).arg(tag->T_ticks, 6)));
 		}
-		msleep(1000);
+		msleep(10000);
 	}//while (bStopped == false)
 
 

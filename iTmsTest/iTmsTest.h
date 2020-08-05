@@ -14,14 +14,15 @@ typedef enum
 	STM_RDM_INFO=0,
 	STM_RDM_SYSTIME,
 	STM_RDM_READERTEMP,
+	STM_RDM_POWER,																					//read holding reg 0x0002
 	STM_TAG_CNT,																				    //read input reg   0x000F
 	STM_TAG_TEMP,																					//read input regs [0x0010 - 0x003F]
 	STM_TAG_RSSI,																					//read input regs [0x0040 - 0x006F]
 	STM_TAG_OCRSSI,																					//read input regs [0x0070 - 0x009F]
 	STM_TAG_EPC,																					//read input regs [0x0160 - 0x02D8]
 	STM_TAG_ONLINE,																					//read discrete regs [0x0000 - 0x002F]
-	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
 	STM_TAG_TEMPLIMIT,																				//read holding regs [0x0010 - 0x003F]
+	STM_TAG_ALARM,																					//read discrete regs [0x0030 - 0x005F]
 	STM_TAG_END
 }STM_TAG;
 
@@ -35,22 +36,24 @@ typedef enum
 #endif
 
 
-#define ADDRESS_TAGCOUNT		   0x000F
 
 
-
+//input registers
 #define STARTADDRESS_RDMSYSTIME    0x0000
 #define STARTADDRESS_RDMINFO	   0x0003				//info means Rdm name and version
 #define STARTADDRESS_READERTEMP	   0x000C				
+#define ADDRESS_TAGCOUNT		   0x000F
 
 #define STARTADDRESS_TEMPERATURE   0x0010
 #define STARTADDRESS_RSSI		   0x0040
 #define STARTADDRESS_OCRSSI		   0x0070
 #define STARTADDRESS_EPC		   0x0160
 
-
+//holding registers
+#define STARTADDRESS_POWER		   0x0002
 #define STARTADDRESS_TEMPLIMIT     0x0010
 
+//discrete input registers
 #define STARTADDRESS_ONLINE		   0x0000
 #define STARTADDRESS_ALARM		   0x0030
 
@@ -155,4 +158,7 @@ public slots:
 	void OnDeleteData();
 	void OnRefreshData();
 	void OnTagDataSelectChanged(const QModelIndex &, const QModelIndex &);
+	void OnCfgTagChanged(int);
+	void OnPowerChanged(int);
+	void OnSetRdPower();
 };

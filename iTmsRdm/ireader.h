@@ -42,6 +42,8 @@ public:
 	quint8 get_reader_temp() {
 		return reader_temp;
 	}
+	int	RD_power() { return power; }
+	void RD_setPower(int pwr);
 
 protected:
 	quint64 readtagTid(TMR_TagFilter *filter);
@@ -63,6 +65,7 @@ private:
 	bool		bCreated;
 	bool		bStopped;
 	bool		bError;
+	int			power;
 
 	//reader parameters
 	QString		group;

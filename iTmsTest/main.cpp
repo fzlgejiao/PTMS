@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	a.setApplicationName(QObject::tr("PTMS - Test"));
-	a.setApplicationVersion("V0.2.0");
+	a.setApplicationVersion("V0.4.0");
 
 	qInstallMessageHandler(outputMessage);
 	qDebug("*****************Application Start*****************");

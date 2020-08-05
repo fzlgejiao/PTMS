@@ -178,6 +178,7 @@ void CModbus::setupDeviceData()
 	//HoldingRegisters datas
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RTU, B2WORD(m_rtubaudrate, m_rtuparity));
 	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_TCPPORT, ModbusTcpPort);
+	modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RDPOWER, RDM->reader->RD_power());
 	
 	//save Rdm name and version
 	QByteArray rdm_name = RDM->RDM_name.toLocal8Bit();	
@@ -327,7 +328,14 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 			}
 		}
 	}
-		break;			
+	break;
+
+	case HoldingRegister_RDPOWER:
+	{
+		RDM->reader->RD_setPower(value);
+		modbusDevice->setData(QModbusDataUnit::HoldingRegisters, HoldingRegister_RDPOWER, RDM->reader->RD_power());
+	}
+	break;
 
 	case HoldingRegister_SYSYEARMONTH:
 	{
@@ -424,6 +432,8 @@ void CModbus::handler_holdingRegister(quint16 address, quint16 value)
 		iTag *tag = RDM->Tag_getbysid(sid);
 		if (tag)
 			tag->T_uplimit = value;
+
+		RDM->Cfg_changeTagUpLimit(tag, value);														//change tag up limit in xml file
 	}
 		break;
 	}

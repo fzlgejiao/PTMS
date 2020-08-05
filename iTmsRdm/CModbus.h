@@ -53,6 +53,7 @@
 //HoldingRegisters:			Read/Write
 #define HoldingRegister_RTU				0x0000
 #define HoldingRegister_TCPPORT			0x0001
+#define HoldingRegister_RDPOWER			0x0002
 #define HoldingRegister_Tag1UPPERLIMIT	0x0010
 #define HoldingRegister_Tag2UPPERLIMIT	0x0011
 #define HoldingRegister_Tag3UPPERLIMIT	0x0012

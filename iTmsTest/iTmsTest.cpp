@@ -89,7 +89,8 @@ iTmsTest::iTmsTest(QWidget *parent)
 	});
 	connect(modbus, &QModbusClient::stateChanged,this, &iTmsTest::OnStateChanged);
 
-	//connect(ui.tableViewOnline->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnCurrentChanged()));
+	connect(ui.cbxTags, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCfgTagChanged(int)));
+	connect(ui.cbxPower, SIGNAL(currentIndexChanged(int)), this, SLOT(OnPowerChanged(int)));
 	//connect(ui.tableViewHistory->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(OnTagDataSelectChanged(const QModelIndex &, const QModelIndex &)));
 }
 iTmsTest::~iTmsTest()
@@ -220,10 +221,11 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 				if (temp < min)
 					min = temp;
 			}
-			if ((max - min) > 2)
+			if ((max - min) >= 2)
 			{
 				QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss.zzz");
-				DB_saveHistory(tag, time);
+				DB_saveHistory(tag, time);															//save tag data when TEMP vary bigger than 2 degree
+				ui.plainTextEdit->appendPlainText(QString("Tag: %1 temperature changes lot").arg(tag->T_epc));
 			}
 		}
 	}
@@ -253,9 +255,8 @@ void iTmsTest::OnDeleteData()
 	QItemSelectionModel *selectionModel = ui.tableViewHistory->selectionModel();
 
 	QModelIndexList indexes = selectionModel->selectedRows();
-	QModelIndex index;
-
-	foreach(index, indexes) {
+	for(QModelIndex index : indexes)
+	{
 		int row = proxy->mapToSource(index).row();
 		dataModel->removeRows(row, 1, QModelIndex());
 	}
@@ -361,7 +362,12 @@ QModbusDataUnit iTmsTest::readRequest() const
 		type = QModbusDataUnit::InputRegisters;
 		startAddress = STARTADDRESS_READERTEMP;
 		numberOfEntries = 1;
-		break;		
+		break;			
+	case STM_RDM_POWER:
+		type = QModbusDataUnit::HoldingRegisters;
+		startAddress = STARTADDRESS_POWER;
+		numberOfEntries = 1;
+		break;
 	case STM_TAG_CNT:
 		type = QModbusDataUnit::InputRegisters;
 		startAddress = ADDRESS_TAGCOUNT;
@@ -392,17 +398,16 @@ QModbusDataUnit iTmsTest::readRequest() const
 		startAddress = STARTADDRESS_ONLINE;
 		numberOfEntries = m_CurrentTagcnt;
 		break;
+	case STM_TAG_TEMPLIMIT:
+		type = QModbusDataUnit::HoldingRegisters;
+		startAddress = STARTADDRESS_TEMPLIMIT;
+		numberOfEntries = m_CurrentTagcnt;
+		break;
 	case STM_TAG_ALARM:
 		type = QModbusDataUnit::DiscreteInputs;
 		startAddress = STARTADDRESS_ALARM;
 		numberOfEntries = m_CurrentTagcnt;
 		break;
-
-	case STM_TAG_TEMPLIMIT:
-		type = QModbusDataUnit::HoldingRegisters;
-		startAddress = STARTADDRESS_TEMPLIMIT;
-		numberOfEntries = m_CurrentTagcnt;
-		break;		
 	}
 
     return QModbusDataUnit(type, startAddress, numberOfEntries);
@@ -528,7 +533,18 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 			{
 				iTag* tag = getTag(i + 1);
 				if (tag)
+				{
+					bool alarm = false;
+					if (tag->T_alarm == 0 && unit.value(i) == 1)					//new alarm
+						alarm = true;
 					tag->T_alarm = unit.value(i);
+					if (alarm)
+					{
+						QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss.zzz");
+						DB_saveHistory(tag, time);															//save tag data when TEMP vary bigger than 2 degree
+						ui.plainTextEdit->appendPlainText(QString("Tag: %1 temperature alarmed").arg(tag->T_epc));
+					}
+				}
 			}
 		}
 	}
@@ -536,12 +552,22 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 
 	case QModbusDataUnit::HoldingRegisters:
 	{
-		for (uint i = 0; i < unit.valueCount(); i++)
+		if (unit.startAddress() == STARTADDRESS_POWER && (unit.valueCount() == 1))//read power
 		{
-			iTag* tag = getTag(i + 1);
-			if (tag)
-				tag->T_uplimit = unit.value(i);
+			quint16 power = unit.value(0);
+
+			ui.lePower->setText(QString::number(power));
 		}
+		else
+		{
+			for (uint i = 0; i < unit.valueCount(); i++)
+			{
+				iTag* tag = getTag(i + 1);
+				if (tag)
+					tag->T_uplimit = unit.value(i);
+			}
+		}
+
 	}
 	break;
 	}
@@ -552,7 +578,7 @@ void iTmsTest::DB_createTags(int cnt)
 	qDeleteAll(listTags);
 	listTags.clear();
 
-	ui.combo_sid->clear();
+	ui.cbxTags->clear();
 	for (int i = 0; i < cnt; i++) {
 		QSqlRecord record = tagModel->record();
 		record.setValue("SID", i + 1);
@@ -562,14 +588,14 @@ void iTmsTest::DB_createTags(int cnt)
 		
 		if (tagModel->insertRecord(i, record) == true)
 		{
-			ui.combo_sid->addItem(QString::number(i + 1));
+			ui.cbxTags->addItem(QString::number(i + 1));
 			iTag* tag = new iTag(i + 1);
 			if(tag)
 				listTags.insert(i + 1, tag);
 		}
 	}
 	if (cnt > 0)
-		ui.combo_sid->setCurrentIndex(0);
+		ui.cbxTags->setCurrentIndex(0);
 }
 void iTmsTest::DB_saveTags()
 {
@@ -620,9 +646,9 @@ void iTmsTest::DB_saveHistory(iTag *tag, const QString& time)
 }
 void iTmsTest::onSetTempLimit()
 {
-	if((ui.combo_sid->currentText().isEmpty()) || (ui.leTempMax->text().isEmpty()) ) return;
+	if((ui.cbxTags->currentText().isEmpty()) || (ui.leTempMax->text().isEmpty()) ) return;
 	
-	int startAddress = STARTADDRESS_TEMPLIMIT + ui.combo_sid->currentText().toInt() - 1;
+	int startAddress = STARTADDRESS_TEMPLIMIT + ui.cbxTags->currentText().toInt() - 1;
 
 	quint16 limit = ui.leTempMax->text().trimmed().toInt();
 	writeRequest.setRegisterType(QModbusDataUnit::HoldingRegisters);
@@ -705,4 +731,30 @@ void iTmsTest::OnTagDataSelectChanged(const QModelIndex &current, const QModelIn
 	}
 	else
 		ui.btnDelete->setEnabled(false);
+}
+void iTmsTest::OnCfgTagChanged(int row)
+{
+	iTag* tag = getTag(row + 1);
+	if (tag)
+	{
+		ui.leTempMax->setText(QString::number(tag->T_uplimit));
+	}
+}
+void iTmsTest::OnPowerChanged(int index)
+{
+	//if(index == 0)
+	//	ui.lePower->setText("2300");
+	//else
+	//	ui.lePower->setText("3000");
+}
+void iTmsTest::OnSetRdPower()
+{
+	if (ui.cbxPower->currentText().isEmpty()) return;
+
+	int startAddress = STARTADDRESS_POWER;
+
+	quint16 power = ui.cbxPower->currentText().trimmed().toUInt();
+	writeRequest.setRegisterType(QModbusDataUnit::HoldingRegisters);
+	writeRequest.setStartAddress(startAddress);
+	writeRequest.setValue(0, power);
 }

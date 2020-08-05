@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>800</height>
+    <width>1207</width>
+    <height>816</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -318,7 +318,7 @@
          <widget class="QTableView" name="tableViewOnline">
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>740</width>
             <height>450</height>
            </size>
           </property>
@@ -328,61 +328,129 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>选择传感器(SID):</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="combo_sid"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>报警温度</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="leTempMax">
-            <property name="maximumSize">
-             <size>
-              <width>120</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="placeholderText">
-             <string>range:[0-120]</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnSetTempMax">
-            <property name="text">
-             <string>设置报警温度</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="Line" name="line">
+         <widget class="QGroupBox" name="groupBox_2">
+          <property name="minimumSize">
+           <size>
+            <width>740</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>设置</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>选择读取功率(dBm):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>当前读取功率:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>选择传感器(SID):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>报警温度:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="cbxPower">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>2300</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>3000</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lePower">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+             <property name="placeholderText">
+              <string>range:[0-120]</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="btnSetPower">
+             <property name="text">
+              <string>设置读取功率</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QComboBox" name="cbxTags"/>
+           </item>
+           <item row="1" column="4">
+            <widget class="QLineEdit" name="leTempMax">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="placeholderText">
+              <string>range:[0-120]</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QPushButton" name="btnSetTempMax">
+             <property name="text">
+              <string>设置报警温度</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -478,7 +546,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
+     <width>1207</width>
      <height>26</height>
     </rect>
    </property>
@@ -553,8 +621,8 @@
    <slot>DB_clearData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1126</x>
-     <y>747</y>
+     <x>1107</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
      <x>474</x>
@@ -569,8 +637,8 @@
    <slot>onSetTempLimit()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1120</x>
-     <y>413</y>
+     <x>1165</x>
+     <y>650</y>
     </hint>
     <hint type="destinationlabel">
      <x>501</x>
@@ -585,8 +653,8 @@
    <slot>OnDeleteData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>954</x>
-     <y>747</y>
+     <x>934</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
      <x>427</x>
@@ -601,12 +669,28 @@
    <slot>OnRefreshData()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>741</x>
-     <y>732</y>
+     <x>761</x>
+     <y>784</y>
     </hint>
     <hint type="destinationlabel">
      <x>511</x>
      <y>732</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btnSetPower</sender>
+   <signal>clicked()</signal>
+   <receiver>iTmsTestClass</receiver>
+   <slot>OnSetRdPower()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1101</x>
+     <y>754</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>455</x>
+     <y>664</y>
     </hint>
    </hints>
   </connection>
@@ -619,5 +703,6 @@
   <slot>onSetTempLimit()</slot>
   <slot>OnDeleteData()</slot>
   <slot>OnRefreshData()</slot>
+  <slot>OnSetRdPower()</slot>
  </slots>
 </ui>

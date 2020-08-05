@@ -51,6 +51,7 @@ protected:
 	void	Cfg_readcfg(QXmlStreamReader& xmlReader);
 	void	Cfg_readtags(QXmlStreamReader& xmlReader);
 	void	Cfg_skipUnknownElement(QXmlStreamReader& xmlReader);
+	void	Cfg_changeTagUpLimit(iTag* tag,int max);
 
 	iTag*	Tag_add(int sid,quint64 uid,const QString& epc);
 	int		HW_ver();
