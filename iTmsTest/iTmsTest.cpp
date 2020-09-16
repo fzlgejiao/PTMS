@@ -1,7 +1,6 @@
 #include "iTmsTest.h"
 #include <QSerialPortInfo> 
 #include <QSqlTableModel> 
-#include <QSqlQuery> 
 #include <QModbusClient> 
 #include <QModbusRtuSerialMaster> 
 #include <QSqlRecord>
@@ -206,6 +205,11 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 	}
 	else if (event->timerId() == m_nTimerId_30s)
 	{
+		QSqlDatabase db = QSqlDatabase::database();
+		db.transaction();
+		QSqlQuery	query;
+		QDateTime c_time = QDateTime::currentDateTime();
+		int i = 0;
 		for (iTag* tag : listTags)
 		{
 			if (tag->listTemps.count() >= 3)
@@ -223,16 +227,17 @@ void iTmsTest::timerEvent(QTimerEvent *event)
 			}
 			if ((max - min) >= 2)
 			{
-				QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss.zzz");
-				DB_saveHistory(tag, time);															//save tag data when TEMP vary bigger than 2 degree
+				QString time = c_time.addMSecs(i++).toString("yyyy/MM/dd hh:mm:ss.zzz");
+				DB_saveHistory(query,tag, time);															//save tag data when TEMP vary bigger than 2 degree
 				ui.plainTextEdit->appendPlainText(QString("Tag: %1 temperature changes lot").arg(tag->T_epc));
 			}
 		}
+		db.commit();
 	}
 	else if (event->timerId() == m_nTimerId_5min)
 	{
 		//time to copy table 'TAGS' into table 'DATA'
-		DB_saveHistory();
+		DB_saveHistory();																			//save tag data every 5 mins
 		dataModel->select();
 		while (dataModel->canFetchMore()) dataModel->fetchMore();
 	}
@@ -529,6 +534,10 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 		}
 		else if (unit.startAddress() == STARTADDRESS_ALARM)							//alarm flag
 		{
+			QSqlDatabase db = QSqlDatabase::database();
+			db.transaction();
+			QSqlQuery	query;
+			QDateTime c_time = QDateTime::currentDateTime();
 			for (uint i = 0; i < unit.valueCount(); i++)
 			{
 				iTag* tag = getTag(i + 1);
@@ -540,12 +549,13 @@ void iTmsTest::dataHandler(QModbusDataUnit unit)
 					tag->T_alarm = unit.value(i);
 					if (alarm)
 					{
-						QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss.zzz");
-						DB_saveHistory(tag, time);															//save tag data when TEMP vary bigger than 2 degree
+						QString time = c_time.addMSecs(i++).toString("yyyy/MM/dd hh:mm:ss.zzz");
+						DB_saveHistory(query,tag, time);															//save tag data when it's a new alarm
 						ui.plainTextEdit->appendPlainText(QString("Tag: %1 temperature alarmed").arg(tag->T_epc));
 					}
 				}
 			}
+			db.commit();
 		}
 	}
 	break;
@@ -618,21 +628,23 @@ void iTmsTest::DB_saveTags()
 }
 void iTmsTest::DB_saveHistory()
 {
+	QSqlDatabase db = QSqlDatabase::database();
+	db.transaction();
+	QSqlQuery	query;
+	QDateTime c_time = QDateTime::currentDateTime();
 	int i = 0;
 	for (iTag* tag : listTags)
 	{
-		QDateTime c_time = QDateTime::currentDateTime();
-		c_time.addMSecs(i++);
-		QString time = c_time.toString("yyyy/MM/dd hh:mm:ss.zzz");
-		DB_saveHistory(tag, time);
+		QString time = c_time.addMSecs(i++).toString("yyyy/MM/dd hh:mm:ss.zzz");
+		DB_saveHistory(query,tag, time);
 	}
+	db.commit();
 }
-void iTmsTest::DB_saveHistory(iTag *tag, const QString& time)
+void iTmsTest::DB_saveHistory(QSqlQuery&	query,iTag *tag, const QString& time)
 {
 	if (modbus->state() != QModbusDevice::ConnectedState)
 		return;
 
-	QSqlQuery	query;
 	bool	ret = query.exec(QString("INSERT INTO DATA VALUES('%1',%2,'%3','%4','%5','%6', %7,%8)")
 			.arg(time)
 			.arg(tag->T_sid)

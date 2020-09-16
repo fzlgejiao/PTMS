@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QMap>
 #include <QQueue> 
+#include <QSqlQuery> 
 
 //state machine for reading tag data
 typedef enum
@@ -111,7 +112,7 @@ protected:
 	void DB_createTags(int cnt);
 	void DB_saveTags();
 	void DB_saveHistory();
-	void DB_saveHistory(iTag *tag,const QString& time);
+	void DB_saveHistory(QSqlQuery&	query,iTag *tag,const QString& time);
 
 	void read();
 	QModbusDataUnit readRequest() const;

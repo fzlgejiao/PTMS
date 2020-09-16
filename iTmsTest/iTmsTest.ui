@@ -395,6 +395,21 @@
              </item>
              <item>
               <property name="text">
+               <string>2600</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2700</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2800</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>3000</string>
               </property>
              </item>
